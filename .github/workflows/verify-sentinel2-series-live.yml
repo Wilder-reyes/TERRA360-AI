@@ -1,0 +1,28 @@
+name: Sentinel-2 multi-date live raster verification
+on:
+  pull_request:
+    paths:
+      - 'backend/app/services/sentinel_timeseries.py'
+      - 'backend/app/api/ndvi_routes.py'
+      - 'scripts/verify_sentinel2_series_live.py'
+      - '.github/workflows/verify-sentinel2-series-live.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-series:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install geospatial dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Verify multiple distinct dates using actual ESA/Copernicus B04, B08 and SCL imagery
+        env:
+          PYTHONPATH: backend
+        run: python scripts/verify_sentinel2_series_live.py
