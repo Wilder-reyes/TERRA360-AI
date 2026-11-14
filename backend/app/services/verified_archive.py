@@ -209,3 +209,47 @@ def upload_verified(product: str, target: date, path: Path, *, source_id: str):
                   Body=json.dumps(manifest, sort_keys=True).encode(),
                   ContentType="application/json")
     return {k: manifest[k] for k in ("product", "date", "size_bytes", "sha256")}
+
+
+def prune_expired(*, keep_days: int = 14, today: date | None = None) -> dict:
+    """Controlled retention for NASA archive. Never touches unknown S3 keys.
+
+    Only paths produced by object_keys() are eligible, and only dates strictly
+    older than the retention window. Call in a private ingestion workflow,
+    never an HTTP request. All storage is operator-owned.
+    """
+    from datetime import timedelta
+    if not 7 <= keep_days <= 30:
+        raise ValueError("Retención admitida: 7–30 días.")
+    config = settings()
+    if config is None:
+        raise ArchiveError("El almacenamiento privado no está configurado.")
+    s3 = client(config)
+    cutoff = (today or date.today()) - timedelta(days=keep_days)
+    groups: dict[tuple[str, date], set[str]] = {}
+    paginator = s3.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=config.bucket, Prefix=PREFIX + "/"):
+        for obj in page.get("Contents", []):
+            key = obj["Key"]
+            parts = key.split("/")
+            if len(parts) != 6 or parts[0] != PREFIX or parts[1] not in PRODUCTS or (
+                parts[5] not in ("manifest.json","granule")):
+                continue
+            try:
+                target = date(int(parts[2]), int(parts[3]), int(parts[4]))
+            except ValueError:
+                continue
+            if target >= cutoff:
+                continue
+            groups.setdefault((parts[1], target), set()).add(parts[5])
+    deleted_dates = 0
+    for (product, target), present in sorted(groups.items(), key=lambda x:x[0][1]):
+        data_key, manifest_key = object_keys(product, target)
+        keys = [data_key if name == "granule" else manifest_key for name in present]
+        if not keys:
+            continue
+        s3.delete_objects(Bucket=config.bucket,
+                          Delete={"Objects":[{"Key":k} for k in keys], "Quiet":True})
+        deleted_dates += 1
+    return {"deleted_archive_dates":deleted_dates,"retention_days":keep_days,
+            "cutoff":cutoff.isoformat(),"scope":PREFIX}
