@@ -6,10 +6,11 @@ import {imergApproxCell} from './imerg-grid'
 import {ParcelNDVI} from './ParcelNDVI'
 import {GpmPolygon} from './GpmPolygon'
 import {SmapRegional} from './SmapRegional'
+import {GaezRaw} from './GaezRaw'
 import type {ApiResult, Position, RecordRow} from './domain'
 import './geo-workspace.css'
 
-type Layer = 'rain' | 'temperature' | 'humidity' | 'scenes' | 'sentinel_ndvi' | 'gpm_polygon' | 'smap_quant' | 'gpm_map' | 'smap_map' | 'ndvi_map' | 'srtm_map'
+type Layer = 'rain' | 'temperature' | 'humidity' | 'scenes' | 'sentinel_ndvi' | 'gpm_polygon' | 'smap_quant' | 'gaez_raw' | 'gpm_map' | 'smap_map' | 'ndvi_map' | 'srtm_map'
 type Base = 'streets' | 'satellite'
 type Scene = {date:string;cloud_cover_percent:number;satellite:string;scene_id:string}
 type SceneResponse = {scenes:Scene[];status:string;source_url:string}
@@ -220,7 +221,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
       <aside className="terra-geo-inspector">
         <div className="terra-geo-layer-title"><strong>{en?'What do you want to explore?':'¿Qué quieres explorar?'}</strong><small>{en?'Select one view':'Elige una vista'}</small></div>
         <div className="terra-geo-layer-pills">
-          {([['rain',en?'Rain':'Lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['sentinel_ndvi',en?'Parcel Sentinel-2 NDVI':'NDVI Sentinel-2 de parcela'],['gpm_polygon',en?'GPM rainfall by area':'Lluvia GPM por área'],['smap_quant',en?'SMAP regional reading':'Humedad regional SMAP'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
+          {([['rain',en?'Rain':'Lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['sentinel_ndvi',en?'Parcel Sentinel-2 NDVI':'NDVI Sentinel-2 de parcela'],['gpm_polygon',en?'GPM rainfall by area':'Lluvia GPM por área'],['smap_quant',en?'SMAP regional reading':'Humedad regional SMAP'],['gaez_raw',en?'FAO GAEZ v5 cell code':'Código FAO GAEZ v5'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
         </div>
         {nasaLayer?<div className="terra-geo-reading terra-geo-raster-reading">
           <small>NASA GIBS · {layer==='gpm_map'?'GPM IMERG':layer==='smap_map'?'SMAP L4':layer==='ndvi_map'?'MODIS NDVI (8 días)':'SRTM v3'}</small>
@@ -244,7 +245,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           <button className="terra-geo-fetch" type="button" onClick={()=>void findScenes()} disabled={!point||loadingScenes}>{loadingScenes?(en?'Searching…':'Consultando…'):(en?'Find images':'Buscar imágenes')}</button>
           {sceneError&&<p role="alert">{sceneError}</p>}
           {scenes&&<div className="terra-geo-scenes">{scenes.scenes.length?scenes.scenes.map(s=><div key={s.scene_id}><strong>{s.date}</strong><small>{s.cloud_cover_percent.toFixed(1)}% {en?'cloud cover of whole image':'de nubes en la imagen completa'}</small></div>):<p>{en?'No matching scenes in this limited search.':'No hay imágenes coincidentes en esta búsqueda limitada.'}</p>}</div>}
-        </div>:layer==='sentinel_ndvi'?<ParcelNDVI vertices={parcelVertices} api={api} en={en}/>:layer==='gpm_polygon'?<GpmPolygon vertices={parcelVertices} api={api} en={en}/>:layer==='smap_quant'?<SmapRegional vertices={parcelVertices} api={api} en={en}/>:<div className="terra-geo-reading">
+        </div>:layer==='sentinel_ndvi'?<ParcelNDVI vertices={parcelVertices} api={api} en={en}/>:layer==='gpm_polygon'?<GpmPolygon vertices={parcelVertices} api={api} en={en}/>:layer==='smap_quant'?<SmapRegional vertices={parcelVertices} api={api} en={en}/>:layer==='gaez_raw'?<GaezRaw vertices={parcelVertices} api={api} en={en}/>:<div className="terra-geo-reading">
           <small>NASA POWER · {en?'regional observation':'dato regional'}</small>
           <h3>{title}</h3>
           <strong className="terra-geo-value">{loading?'…':shownValue} <span>{shownValue==='—'?'':unit}</span></strong>
