@@ -1,0 +1,13 @@
+.terra-ndvi-reading .terra-ndvi-setup{border:1px solid #d6e6d7;background:#f7faf5;border-radius:9px;padding:13px;color:#43654e}
+.terra-ndvi-result{border-top:1px solid #dce8db;margin-top:14px;padding-top:15px}
+.terra-ndvi-result>p:first-child{display:flex;flex-direction:column;gap:4px}
+.terra-ndvi-result>p:first-child span{font-size:.8rem;color:#566b58}
+.terra-ndvi-number{display:flex;flex-direction:column;border:1px solid #bcd8c4;border-radius:12px;padding:13px;background:#f1f8f1;color:#276342}
+.terra-ndvi-number strong{font-size:2rem;font-variant-numeric:tabular-nums;line-height:1.25}
+.terra-ndvi-number span{font-size:.82rem;font-weight:700}
+.terra-ndvi-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin:11px 0}
+.terra-ndvi-stats span{padding:9px;background:#f8faf7;border:1px solid #e5ece3;border-radius:7px;font-size:.79rem;color:#4b6552}
+.terra-ndvi-stats b{color:#254e33}
+.terra-ndvi-error,.terra-ndvi-no-result{color:#8a422a;background:#fff3ed;border-radius:8px;padding:11px}
+.terra-ndvi-reading .fineprint{display:block;line-height:1.5}
+.terra-ndvi-reading a{color:#276f4c}

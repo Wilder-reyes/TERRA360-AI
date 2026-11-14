@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | NASA POWER | Lluvia, temperatura/humedad y periodos históricos de contexto regional | Agua disponible o sensores de parcela |
 | NASA GIBS IMERG/SMAP/MODIS/SRTM | Imágenes regionales originales del proveedor, no análisis de píxel propio | Precipitación, humedad o NDVI exactos en una parcela |
-| ESA Sentinel-2 vía Planetary Computer | Metadatos de escenas y fechas | NDVI Sentinel-2, nubes corregidas ni salud del cultivo |
+| ESA Sentinel-2 vía Planetary Computer | Escenas y NDVI calculado por polígono usando B04/B08, corrección BOA y máscara SCL | Diagnóstico de salud del cultivo, series calibradas, rendimiento ni aptitud agrícola |
 | FAO ECOCROP vía CGIAR | 2.568 fichas de estimaciones de requisitos ecológicos de calidad heterogénea | Aptitud local, producción garantizada o calendario confiable |
 | FAO GAEZ v5 | Documentación científica y vínculo para investigación | **Aún no hay rasters de aptitud GAEZ integrados** |
 | OpenTopoData SRTM90m | Altitud y gradiente ilustrativo de la zona (5 muestras) | Pendiente medida dentro del polígono |
@@ -60,6 +60,6 @@ Abre `http://localhost:5173/`. No publiques archivos `.env`, tokens Earthdata, d
 
 ## Seguimiento y validación
 
-[Hoja de ruta detallada v0.10](docs/roadmap-v0.10.md) · [Requisitos UX](docs/farmer-first-ux-redesign.md) · [Protocolo con agricultores](docs/farmer-validation-protocol.md) · [Capas NASA GIBS](docs/gibs-layers.md) · [GitHub Issues](https://github.com/Wilder-reyes/TERRA360-AI/issues).
+[Hoja de ruta actualizada v0.11](docs/roadmap-v0.11.md) · [Histórico v0.10](docs/roadmap-v0.10.md) · [Requisitos UX](docs/farmer-first-ux-redesign.md) · [Protocolo con agricultores](docs/farmer-validation-protocol.md) · [Capas NASA GIBS](docs/gibs-layers.md) · [GitHub Issues](https://github.com/Wilder-reyes/TERRA360-AI/issues).
 
-**El objetivo es que una persona sin conocimientos técnicos pueda ver, comprender y comparar información regional.** La validación agronómica real, la importación espacial GAEZ v5 y el cálculo NDVI Sentinel-2 sobre parcelas siguen pendientes de fuentes y ensayos adicionales.
+**El objetivo es que una persona sin conocimientos técnicos pueda ver, comprender y comparar información regional.** La validación agronómica real y la importación espacial GAEZ v5 siguen pendientes de datos y ensayos adicionales. El NDVI Sentinel-2 por polígono ya se calcula técnicamente, pero todavía no ha sido validado con mediciones de campo.

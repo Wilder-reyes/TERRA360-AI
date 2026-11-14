@@ -3,10 +3,11 @@ import {CircleMarker, MapContainer, Marker, Popup, Polygon, Polyline, Rectangle,
 import L from 'leaflet'
 import {approximatePolygonHectares, validatePolygon} from './geometry'
 import {imergApproxCell} from './imerg-grid'
+import {ParcelNDVI} from './ParcelNDVI'
 import type {ApiResult, Position, RecordRow} from './domain'
 import './geo-workspace.css'
 
-type Layer = 'rain' | 'temperature' | 'humidity' | 'scenes' | 'gpm_map' | 'smap_map' | 'ndvi_map' | 'srtm_map'
+type Layer = 'rain' | 'temperature' | 'humidity' | 'scenes' | 'sentinel_ndvi' | 'gpm_map' | 'smap_map' | 'ndvi_map' | 'srtm_map'
 type Base = 'streets' | 'satellite'
 type Scene = {date:string;cloud_cover_percent:number;satellite:string;scene_id:string}
 type SceneResponse = {scenes:Scene[];status:string;source_url:string}
@@ -102,6 +103,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const current=useMemo(()=>records.find(r=>r.date===date)||records[records.length-1]||null,[records,date])
   const unit=layer==='rain'?'mm':layer==='temperature'?'°C':layer==='humidity'?'%':''
   const nasaLayer=layer==='gpm_map'?'IMERG_Precipitation_Rate':layer==='smap_map'?'SMAP_L4_Analyzed_Surface_Soil_Moisture':layer==='ndvi_map'?'MODIS_Terra_NDVI_8Day':layer==='srtm_map'?'SRTM_Color_Index':null
+  const parcelVertices = polygon || (area ? [area[0], {lat:area[0].lat,lng:area[1].lng}, area[1], {lat:area[1].lat,lng:area[0].lng}] : null)
   const rasterDate=current?.date||last
   useEffect(()=>{setRasterFailed(false)},[layer,rasterDate])
   const value=layer==='rain'?current?.PRECTOTCORR:layer==='temperature'?current?.T2M:layer==='humidity'?current?.RH2M:null
@@ -216,7 +218,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
       <aside className="terra-geo-inspector">
         <div className="terra-geo-layer-title"><strong>{en?'What do you want to explore?':'¿Qué quieres explorar?'}</strong><small>{en?'Select one view':'Elige una vista'}</small></div>
         <div className="terra-geo-layer-pills">
-          {([['rain',en?'Rain':'Lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
+          {([['rain',en?'Rain':'Lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['sentinel_ndvi',en?'Parcel Sentinel-2 NDVI':'NDVI Sentinel-2 de parcela'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
         </div>
         {nasaLayer?<div className="terra-geo-reading terra-geo-raster-reading">
           <small>NASA GIBS · {layer==='gpm_map'?'GPM IMERG':layer==='smap_map'?'SMAP L4':layer==='ndvi_map'?'MODIS NDVI (8 días)':'SRTM v3'}</small>
@@ -240,7 +242,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           <button className="terra-geo-fetch" type="button" onClick={()=>void findScenes()} disabled={!point||loadingScenes}>{loadingScenes?(en?'Searching…':'Consultando…'):(en?'Find images':'Buscar imágenes')}</button>
           {sceneError&&<p role="alert">{sceneError}</p>}
           {scenes&&<div className="terra-geo-scenes">{scenes.scenes.length?scenes.scenes.map(s=><div key={s.scene_id}><strong>{s.date}</strong><small>{s.cloud_cover_percent.toFixed(1)}% {en?'cloud cover of whole image':'de nubes en la imagen completa'}</small></div>):<p>{en?'No matching scenes in this limited search.':'No hay imágenes coincidentes en esta búsqueda limitada.'}</p>}</div>}
-        </div>:<div className="terra-geo-reading">
+        </div>:layer==='sentinel_ndvi'?<ParcelNDVI vertices={parcelVertices} api={api} en={en}/>:<div className="terra-geo-reading">
           <small>NASA POWER · {en?'regional observation':'dato regional'}</small>
           <h3>{title}</h3>
           <strong className="terra-geo-value">{loading?'…':shownValue} <span>{shownValue==='—'?'':unit}</span></strong>
@@ -272,7 +274,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           {!point&&<p>{en?'Choose a point on the map first.':'Primero elige un punto en el mapa.'}</p>}
           {data&&<small>{data.period.start} — {data.period.end}</small>}
         </div>}
-        <div className="terra-geo-key"><strong>{en?'How to read this map':'Cómo interpretar el mapa'}</strong><p><span className="terra-geo-legend-dot"/> {en?'Colored circle: regional value for one NASA POWER query point. It is not a gridded field map.':'Círculo de color: valor regional para un punto de consulta NASA POWER. En IMERG, el cuadro azul representa una cuadrícula aproximada de 0,1°, no el píxel exacto.'}</p><p><span className="terra-geo-legend-line"/> {en?'Green outline: the approximate area you drew.':'Contorno verde: área aproximada que dibujaste.'}</p><p>{en?'Base map: OSM streets or Esri aerial imagery. The aerial photo is NOT a computed Sentinel-2 or NASA vegetation layer.':'Fondo: calles de OSM o foto aérea de Esri. La fotografía NO es un análisis de vegetación NASA ni de Sentinel-2.'}</p><p>{en?'NASA GIBS satellite maps are visual layers. The numeric point readings come from NASA POWER, a different product. Sentinel-2 vegetation indices and slope rasters are not computed here; MODIS NDVI is an existing NASA visualization.':'Los mapas satelitales NASA GIBS son capas visuales. Los valores numéricos del punto provienen de NASA POWER, que es otro producto. Aún no calculamos índices de vegetación Sentinel-2 ni mapas de pendiente; el NDVI MODIS es una visualización existente de NASA.'}</p></div>
+        <div className="terra-geo-key"><strong>{en?'How to read this map':'Cómo interpretar el mapa'}</strong><p><span className="terra-geo-legend-dot"/> {en?'Colored circle: regional value for one NASA POWER query point. It is not a gridded field map.':'Círculo de color: valor regional para un punto de consulta NASA POWER. En IMERG, el cuadro azul representa una cuadrícula aproximada de 0,1°, no el píxel exacto.'}</p><p><span className="terra-geo-legend-line"/> {en?'Green outline: the approximate area you drew.':'Contorno verde: área aproximada que dibujaste.'}</p><p>{en?'Base map: OSM streets or Esri aerial imagery. The aerial photo is NOT a computed Sentinel-2 or NASA vegetation layer.':'Fondo: calles de OSM o foto aérea de Esri. La fotografía NO es un análisis de vegetación NASA ni de Sentinel-2.'}</p><p>{en?'NASA GIBS satellite maps are visual layers. The numeric point readings come from NASA POWER, a different product. Sentinel-2 NDVI is calculated only after outlining a parcel and requesting a per-scene analysis; it does not diagnose crops or inform ARIE. MODIS NDVI is a separate NASA visualization. Slope rasters are not computed here.':'Los mapas satelitales NASA GIBS son capas visuales. Los valores numéricos del punto provienen de NASA POWER, que es otro producto. El NDVI Sentinel-2 se calcula únicamente al delimitar un terreno y solicitar el análisis de una escena; no diagnostica cultivos ni orienta ARIE. El NDVI MODIS es una visualización distinta de NASA. No calculamos mapas de pendiente.'}</p></div>
       </aside>
     </div>
   </section>
