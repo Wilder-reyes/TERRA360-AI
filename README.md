@@ -4,6 +4,14 @@
 **API:** https://terra360-api.onrender.com/api/health  
 **Tipo:** prototipo de apoyo a decisiones agrícolas; **no** ofrece prescripciones de siembra validadas.
 
+## Nueva dirección de producto (v0.17, en planificación)
+
+El siguiente piloto tendrá como público objetivo a **agricultores peruanos** y se concentrará en **una zona agrícola específica de Huaral (Lima)**, cuyo perímetro todavía debe delimitarse. Se priorizará un mapa móvil con **colores, leyendas y frases sencillas**, y un flujo de **fotografía para reconocer el posible tipo de cultivo**, con confirmación humana y selección manual si el modelo desconoce la planta. El catálogo completo de cultivos y la futura inferencia visual pertenecen al **backend**, no a una lista compleja que tenga que recorrer el agricultor.
+
+**Importante:** esto es una especificación nueva, **no** una función publicada. La versión anterior contiene un recorte privado de SMAP **para Calca, Cusco**, que **no** debe mostrarse como Huaral hasta migrar su ámbito geográfico con validación. No existe todavía un modelo visual entrenado y validado para los cultivos del piloto.
+
+[Plan de producto, privacidad, arquitectura y criterios de aceptación v0.17](docs/roadmap-v0.17-huaral-farmer-vision.md).
+
 ## Qué hace hoy la plataforma
 
 - Mapa central con búsqueda mundial de localidades, ubicación por clic, polígonos editables y mediciones aproximadas de área.
