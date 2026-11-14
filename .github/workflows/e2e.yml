@@ -5,6 +5,8 @@ on:
       - 'frontend/e2e/**'
       - 'frontend/src/GeoWorkspace.tsx'
       - 'frontend/src/ParcelNDVI.tsx'
+      - 'frontend/src/SentinelSeries.tsx'
+      - 'frontend/src/sentinel-series.css'
       - 'frontend/src/parcel-ndvi.css'
       - 'frontend/playwright.config.ts'
       - '.github/workflows/e2e.yml'
