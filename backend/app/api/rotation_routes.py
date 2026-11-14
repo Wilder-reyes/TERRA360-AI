@@ -5,6 +5,7 @@ GET  /api/rotation/zones       demo zones (Huaral, Barranca) from MIDAGRI 2024
 GET  /api/rotation/crops       team crop catalogue (13 crops) + coastal seasons
 GET  /api/rotation/templates   team S0/S1/S2 test rotations (backup for the demo)
 GET  /api/rotation/climate     NASA POWER monthly ET0 / Tmax for a zone or point
+GET  /api/rotation/upper-basin-rain  GPM IMERG monthly rain in the upper basin («agua que viene»)
 POST /api/rotation/history     monthly NDVI 2021-today for a GeoJSON field (HLS, fallback S2)
 POST /api/rotation/compare     S0 (current) vs S1 «Water» vs S2 «Soil», 5-section explanations
 """
@@ -21,6 +22,7 @@ from pydantic import BaseModel, Field
 
 from app.services import rotation_engine as engine
 from app.services.hls_history import cached_history, monthly_history
+from app.services.imerg_basin import basin_context
 from app.services.power_climatology import ClimateError, monthly_climate
 from app.services.rotation_zones import get_zone, list_zones
 from app.services.sentinel_ndvi import NDVIError
@@ -110,6 +112,11 @@ async def _climate(zone: str | None, lat: float | None, lon: float | None) -> di
         raise HTTPException(422, str(exc)) from exc
 
 
+@router.get("/upper-basin-rain")
+def upper_basin_rain(zone: Literal["huaral", "barranca"]):
+    return basin_context(zone)
+
+
 @router.get("/climate")
 async def climate(zone: Literal["huaral", "barranca"] | None = None,
                   latitude: float | None = Query(None, ge=-60, le=60),
@@ -179,4 +186,11 @@ async def compare(req: CompareRequest):
     except engine.RotationError as exc:
         raise HTTPException(422, str(exc)) from exc
     result["zone"] = req.zone
+    # P1 «agua que viene»: IMERG rain in the upper basin (context only; abstains if not computed).
+    basin = basin_context(req.zone)
+    result["upper_basin_rain"] = basin
+    if basin["status"] == "available":
+        for month in result["window"]["context"]:
+            month["basin_rain_mm"] = basin["climatology_mm_month"].get(str(month["calendar_month"]),
+                                                                       basin["climatology_mm_month"].get(month["calendar_month"]))
     return result

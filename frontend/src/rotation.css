@@ -103,3 +103,9 @@
  .r-strategy{break-inside:avoid;page-break-inside:avoid}
  .r-cell,.r-strip,.r-bar,.r-tag,.r-dot{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* Drawing: status and error sit on the map, full width on phones */
+.r-map-tools .r-map-status,.r-map-tools .r-map-error{flex:1 1 100%;text-align:left}
+.r-map-tools .r-map-error{background:#fdecea;color:#8a2a1f;border:1px solid #f3c1bb}
+.r-map .leaflet-interactive{cursor:crosshair}
+.r-bar.basin{background:#4f8fc9}

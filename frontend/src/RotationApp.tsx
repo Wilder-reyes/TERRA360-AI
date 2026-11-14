@@ -6,7 +6,7 @@
  * data is missing. Backend: /api/rotation/*.
  */
 import {useEffect,useMemo,useRef,useState} from 'react'
-import {MapContainer,Polygon,Polyline,TileLayer,useMap,useMapEvents} from 'react-leaflet'
+import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {CartesianGrid,Line,LineChart,ReferenceArea,ReferenceLine,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts'
 import {API,httpErrorMessage,readableApiError} from './network'
 import {approximatePolygonHectares,validatePolygon} from './geometry'
@@ -27,8 +27,9 @@ type Strategy={id:'S0'|'S1'|'S2';key:'current'|'water'|'soil';title_es:string;ti
  indicators:{water_total_mm:number;water_low_river_mm:number;bare_months:number;bare_months_low_river:number;legume_plantings:number;distinct_families:number;same_family_consecutive:number;heat_sensitive_hits:{crop_id:string;name_es:string;months:number[]}[];approximate_crops:string[]};
  relative_to_current:{water_low_river_change_percent:number|null;water_total_change_percent:number|null;bare_months_change:number;legume_plantings_change:number}|null;
  icons:{water:string;soil_cover:string;nitrogen:string;pests:string;heat:string};sections:Record<Section,{es:string[];en:string[]}>}
-type Context={index:number;calendar_month:number;year:number;low_river:boolean;hot:boolean;et0_mm_month:number;tmax_c:number}
-type CompareResult={status:string;income_crop?:string;strategies:Strategy[];window?:{context:Context[]};climate?:{period:string;hot_months:number[];annual_et0_mm:number;limitations:string[];limitations_en?:string[];cell_adjustment:{reason_es:string;reason_en:string}|null};disclaimer_es?:string;disclaimer_en?:string;message_es?:string;message_en?:string}
+type Context={index:number;calendar_month:number;year:number;low_river:boolean;hot:boolean;et0_mm_month:number;tmax_c:number;basin_rain_mm?:number|null}
+type BasinRain={status:string;message_es?:string;message_en?:string;source?:string;basin_es?:string;basin_en?:string;years?:string[];years_count?:number;last_season?:{season:string;rain_mm:number;percent_of_normal:number|null}|null;note_es?:string;note_en?:string}
+type CompareResult={status:string;upper_basin_rain?:BasinRain;income_crop?:string;strategies:Strategy[];window?:{context:Context[]};climate?:{period:string;hot_months:number[];annual_et0_mm:number;limitations:string[];limitations_en?:string[];cell_adjustment:{reason_es:string;reason_en:string}|null};disclaimer_es?:string;disclaimer_en?:string;message_es?:string;message_en?:string}
 type Planting={crop_id:string;start_index:number}
 
 const CROPS:Record<string,{es:string;en:string;icon:string;color:string}>={
@@ -54,7 +55,7 @@ const T={
   brand:'Comparador de rotaciones',pilot:'Huaral y Barranca · Lima, Perú',steps:['Mi terreno','Mi rotación','¿Qué te importa?','Compara'],
   s1Title:'Elige tu zona y tu terreno',s1Lead:'Toca un terreno de ejemplo, dibuja el tuyo en el mapa o pega su GeoJSON.',zone:'Zona',
   examples:'Terrenos de ejemplo',teamFields:'Terrenos del equipo',testFields:'Terrenos de prueba técnica',draw:'Dibujar mi terreno',finish:'Terminar',cancel:'Cancelar',
-  corners:(n:number)=>`Toca las esquinas de tu terreno (${n})`,drawError:'No se pudo cerrar el terreno. Marca al menos 3 esquinas sin cruzar las líneas.',
+  corners:(n:number)=>n<3?`Toca las esquinas de tu terreno, una tras otra, siguiendo el borde (${n} de al menos 3)`:`${n} esquinas. Para cerrar, toca la esquina amarilla, haz doble clic o pulsa «Terminar».`,undo:'Deshacer',drawError:'No se pudo cerrar el terreno.',drawReasons:{vertex_count:'Marca al menos 3 esquinas.',self_intersection:'Las líneas se cruzan. Pulsa «Deshacer» y marca las esquinas en orden, siguiendo el borde.',duplicate_vertices:'Hay dos esquinas en el mismo punto. Pulsa «Deshacer».',too_small:'El terreno es demasiado pequeño. Acerca el mapa y marca las esquinas más separadas.',area_too_large:'El terreno es demasiado grande. Dibuja solo tu chacra.',coordinates:'Hay una esquina fuera del mapa.'} as Record<string,string>,parcelSize:'El satélite necesita un terreno de 0,1 a 500 ha.',
   geojson:'Pegar o subir GeoJSON',geojsonHint:'Polygon, Feature o FeatureCollection en coordenadas WGS84.',useGeojson:'Usar este GeoJSON',geojsonError:'No reconocimos un polígono válido en ese GeoJSON.',
   area:(ha:string)=>`Área aproximada: ${ha} ha`,noField:'Aún no elegiste un terreno.',seeHistory:'Ver cómo ha estado mi terreno →',
   sectorNote:(s:string,c:string)=>`El mapa inicia en el sector estadístico ${s} (código ${c}, MIDAGRI 2024). Es una referencia, no una chacra.`,
@@ -71,7 +72,7 @@ const T={
   turnQ:'¿Cómo suele estar tu turno de agua entre mayo y noviembre?',turn:{normal:'Normal',escaso:'Escaso',no_se:'No sé'},compare:'Comparar 3 rotaciones →',comparing:'Calculando con NASA POWER y el catálogo de cultivos…',
   s4Title:'Tu forma de sembrar y dos ideas para cuidar tu suelo y tu agua',
   disclaimer:'Son ideas para conversar, no órdenes. Revísalas con un técnico de la Agencia Agraria o de tu Junta de Usuarios antes de decidir.',
-  ctxLow:'Río bajo (estiaje)',ctxHot:'Meses de más calor',ctxEt0:'Demanda de agua del aire (ET0)',
+  ctxLow:'Río bajo (estiaje)',ctxBasin:'Agua que viene: lluvia en la sierra (GPM IMERG)',basinSeason:(s:string,p:number)=>`Temporada ${s}: ${p} % de lo normal en la cabecera de cuenca.`,ctxHot:'Meses de más calor',ctxEt0:'Demanda de agua del aire (ET0)',
   why:'¿Por qué?',hide:'Ocultar',sections:{why:'¿Por qué te lo sugerimos?',evidence:'¿En qué nos basamos?',benefits:'¿Qué podrías ganar?',gaps:'¿Qué no sabemos?',risks:'¿Qué debes revisar con un técnico?'} as Record<Section,string>,
   waterLow:'Agua en estiaje',bare:'Meses sin cubierta',legumes:'Leguminosas',families:'Familias',vsToday:'vs. hoy',of24:'de 24',
   icon:{water:'💧 Agua en estiaje',soil:'🌱 Suelo cubierto',n:'🫘 Aporta nitrógeno',pests:'🐛 Corta plagas',market:'💰 Cultivo de ingreso',heat:'🔥 Calor en etapa sensible'},
@@ -85,7 +86,7 @@ const T={
   brand:'Rotation comparator',pilot:'Huaral and Barranca · Lima, Peru',steps:['My field','My rotation','What matters?','Compare'],
   s1Title:'Choose your zone and your field',s1Lead:'Tap an example field, draw yours on the map or paste its GeoJSON.',zone:'Zone',
   examples:'Example fields',teamFields:'Team fields',testFields:'Technical test fields',draw:'Draw my field',finish:'Finish',cancel:'Cancel',
-  corners:(n:number)=>`Tap the corners of your field (${n})`,drawError:'Could not close the field. Mark at least 3 corners without crossing lines.',
+  corners:(n:number)=>n<3?`Tap your field's corners one after another along the edge (${n} of at least 3)`:`${n} corners. To close, tap the yellow corner, double-click or press «Finish».`,undo:'Undo',drawError:'Could not close the field.',drawReasons:{vertex_count:'Mark at least 3 corners.',self_intersection:'The lines cross. Press «Undo» and mark the corners in order along the edge.',duplicate_vertices:'Two corners are on the same spot. Press «Undo».',too_small:'The field is too small. Zoom in and mark corners further apart.',area_too_large:'The field is too large. Draw only your farm.',coordinates:'A corner is outside the map.'} as Record<string,string>,parcelSize:'The satellite needs a field of 0.1 to 500 ha.',
   geojson:'Paste or upload GeoJSON',geojsonHint:'Polygon, Feature or FeatureCollection in WGS84 coordinates.',useGeojson:'Use this GeoJSON',geojsonError:'We did not find a valid polygon in that GeoJSON.',
   area:(ha:string)=>`Approximate area: ${ha} ha`,noField:'You have not chosen a field yet.',seeHistory:'See how my field has been →',
   sectorNote:(s:string,c:string)=>`The map starts at statistical sector ${s} (code ${c}, MIDAGRI 2024). It is a reference, not a farm.`,
@@ -102,7 +103,7 @@ const T={
   turnQ:'How is your irrigation turn usually between May and November?',turn:{normal:'Normal',escaso:'Scarce',no_se:"I don't know"},compare:'Compare 3 rotations →',comparing:'Computing with NASA POWER and the crop catalogue…',
   s4Title:'Your way of planting and two ideas to care for your soil and water',
   disclaimer:'These are ideas to discuss, not instructions. Review them with a technician from the Agrarian Agency or your Water Users\' Board before deciding.',
-  ctxLow:'Low river (dry season)',ctxHot:'Warmest months',ctxEt0:'Air water demand (ET0)',
+  ctxLow:'Low river (dry season)',ctxBasin:'Water to come: rain in the Andes (GPM IMERG)',basinSeason:(s:string,p:number)=>`Season ${s}: ${p}% of normal in the headwaters.`,ctxHot:'Warmest months',ctxEt0:'Air water demand (ET0)',
   why:'Why?',hide:'Hide',sections:{why:'Why do we suggest it?',evidence:'What is it based on?',benefits:'What could you gain?',gaps:'What do we not know?',risks:'What to check with a technician?'} as Record<Section,string>,
   waterLow:'Dry-season water',bare:'Bare months',legumes:'Legumes',families:'Families',vsToday:'vs. today',of24:'of 24',
   icon:{water:'💧 Dry-season water',soil:'🌱 Covered soil',n:'🫘 Adds nitrogen',pests:'🐛 Breaks pests',market:'💰 Income crop',heat:'🔥 Heat in sensitive stage'},
@@ -135,9 +136,33 @@ function FitView({zone,polygon}:{zone:ZoneId;polygon:LatLng[]|null}){
  },[map,zone,polygon])
  return null
 }
-function Clicks({active,onVertex}:{active:boolean;onVertex:(p:LatLng)=>void}){
- useMapEvents({click(e){if(active)onVertex({lat:Number(e.latlng.lat.toFixed(6)),lng:Number(e.latlng.lng.toFixed(6))})}})
- return null
+/** Drawing layer: visible corners, closed preview, close by tapping the first
+ * corner or double-clicking, repeated taps on the same spot ignored, and no
+ * double-click zoom while drawing (it used to add a duplicate corner). */
+const SAME_SPOT_PX=10
+const CLOSE_PX=22
+function DrawingLayer({active,vertices,onVertex,onClose}:{active:boolean;vertices:LatLng[];onVertex:(p:LatLng)=>void;onClose:()=>void}){
+ const map=useMap()
+ useEffect(()=>{if(active)map.doubleClickZoom.disable();else map.doubleClickZoom.enable();return()=>map.doubleClickZoom.enable()},[map,active])
+ const px=(p:LatLng)=>map.latLngToContainerPoint([p.lat,p.lng])
+ const near=(a:LatLng,b:LatLng,limit:number)=>{const pa=px(a),pb=px(b);return Math.hypot(pa.x-pb.x,pa.y-pb.y)<limit}
+ useMapEvents({
+  click(e){
+   if(!active)return
+   const p={lat:Number(e.latlng.lat.toFixed(6)),lng:Number(e.latlng.lng.toFixed(6))}
+   if(vertices.length>=3&&near(p,vertices[0],CLOSE_PX)){onClose();return}
+   if(vertices.length&&near(p,vertices[vertices.length-1],SAME_SPOT_PX))return
+   onVertex(p)
+  },
+  dblclick(){if(active&&vertices.length>=3)onClose()},
+ })
+ if(!active)return null
+ return <>
+  {vertices.length>=3&&<Polygon positions={vertices.map(p=>[p.lat,p.lng])} pathOptions={{color:'#ffd34d',weight:2,dashArray:'6 6',fillColor:'#ffd34d',fillOpacity:.18}}/>}
+  {vertices.length===2&&<Polyline positions={vertices.map(p=>[p.lat,p.lng])} pathOptions={{color:'#ffd34d',weight:3,dashArray:'6 6'}}/>}
+  {vertices.map((p,i)=><CircleMarker key={i+':'+p.lat+':'+p.lng} center={[p.lat,p.lng]} radius={i===0?(vertices.length>=3?11:8):6}
+   pathOptions={{color:'#173a2e',weight:2,fillColor:i===0?'#ffd34d':'#ffffff',fillOpacity:1}}/>)}
+ </>
 }
 
 function NdviChart({history,lang,windowStart}:{history:History;lang:Lang;windowStart:number}){
@@ -184,6 +209,9 @@ function ContextStrips({ctx,lang}:{ctx:Context[];lang:Lang}){
   <div className="r-grid">{ctx.map(c=><div key={c.index} className={'r-strip'+(c.low_river?' on-low':'')}/>)}</div>
   <div className="r-strip-label">{t.ctxHot}</div>
   <div className="r-grid">{ctx.map(c=><div key={c.index} className={'r-strip'+(c.hot?' on-hot':'')} title={`Tmax ${c.tmax_c.toFixed(1)} °C`}/>)}</div>
+  {ctx.some(c=>c.basin_rain_mm!=null)&&(()=>{const maxR=Math.max(1,...ctx.map(c=>c.basin_rain_mm||0));return <>
+   <div className="r-strip-label">{t.ctxBasin}</div>
+   <div className="r-grid r-water">{ctx.map(c=><div key={c.index} className="r-bar-wrap"><div className="r-bar basin" style={{height:`${Math.max(2,100*(c.basin_rain_mm||0)/maxR)}%`}} title={`${(c.basin_rain_mm||0).toFixed(0)} mm`}/></div>)}</div></>})()}
   <div className="r-strip-label">{t.ctxEt0}</div>
   <div className="r-grid r-water">{ctx.map(c=><div key={c.index} className="r-bar-wrap"><div className="r-bar et0" style={{height:`${100*c.et0_mm_month/maxEt0}%`}} title={`${c.et0_mm_month.toFixed(0)} mm`}/></div>)}</div>
  </div>
@@ -252,7 +280,9 @@ export default function RotationApp(){
  function resetDownstream(){epoch.current++;setHistory(null);setHistoryError('');setAnswers({});setTemplateCurrent(null);setResult(null)}
  function finishDrawing(){
   const v=validatePolygon(vertices)
-  if(!v.valid){setDrawError(t.drawError);return}
+  if(!v.valid){setDrawError(t.drawError+' '+(t.drawReasons[v.reason]||''));return}
+  const ha=approximatePolygonHectares(vertices)
+  if(ha<0.1||ha>500){setDrawError(t.drawError+' '+t.parcelSize);return}
   setField({polygon:fromLatLngs(vertices),label:lang==='es'?'Terreno dibujado':'Drawn field'});setDrawing(false);setVertices([]);setDrawError('');resetDownstream()
  }
  function useGeo(text:string){
@@ -342,12 +372,11 @@ export default function RotationApp(){
      <MapContainer className="r-map" center={[ZONES[zone].lat,ZONES[zone].lng]} zoom={13} scrollWheelZoom={false}>
       <TileLayer attribution="Imagery &copy; Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
       <FitView zone={zone} polygon={polygonLL}/>
-      <Clicks active={drawing} onVertex={p=>setVertices(v=>v.length<40?[...v,p]:v)}/>
+      <DrawingLayer active={drawing} vertices={vertices} onVertex={p=>{setDrawError('');setVertices(v=>v.length<40?[...v,p]:v)}} onClose={finishDrawing}/>
       {polygonLL&&<Polygon positions={polygonLL.map(p=>[p.lat,p.lng])} pathOptions={{color:'#ffd34d',weight:3,fillOpacity:.15}}/>}
-      {vertices.length>=2&&<Polyline positions={vertices.map(p=>[p.lat,p.lng])} pathOptions={{color:'#fff',weight:3,dashArray:'6 6'}}/>}
      </MapContainer>
      <div className="r-map-tools">
-      {drawing?<><span role="status">{t.corners(vertices.length)}</span><button type="button" className="r-btn" disabled={vertices.length<3} onClick={finishDrawing}>{t.finish}</button><button type="button" className="r-btn r-btn-outline" onClick={()=>{setDrawing(false);setVertices([])}}>{t.cancel}</button></>
+      {drawing?<><span role="status" className="r-map-status">{t.corners(vertices.length)}</span>{drawError&&<span role="alert" className="r-map-error">{drawError}</span>}<button type="button" className="r-btn r-btn-outline" disabled={vertices.length===0} onClick={()=>{setDrawError('');setVertices(v=>v.slice(0,-1))}}>↶ {t.undo}</button><button type="button" className="r-btn" disabled={vertices.length<3} onClick={finishDrawing}>✓ {t.finish}</button><button type="button" className="r-btn r-btn-outline" onClick={()=>{setDrawing(false);setVertices([])}}>{t.cancel}</button></>
        :<button type="button" className="r-btn r-btn-outline" onClick={()=>{setDrawing(true);setVertices([]);setDrawError('')}}>✏️ {t.draw}</button>}
      </div>
     </div>
@@ -360,7 +389,7 @@ export default function RotationApp(){
      <textarea rows={4} value={geoText} onChange={e=>setGeoText(e.target.value)} placeholder='{"type":"Polygon","coordinates":[[[-77.17,-11.55],...]]}'/>
      <div className="r-row"><input type="file" accept=".geojson,.json,application/geo+json,application/json" onChange={async e=>{const f=e.target.files?.[0];if(f){const txt=await f.text();setGeoText(txt);useGeo(txt)}}}/><button type="button" className="r-btn r-btn-outline" disabled={!geoText.trim()} onClick={()=>useGeo(geoText)}>{t.useGeojson}</button></div>
     </details>
-    {drawError&&<p className="r-error" role="alert">{drawError}</p>}
+    {drawError&&!drawing&&<p className="r-error" role="alert">{drawError}</p>}
     <div className="r-field-status">{field?<><b>{field.label}</b> · {t.area(area.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2}))}{field.note&&<p className="r-small">{field.note}</p>}</>:<span>{t.noField}</span>}</div>
     <button type="button" className="r-btn r-btn-wide" disabled={!field} onClick={()=>{go(2);if(!history)void loadHistory()}}>{t.seeHistory}</button>
    </section>}
@@ -407,7 +436,11 @@ export default function RotationApp(){
      <div className="r-strategies">{result.strategies.map(s=><StrategyCard key={s.id} s={s} ctx={ctx} lang={lang} maxWater={maxWater} incomeCrop={result.income_crop} open={!!open[s.id]} onToggle={()=>setOpen(o=>({...o,[s.id]:!o[s.id]}))}/>)}</div>
      {result.climate&&<div className="r-climate"><h3>{t.climate}</h3><ul>
       <li>NASA POWER · {result.climate.period} · ET0 {result.climate.annual_et0_mm.toFixed(0)} mm/{lang==='es'?'año':'yr'}</li>
-      {result.climate.cell_adjustment&&<li>{lang==='es'?result.climate.cell_adjustment.reason_es:result.climate.cell_adjustment.reason_en}</li>}
+      {result.upper_basin_rain&&(result.upper_basin_rain.status==='available'?<>
+       <li>{result.upper_basin_rain.source} · {lang==='es'?result.upper_basin_rain.basin_es:result.upper_basin_rain.basin_en} · {result.upper_basin_rain.years?.join('–')}</li>
+       {result.upper_basin_rain.last_season?.percent_of_normal!=null&&<li><b>{t.basinSeason(result.upper_basin_rain.last_season.season,result.upper_basin_rain.last_season.percent_of_normal)}</b></li>}
+       <li>{lang==='es'?result.upper_basin_rain.note_es:result.upper_basin_rain.note_en}</li></>
+       :<li>{lang==='es'?result.upper_basin_rain.message_es:result.upper_basin_rain.message_en}</li>)}      {result.climate.cell_adjustment&&<li>{lang==='es'?result.climate.cell_adjustment.reason_es:result.climate.cell_adjustment.reason_en}</li>}
       {(lang==='es'?result.climate.limitations:(result.climate.limitations_en||[])).map((l,i)=><li key={i}>{l}</li>)}
      </ul></div>}
     </>}
