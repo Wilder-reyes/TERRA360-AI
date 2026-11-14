@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from 'react'
-import {CircleMarker, MapContainer, Marker, Popup, Rectangle, TileLayer, useMap, useMapEvents} from 'react-leaflet'
+import {MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents} from 'react-leaflet'
 import L from 'leaflet'
 import type {ApiResult, Position, RecordRow} from './domain'
 import './geo-workspace.css'
@@ -20,6 +20,27 @@ const markerIcon = L.divIcon({
 function Recenter({point}:{point:Position|null}) {
   const map=useMap()
   useEffect(()=>{if(point)map.setView([point.lat,point.lng],Math.max(8,map.getZoom()))},[map,point?.lat,point?.lng])
+  return null
+}
+
+function MapOverlays({point,area,layer,value,current,title,unit,shownValue,en}:{point:Position|null;area:Area|null;layer:Layer;value:number|null|undefined;current:RecordRow|null;title:string;unit:string;shownValue:string;en:boolean}){
+  const map=useMap()
+  useEffect(()=>{
+    const overlays:L.Layer[]=[]
+    if(point&&layer==='scenes'){
+      overlays.push(L.rectangle(boundsForPoint(point),{color:'#a45d2b',weight:2,dashArray:'7 5',fillOpacity:.07}).bindPopup(en?'Approximate scene search area, not a property boundary':'Área aproximada de búsqueda de imágenes, no un terreno delimitado'))
+    }
+    if(area){
+      overlays.push(L.rectangle(boundsForArea(area),{color:'#0d694a',weight:3,fillColor:'#42bd91',fillOpacity:.12}).bindPopup(en?'Approximate area drawn by user; not surveyed':'Área aproximada dibujada, sin validez catastral'))
+    }
+    if(point&&current&&layer!=='scenes'&&value!==null&&value!==undefined){
+      const color=layer==='rain'?'#287bb5':layer==='temperature'?'#c26d24':'#6b5ca9'
+      overlays.push(L.circleMarker([point.lat,point.lng],{radius:24,color,weight:3,fillOpacity:.28})
+        .bindPopup(`${title}: ${shownValue} ${unit} · ${current.date}. ${en?'Regional observation':'Dato regional'}`))
+    }
+    overlays.forEach(overlay=>overlay.addTo(map))
+    return()=>{overlays.forEach(overlay=>map.removeLayer(overlay))}
+  },[map,point?.lat,point?.lng,area?.[0]?.lat,area?.[0]?.lng,area?.[1]?.lat,area?.[1]?.lng,layer,value,current?.date,title,unit,shownValue,en])
   return null
 }
 
@@ -109,9 +130,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           <Recenter point={point}/>
           <MapSelection draw={draw} corner={corner} onPoint={onPick} onCorner={chooseCorner}/>
           {point&&<Marker position={[point.lat,point.lng]} icon={markerIcon}><Popup>{en?'Your selected reference point':'Punto de referencia elegido'}<br/>{point.lat.toFixed(5)}, {point.lng.toFixed(5)}</Popup></Marker>}
-          {point&&layer==='scenes'&&<Rectangle bounds={boundsForPoint(point)} pathOptions={{color:'#a45d2b',weight:2,dashArray:'7 5',fillOpacity:.07}}><Popup>{en?'Approximate Sentinel-2 scene search area, not a field boundary':'Área aproximada de búsqueda de imágenes, no límites de tu terreno'}</Popup></Rectangle>}
-          {area&&<Rectangle bounds={boundsForArea(area)} pathOptions={{color:'#0d694a',weight:3,fillColor:'#42bd91',fillOpacity:.12}}><Popup>{en?'Approximate area drawn by the user; not surveyed':'Área aproximada dibujada, no delimitación catastral'}</Popup></Rectangle>}
-          {point&&current&&layer!=='scenes'&&value!==null&&value!==undefined&&<CircleMarker center={[point.lat,point.lng]} radius={24} pathOptions={{color:layer==='rain'?'#287bb5':layer==='temperature'?'#c26d24':'#6b5ca9',weight:3,fillOpacity:.28}}><Popup>{title}: {shownValue} {unit}<br/>{current.date}<br/>{en?'Regional observation only':'Dato regional, no medición del terreno'}</Popup></CircleMarker>}
+          <MapOverlays point={point} area={area} layer={layer} value={value} current={current} title={title} unit={unit} shownValue={shownValue} en={en}/>
         </MapContainer>
         <div className="terra-geo-draw-actions">
           <button type="button" aria-pressed={draw} onClick={()=>{setDraw(v=>!v);setCorner(null)}}>{draw?(corner?(en?'Pick opposite corner':'Marca la esquina opuesta'):(en?'Pick first corner':'Marca la primera esquina')):(en?'Draw approximate area':'Delimitar área aproximada')}</button>
