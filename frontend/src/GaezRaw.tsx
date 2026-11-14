@@ -1,6 +1,7 @@
 /** Raw 5-arcminute FAO GAEZ v5 cell code: NOT a crop suitability % or advice. */
 import {useEffect,useMemo,useRef,useState} from 'react'
 import type {Position} from './domain'
+import {readableApiError,httpErrorMessage} from './network'
 import './gaez-raw.css'
 
 type RawCell={
@@ -32,10 +33,10 @@ export function GaezRaw({vertices,api,en}:{vertices:Position[]|null;api:string;e
     method:'POST',signal:abort.signal,headers:{'Content-Type':'application/json'},
     body:JSON.stringify({polygon:{type:'Polygon',coordinates:[[...positions,positions[0]]]}})
    })
-   if(!response.ok)throw Error(en?'The original FAO file is unavailable or the polygon is invalid.':'El archivo original FAO no está disponible o el contorno no es válido.')
+   if(!response.ok)throw Error(await httpErrorMessage(response,en))
    const data=await response.json() as RawCell
    if(!abort.signal.aborted)setResult(data)
-  }catch(err){if(!abort.signal.aborted)setError(err instanceof Error?err.message:String(err))}
+  }catch(err){if(!abort.signal.aborted)setError(readableApiError(err,en))}
   finally{if(!abort.signal.aborted)setBusy(false)}
  }
  return <section className="terra-geo-reading terra-gaez-raw" aria-label={en?'Original FAO GAEZ v5 cell code':'Código de celda original FAO GAEZ v5'}>
