@@ -110,7 +110,9 @@ def templates():
 
 
 async def _climate(zone: str | None, lat: float | None, lon: float | None) -> dict:
-    if zone:
+    # Use the farmer's selected parcel coordinates when supplied. A demo zone
+    # is a contextual label, not the location of every farm in that valley.
+    if zone and (lat is None or lon is None):
         z = get_zone(zone)
         lat, lon = z["lat"], z["lng"]
     if lat is None or lon is None:
