@@ -1,0 +1,441 @@
+// AI-assisted: farmer-first BIOTEX interface. Scientific calculations remain on the server.
+import {useEffect,useMemo,useRef,useState} from 'react'
+import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,useMap,useMapEvents} from 'react-leaflet'
+import {API,httpErrorMessage,readableApiError} from './network'
+import {approximatePolygonHectares,validatePolygon} from './geometry'
+import {TEAM_FIELDS,ZONES,type GeoPolygon} from './rotationZones'
+import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
+import './biotex-farmer.css'
+
+type Lang='es'|'en'
+type Step=0|1|2|3
+type Point={lat:number;lng:number}
+type Planting={crop_id:string;start_index:number}
+type Suggestion={crop_id:string;name_es:string}
+type Campaign={start:string;end:string;candidates:Suggestion[]}
+type History={sensor:string;period:{start:string;end:string};months_with_data:number;months_total:number;months:{month:string;ndvi:number|null}[];detection:{campaigns:Campaign[]}}
+type OneCrop={crop_id:string;name_es:string;start_index:number;months:number;approximate:boolean}
+type Strategy={
+ id:string;key:string;title_es:string;title_en:string;origin:string;
+ plantings:OneCrop[];timeline:{index:number;crop_id:string|null;water_mm:number;covered:boolean}[];
+ indicators:{water_low_river_mm:number;bare_months:number;legume_plantings:number;approximate_crops:string[]};
+ relative_to_current:{water_low_river_change_percent:number|null;water_total_change_percent:number|null;bare_months_change:number;legume_plantings_change:number}|null;
+ sections:{why:{es:string[];en:string[]};benefits:{es:string[];en:string[]};gaps:{es:string[];en:string[]};risks:{es:string[];en:string[]};evidence:{es:string[];en:string[]}}
+}
+type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;
+ recommendation_reason_es?:string;recommendation_reason_en?:string;
+ climate?:{period:string;annual_et0_mm:number;cell_adjustment?:{reason_es:string;reason_en:string}|null};
+ income_crop?:string;disclaimer_es?:string;disclaimer_en?:string;method?:Record<string,unknown>}
+
+const NAMES:Record<string,[string,string]>={
+ maiz_amarillo_duro:['Maíz amarillo duro','Yellow maize'],maiz_chala:['Maíz chala','Forage maize'],
+ camote:['Camote','Sweet potato'],papa:['Papa','Potato'],frijol_grano_seco:['Frijol canario','Canary bean'],
+ frijol_castilla:['Frijol castilla','Cowpea'],vainita:['Vainita','Green bean'],pallar:['Pallar','Lima bean'],
+ arveja_verde:['Arveja','Pea'],cebolla:['Cebolla','Onion'],zanahoria:['Zanahoria','Carrot'],
+ brocoli_col:['Brócoli / col','Broccoli / cabbage'],alfalfa:['Alfalfa','Alfalfa']
+}
+const CROPS=Object.keys(NAMES)
+const MONTHS_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre']
+const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December']
+const LABELS={
+ es:{
+ steps:['Mi chacra','Mis cultivos','Mis prioridades','Mi plan'],
+ title:'Cultiva mejor, cuidando tu agua y tu tierra.',
+ subtitle:'Marca tu chacra, cuéntanos qué sembraste y descubre opciones para tus próximas campañas.',
+ pilot:'Ejemplo disponible: Barranca · Pativilca / Supe',region:'Empezamos por Barranca',
+ search:'¿Dónde está tu chacra?',searchHint:'Escribe el nombre de tu localidad o distrito',find:'Buscar lugar',
+ waitSearch:'Buscando lugares…',notFound:'No encontramos ese lugar. Prueba con el distrito o provincia.',
+ mapHint:'Acerca el mapa y marca las esquinas de tu chacra.',draw:'Marcar mi chacra',finish:'Terminar terreno',
+ undo:'Deshacer esquina',cancel:'Cancelar',area:'Área aproximada',changeField:'Cambiar terreno',
+ examples:'¿Quieres conocer cómo funciona?',exampleNote:'Estos terrenos son ejemplos para probar BIOTEX. No representan cultivos confirmados por sus dueños.',
+ pick:'Usar este ejemplo',fieldReady:'Tu terreno está marcado',fieldMissing:'Primero marca un terreno en el mapa.',
+ locationUnavailable:'No pudimos buscar lugares. Intenta de nuevo.',invalidArea:'Marca entre 0,1 y 500 hectáreas.',
+ invalidShape:'Revisa las esquinas: el terreno no debe cruzarse ni repetirse.',
+ next:'Continuar',back:'Volver',
+ historyTitle:'¿Qué cultivos sembraste?',historyLead:'Añade los cultivos que recuerdes de las últimas dos campañas.',
+ crop:'Cultivo',month:'¿En qué mes lo sembraste?',add:'Agregar cultivo',saved:'Cultivos registrados',
+ remove:'Quitar',nothing:'Todavía no has agregado cultivos.',duplicate:'Ya registraste un cultivo en ese mes.',
+ limit:'Puedes registrar hasta 10 siembras.',helpMe:'¿No recuerdas alguna siembra?',satellite:'Buscar pistas con imágenes del terreno',
+ loading:'Estamos revisando imágenes de tu chacra. Puedes seguir anotando tus cultivos.',
+ loadingHelp:'Las imágenes pueden ayudar, pero no siempre permiten saber qué sembraste.',
+ historyFound:'Encontramos estas posibles temporadas de cultivo. Dinos qué sembraste:',
+ possible:'¿Qué sembraste en',choose:'Elegir cultivo',none:'No recuerdo',record:'Guardar este cultivo',
+ recorded:'Cultivo guardado',noSeasons:'No encontramos temporadas claras. Puedes registrar tus cultivos a mano.',
+ satFail:'No pudimos consultar las imágenes ahora. Puedes continuar con tus cultivos.',
+ satMore:'Ver detalles de las imágenes (opcional)',satMonth:'Meses observados',
+ priorityTitle:'¿Qué quieres mejorar primero?',priorityLead:'Elige lo que más te importa para tu próxima siembra.',
+ priorityWater:'Usar menos agua',prioritySoil:'Cuidar más la tierra',priorityBoth:'Cuidar agua y tierra',
+ income:'¿Qué cultivo quieres seguir sembrando?',incomeAuto:'El cultivo que más siembro',
+ scarcity:'¿Entre mayo y noviembre te suele faltar agua?',yes:'Sí',no:'No',unknown:'No estoy seguro',
+ action:'Ver mi plan',working:'Estamos preparando tu plan para esta chacra…',
+ planTitle:'Tu plan de siembra',planLead:'Estas opciones se calcularon con los datos que nos diste y referencias agrícolas de Lima.',
+ recommended:'Opción destacada para tu chacra',noRecommend:'Aún no encontramos una opción claramente mejor.',
+ current:'Tu forma de sembrar',alternative:'Otra opción para revisar',other:'Ver otras opciones',keyWater:'Agua en meses secos',keySoil:'Meses sin cultivo',fewer:'menos',more:'más',
+ waterTrade:'Consumo de agua estimado respecto a lo que haces hoy',coverage:'meses de 24 con la tierra descubierta',
+ where:'Chacra',when:'Fecha',areaPrint:'Superficie aproximada',planSchedule:'Calendario para los próximos 24 meses',
+ year1:'Primer año',year2:'Segundo año',noCrop:'Sin cultivo previsto',sowing:'Siembra',
+ benefits:'Qué puede mejorar',risks:'Qué debes tener en cuenta',verify:'Por confirmar en tu chacra',
+ compare:'Comparación de opciones',details:'Cómo hicimos el análisis',warning:'Estos cálculos son orientativos: antes de cambiar tu siembra, revísalos con un técnico agrícola.',
+ report:'Guardar mi plan en PDF',startOver:'Revisar mis respuestas',sources:'Fuentes y límites',
+ evidence:'Datos usados',reportTech:'Datos técnicos y cálculos',printFooter:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',
+ unsupported:'Aquí todavía no tenemos un calendario de cultivos local comprobado. Puedes marcar y revisar tu terreno, pero las recomendaciones de siembra están disponibles para la costa de Lima.',
+ missingPlan:'Necesitamos al menos un cultivo registrado para preparar tu plan.',
+ partial:'Con los datos actuales no fue posible encontrar todas las opciones. Solo mostramos las calculadas.',
+ unavailable:'No se encontraron alternativas suficientemente claras. Revisa tus siembras o consulta con un técnico.'
+ },
+ en:{
+ steps:['My field','My crops','My priorities','My plan'],
+ title:'Better harvests, caring for soil and water.',subtitle:'Mark your field, tell us what you grew, and discover options for your next seasons.',
+ pilot:'Demo area: Barranca · Pativilca / Supe',region:'Start in Barranca',
+ search:'Where is your field?',searchHint:'Enter your town or district',find:'Find a place',
+ waitSearch:'Searching for places…',notFound:'No places found. Try a district or province.',
+ mapHint:'Zoom in and mark the corners of your field.',draw:'Mark my field',finish:'Finish field',
+ undo:'Undo corner',cancel:'Cancel',area:'Approximate area',changeField:'Change field',
+ examples:'Want to see how it works?',exampleNote:'These fields are examples for trying BIOTEX. Their actual crops have not been confirmed by farmers.',
+ pick:'Use this example',fieldReady:'Your field is marked',fieldMissing:'First mark a field on the map.',
+ locationUnavailable:'We could not search places. Please try again.',invalidArea:'Mark an area from 0.1 to 500 hectares.',
+ invalidShape:'Check the corners: field edges cannot cross or repeat.',
+ next:'Continue',back:'Back',
+ historyTitle:'What have you planted?',historyLead:'Add any crops you remember from the last two seasons.',
+ crop:'Crop',month:'Which month did you plant?',add:'Add crop',saved:'Crops recorded',
+ remove:'Remove',nothing:'You have not added crops yet.',duplicate:'A crop is already recorded in that month.',
+ limit:'You can record up to 10 plantings.',helpMe:'Not sure what you planted?',satellite:'Look for clues in field images',
+ loading:'We are checking images of your field. You can keep adding crops.',
+ loadingHelp:'Images may help, but they cannot always identify the crop.',
+ historyFound:'These may be past growing seasons. Tell us what you planted:',
+ possible:'What did you plant in',choose:'Choose a crop',none:'I do not remember',record:'Save this crop',
+ recorded:'Crop saved',noSeasons:'No clear growing seasons found. You can add crops manually.',
+ satFail:'We could not check satellite images. You can keep entering crops.',
+ satMore:'Show image details (optional)',satMonth:'Months observed',
+ priorityTitle:'What would you most like to improve?',priorityLead:'Choose what matters for your next planting.',
+ priorityWater:'Use less water',prioritySoil:'Care for the soil',priorityBoth:'Care for water and soil',
+ income:'Which crop do you need to keep growing?',incomeAuto:'My most frequent crop',
+ scarcity:'Do you have less irrigation water from May to November?',yes:'Yes',no:'No',unknown:'Not sure',
+ action:'Show my plan',working:'Preparing a plan for your field…',
+ planTitle:'Your planting plan',planLead:'Options use the information you entered and crop references for coastal Lima.',
+ recommended:'Highlighted option for your field',noRecommend:'We have not found a clearly better option yet.',
+ current:'Your current planting',alternative:'Another option to review',other:'See other options',keyWater:'Water in dry months',keySoil:'Months without crops',fewer:'less',more:'more',
+ waterTrade:'Estimated crop water compared with your current planting',coverage:'out of 24 months without a crop',
+ where:'Field',when:'Date',areaPrint:'Approximate area',planSchedule:'24-month planting calendar',
+ year1:'Year one',year2:'Year two',noCrop:'No crop planned',sowing:'Sown',
+ benefits:'What could improve',risks:'What to consider',verify:'Check on your field',
+ compare:'Comparison of options',details:'How this was calculated',warning:'These are estimates. Review them with an agricultural technician before changing crops.',
+ report:'Save my plan as PDF',startOver:'Review my answers',sources:'Sources and limitations',
+ evidence:'Data used',reportTech:'Technical calculations',printFooter:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',
+ unsupported:'We do not yet have a verified local crop calendar here. You can mark and review the field, but planting options are available for coastal Lima.',
+ missingPlan:'Add at least one crop before preparing your plan.',
+ partial:'Not all options could be calculated with these inputs. Only calculated options are shown.',
+ unavailable:'No clear alternative was found. Review your planting history or talk to a technician.'
+ }
+} as const
+function labelCrop(id:string,lang:Lang){return (NAMES[id]||[id,id])[lang==='es'?0:1]}
+function mon(i:number,lang:Lang){const m=(7+i)%12;return (lang==='es'?MONTHS_ES:MONTHS_EN)[m]}
+function monthYear(index:number,baseYear:number,lang:Lang){const d=new Date(Date.UTC(baseYear,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}
+function ymNumber(s:string){return Number(s.slice(0,4))*12+Number(s.slice(5,7))-1}
+function recentAugust(){const now=new Date();const year=now.getUTCFullYear(),m=now.getUTCMonth()+1;return (m>=8?year:year-1)-2}
+function simpleDate(lang:Lang){return new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US',{year:'numeric',month:'long',day:'numeric'})}
+function fromGeo(p:GeoPolygon):Point[]{return p.coordinates[0].slice(0,-1).map(([lng,lat])=>({lat,lng}))}
+function toGeo(p:Point[]):GeoPolygon{return{type:'Polygon',coordinates:[[...p.map(a=>[a.lng,a.lat]),[p[0].lng,p[0].lat]]]}}
+function centroid(p:GeoPolygon):Point{const a=fromGeo(p);return{lat:a.reduce((x,v)=>x+v.lat,0)/a.length,lng:a.reduce((x,v)=>x+v.lng,0)/a.length}}
+function coastalLima(p:Point){return p.lat>=-12.35&&p.lat<=-10.20&&p.lng>=-78.35&&p.lng<=-76.55}
+function isBarranca(p:Point){return p.lat>=-10.95&&p.lat<=-10.40&&p.lng>=-78.07&&p.lng<=-77.35}
+function metric(n:number){return Math.round(Math.abs(n)).toLocaleString('es-PE')}
+
+function Icon({name,size=20}:{name:'search'|'pin'|'check'|'left'|'right'|'undo'|'leaf'|'water'|'print'|'alert'|'info',size?:number}){
+ const shapes:Record<string,React.ReactNode>={
+  search:<><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></>,
+  pin:<><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
+  check:<path d="m4 12 5 5L20 6"/>,
+  left:<path d="m14 5-7 7 7 7"/>,right:<path d="m10 5 7 7-7 7"/>,
+  undo:<><path d="M9 14 4 9l5-5"/><path d="M4 9h9a6 6 0 0 1 0 12h-2"/></>,
+  leaf:<><path d="M21 3c-9 0-17 4-17 13a5 5 0 0 0 5 5C18 21 22 13 21 3Z"/><path d="M4 21c3-7 7-9 13-12"/></>,
+  water:<path d="M12 2C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-13Z"/>,
+  print:<><rect x="6" y="14" width="12" height="8"/><path d="M6 8V2h12v6M6 17H3v-8h18v8h-3"/></>,
+  alert:<><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5m0 3v.5"/></>,
+  info:<><circle cx="12" cy="12" r="10"/><path d="M12 11v6m0-10v1"/></>
+ }
+ return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{shapes[name]}</svg>
+}
+function FlyTo({point,polygon}:{point:Point;polygon:Point[]|null}){
+ const map=useMap()
+ useEffect(()=>{if(polygon&&polygon.length>2){map.fitBounds(polygon.map(p=>[p.lat,p.lng] as [number,number]),{padding:[40,40],maxZoom:17})}else{map.setView([point.lat,point.lng],13)}},[map,point.lat,point.lng,polygon])
+ return null
+}
+function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Point[];onPoint:(p:Point)=>void;onFinish:()=>void}){
+ const map=useMap()
+ useEffect(()=>{if(enabled)map.doubleClickZoom.disable();else map.doubleClickZoom.enable();return()=>map.doubleClickZoom.enable()},[map,enabled])
+ useMapEvents({
+  click(e){if(!enabled)return;const first=points[0];if(first&&points.length>=3&&map.latLngToContainerPoint(first).distanceTo(e.containerPoint)<24){onFinish();return}
+   if(points.length&&map.latLngToContainerPoint(points[points.length-1]).distanceTo(e.containerPoint)<10)return
+   if(points.length<100)onPoint({lat:e.latlng.lat,lng:e.latlng.lng})},
+  dblclick(e){if(enabled&&points.length>=3){e.originalEvent.preventDefault();onFinish()}}
+ })
+ if(!enabled)return null
+ return <>{points.length>1&&<Polyline positions={points.map(p=>[p.lat,p.lng])} pathOptions={{color:'#F7C85C',weight:4}}/>}
+ {points.map((p,i)=><CircleMarker key={i} center={[p.lat,p.lng]} radius={i===0?9:6} pathOptions={{color:'#134638',weight:2,fillColor:i===0?'#F7C85C':'#fff',fillOpacity:1}} eventHandlers={i===0?{click:()=>{if(points.length>=3)onFinish()}}:undefined}/>)}</>
+}
+const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,2)
+export default function BiotexFarmerApp(){
+ const [lang,setLang]=useState<Lang>(()=>new URLSearchParams(window.location.search).get('lang')==='en'?'en':'es')
+ const t=LABELS[lang]
+ const [step,setStep]=useState<Step>(0)
+ const [place,setPlace]=useState('Barranca, Pativilca / Supe')
+ const [centre,setCentre]=useState<Point>({lat:ZONES.barranca.lat,lng:ZONES.barranca.lng})
+ const [query,setQuery]=useState('')
+ const [places,setPlaces]=useState<{name:string;lat:number;lng:number}[]>([])
+ const [searching,setSearching]=useState(false)
+ const [searchError,setSearchError]=useState('')
+ const [field,setField]=useState<GeoPolygon|null>(null)
+ const [fieldLabel,setFieldLabel]=useState('')
+ const [drawing,setDrawing]=useState(false)
+ const [points,setPoints]=useState<Point[]>([])
+ const [fieldError,setFieldError]=useState('')
+ const [plantings,setPlantings]=useState<Planting[]>([])
+ const [crop,setCrop]=useState('maiz_amarillo_duro')
+ const [cropMonth,setCropMonth]=useState(0)
+ const [entryError,setEntryError]=useState('')
+ const [history,setHistory]=useState<History|null>(null)
+ const [historyBusy,setHistoryBusy]=useState(false)
+ const [historyError,setHistoryError]=useState('')
+ const [hintChoices,setHintChoices]=useState<Record<string,string>>({})
+ const [goal,setGoal]=useState<'water'|'soil'|'both'>('both')
+ const [incomeCrop,setIncomeCrop]=useState('')
+ const [scarcity,setScarcity]=useState<'normal'|'escaso'|'no_se'>('no_se')
+ const [result,setResult]=useState<Result|null>(null)
+ const [planBusy,setPlanBusy]=useState(false)
+ const [planError,setPlanError]=useState('')
+ const [otherOpen,setOtherOpen]=useState(false)
+ const request=useRef(0)
+ const baseYear=recentAugust()
+ const point=field?centroid(field):centre
+ const area=field?approximatePolygonHectares(fromGeo(field)):0
+ const firstAugust=baseYear*12+7
+ const confirmedOptions=[...new Set(plantings.map(p=>p.crop_id))]
+ const supported=coastalLima(point)
+ const province=isBarranca(point)
+ const sampleNote=fieldLabel.toLowerCase().includes('ejemplo')
+ const source=history&&Object.keys(hintChoices).length?'satellite_confirmed':'farmer_declared'
+ const ctx=useMemo(()=>({lang,baseYear,place,area,fieldLabel}),[lang,baseYear,place,area,fieldLabel])
+ const current=useMemo(()=>plantings.slice().sort((a,b)=>a.start_index-b.start_index),[plantings])
+
+ useEffect(()=>{document.documentElement.lang=lang},[lang])
+ function navigate(s:Step){setStep(s);window.scrollTo({top:0,behavior:'smooth'})}
+ function resetAfterField(){request.current++;setPlantings([]);setHistory(null);setHintChoices({});setResult(null);setPlanError('');setHistoryError('')}
+ function changeArea(){setField(null);setFieldLabel('');setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+ function setExample(f:typeof DEMOS[number]){const p=f.polygon;setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+ async function searchPlace(e:React.FormEvent){
+  e.preventDefault();const q=query.trim();if(q.length<3){setSearchError(t.notFound);return}
+  setSearching(true);setSearchError('');setPlaces([])
+  try{
+   // OpenStreetMap Nominatim: explicit user-triggered searches only, never autocomplete.
+   const url='https://nominatim.openstreetmap.org/search?format=json&limit=5&addressdetails=1&q='+encodeURIComponent(q)
+   const r=await fetch(url,{headers:{'Accept-Language':lang==='es'?'es':'en'}})
+   if(!r.ok)throw new Error('Search unavailable')
+   const data=(await r.json()) as {display_name:string;lat:string;lon:string}[]
+   const found=data.map(x=>({name:x.display_name,lat:Number(x.lat),lng:Number(x.lon)})).filter(x=>Number.isFinite(x.lat)&&Number.isFinite(x.lng))
+   setPlaces(found);if(!found.length)setSearchError(t.notFound)
+  }catch{setSearchError(t.locationUnavailable)}finally{setSearching(false)}
+ }
+ function pickPlace(p:{name:string;lat:number;lng:number}){setCentre({lat:p.lat,lng:p.lng});setPlace(p.name);setQuery('');setPlaces([]);changeArea()}
+ function finish(){const check=validatePolygon(points);const ha=approximatePolygonHectares(points)
+  if(!check.valid){setFieldError(t.invalidShape);return}
+  if(ha<0.1||ha>500){setFieldError(t.invalidArea);return}
+  setField(toGeo(points));setFieldLabel(lang==='es'?'Chacra marcada por ti':'Field marked by you');setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+ function addCrop(){const x=addPlantingToRotation(plantings,crop,cropMonth)
+  if(x.status!=='added'){setEntryError(x.status==='duplicate'?t.duplicate:t.limit);return}
+  setPlantings(x.current);setEntryError('');setResult(null)}
+ function recordSeason(c:Campaign){
+  const id=hintChoices[c.start];if(!id)return
+  const start=ymNumber(c.start)-1-firstAugust
+  const idx=Math.max(0,Math.min(23,start))
+  const r=addPlantingToRotation(plantings,id,idx)
+  if(r.status==='added'){setPlantings(r.current);setEntryError('');setResult(null)}
+  else setEntryError(r.status==='duplicate'?t.duplicate:t.limit)
+ }
+ async function loadImages(){
+  if(!field)return;const token=++request.current;setHistoryBusy(true);setHistoryError('')
+  try{
+   for(let attempt=0;attempt<24;attempt++){
+    const r=await fetch(API+'/api/rotation/history',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({polygon:field,start_year:2021})})
+    if(request.current!==token)return
+    if(r.status===202){await new Promise(resolve=>setTimeout(resolve,5000));continue}
+    if(!r.ok)throw new Error(await httpErrorMessage(r,lang==='en'))
+    setHistory(await r.json() as History);return
+   }
+   setHistoryError(t.satFail)
+  }catch(e){if(request.current===token)setHistoryError(readableApiError(e,lang==='en'))}
+  finally{if(request.current===token)setHistoryBusy(false)}
+ }
+ const seasons=(history?.detection.campaigns||[]).filter(c=>{const n=ymNumber(c.start)-1-firstAugust;return n>=0&&n<=23}).slice(0,8)
+ async function showPlan(){
+  if(!current.length){setPlanError(t.missingPlan);return}
+  if(!supported){setPlanError(t.unsupported);return}
+  if(!field){setPlanError(t.fieldMissing);return}
+  const token=++request.current;setPlanBusy(true);setPlanError('');setResult(null)
+  const priorities=goal==='water'?{water:2,soil:0,income:1,pests:1}:goal==='soil'?{water:0,soil:2,income:1,pests:1}:{water:2,soil:2,income:1,pests:1}
+  const payload={
+   zone:province?'barranca':null,latitude:point.lat,longitude:point.lng,
+   current,priorities,water_turn:scarcity,current_source:sampleNote?'team_demo':source,
+   income_crop_id:confirmedOptions.includes(incomeCrop)?incomeCrop:null,
+   use_team_templates_as_fallback:false,
+   history:source==='satellite_confirmed'&&history?{sensor:history.sensor,start:history.period.start,end:history.period.end,months_with_data:history.months_with_data}:null
+  }
+  try{const r=await fetch(API+'/api/rotation/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+   if(!r.ok)throw new Error(await httpErrorMessage(r,lang==='en'))
+   const v=await r.json() as Result
+   if(token!==request.current)return
+   setResult(v);setOtherOpen(false);navigate(3)
+  }catch(e){if(token===request.current)setPlanError(readableApiError(e,lang==='en'))}
+  finally{if(token===request.current)setPlanBusy(false)}
+ }
+ const preferred=result?.strategies.find(s=>s.id===result.recommended_strategy_id)||null
+ const original=result?.strategies.find(s=>s.id==='S0')||null
+ const other=result?.strategies.filter(s=>s.id!=='S0'&&s.id!==preferred?.id)||[]
+ function goPrint(){window.print()}
+ function strategyName(s:Strategy){if(s.id==='S0')return t.current;return s.key==='water'?(lang==='es'?'Opción para ahorrar agua':'Water-saving option'):(lang==='es'?'Opción para cuidar el suelo':'Soil-care option')}
+ function schedule(s:Strategy){return [...s.plantings].sort((a,b)=>a.start_index-b.start_index)}
+ function showPct(v:number|null|undefined){if(v==null)return '—';return (v>0?'+':'')+Math.round(v)+'%'}
+ function consequences(s:Strategy){const r=s.relative_to_current;return r?[
+  {title:t.keyWater,value:showPct(r.water_low_river_change_percent),bad:(r.water_low_river_change_percent??0)>0,good:(r.water_low_river_change_percent??0)<0},
+  {title:t.keySoil,value:Math.abs(r.bare_months_change)+' '+(r.bare_months_change>0?t.more:r.bare_months_change<0?t.fewer:'='),bad:r.bare_months_change>0,good:r.bare_months_change<0},
+  {title:lang==='es'?'Nuevas siembras de legumbres':'Additional legume crops',value:String(Math.max(0,r.legume_plantings_change)),bad:false,good:r.legume_plantings_change>0}
+ ]:[]}
+ function cropsLine(s:Strategy){return schedule(s).map(p=>labelCrop(p.crop_id,lang)).join(' · ')}
+ function technical(s:Strategy){return <details className="b-technical"><summary>{t.details}</summary>
+  <div className="b-technical-inner"><h4>{t.evidence}</h4><ul>{s.sections.evidence[lang].map((a,i)=><li key={i}>{a}</li>)}</ul>
+   <h4>{t.verify}</h4><ul>{s.sections.gaps[lang].map((a,i)=><li key={i}>{a}</li>)}</ul></div>
+ </details>}
+ function strip(s:Strategy){return <div className="b-crop-calendar" aria-label={t.planSchedule}>{[0,1].map(year=><div className="b-year" key={year}>
+  <strong>{year===0?t.year1:t.year2}</strong>
+  <div className="b-month-grid">{Array.from({length:12},(_,j)=>{const i=year*12+j;const cell=s.timeline[i];const id=cell?.crop_id;return <div key={i} className={'b-month '+(id?'filled':'empty')} title={id?labelCrop(id,lang):t.noCrop}>
+   <span>{mon(i,lang).slice(0,3)}</span><b>{id?labelCrop(id,lang):'—'}</b>
+  </div>})}</div>
+ </div>)}</div>}
+ function mainCard(s:Strategy){return <article className="b-recommend">
+  <div className="b-recommend-top"><span className="b-eyebrow">{t.recommended}</span><h2>{strategyName(s)}</h2>
+  <p>{result?.[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']||t.planLead}</p></div>
+  <div className="b-keyfigures">{consequences(s).map((k,i)=><div key={i} className={'b-kpi '+(k.bad?'risk':k.good?'positive':'neutral')}><span>{k.title}</span><strong>{k.value}</strong></div>)}</div>
+  <h3>{t.planSchedule}</h3>{strip(s)}
+  <div className="b-benefits-grid"><section><h3>{t.benefits}</h3><ul>{s.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section>
+  <section><h3>{t.risks}</h3><ul>{s.sections.risks[lang].slice(0,3).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
+  {technical(s)}
+ </article>}
+ function printable(){if(!result)return null;return <div className="b-print-report" aria-hidden={step!==3}>
+  <div className="b-print-header"><div><strong className="b-print-logo">BIOTEX</strong><p>{t.printFooter}</p></div><div className="b-print-date">{simpleDate(lang)}</div></div>
+  <h1>{t.planTitle}</h1><div className="b-print-meta"><span><b>{t.where}:</b> {place}</span><span><b>{t.areaPrint}:</b> {area.toFixed(2)} ha</span>
+  <span><b>{t.when}:</b> {simpleDate(lang)}</span></div>
+  <p className="b-print-intro">{t.warning} {sampleNote?t.exampleNote:''}</p>
+  {preferred?<><h2>{t.recommended}: {strategyName(preferred)}</h2><p>{result[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']}</p>
+   <div className="b-print-kpis">{consequences(preferred).map((x,i)=><div key={i}><span>{x.title}</span><b>{x.value}</b></div>)}</div>
+   <h3>{t.planSchedule}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Año':'Year'}</th><th>{t.sowing}</th><th>{t.crop}</th><th>{lang==='es'?'Duración':'Duration'}</th></tr></thead>
+    <tbody>{schedule(preferred).map((p,i)=><tr key={i}><td>{p.start_index<12?'1':'2'}</td><td>{monthYear(p.start_index,baseYear,lang)}</td><td>{labelCrop(p.crop_id,lang)}</td><td>{p.months} {lang==='es'?'meses':'months'}</td></tr>)}</tbody></table>
+   <div className="b-print-grid"><section><h3>{t.benefits}</h3><ul>{preferred.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section><section><h3>{t.risks}</h3><ul>{preferred.sections.risks[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
+  </>:<h2>{t.noRecommend}</h2>}
+  <h3>{t.compare}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Opción':'Option'}</th><th>{t.keyWater}</th><th>{t.keySoil}</th></tr></thead>
+  <tbody>{result.strategies.map(s=><tr key={s.id}><td>{strategyName(s)}</td><td>{s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</td><td>{s.indicators.bare_months} / 24</td></tr>)}</tbody></table>
+  <div className="b-print-small"><h3>{t.sources}</h3>
+  <p>NASA POWER (2001–2025); NASA HLS v2.0 {source==='satellite_confirmed'?'(con confirmación humana)':''}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
+  <p>{lang==='es'?'Solo se utiliza un calendario agrícola aproximado de Lima; no se conoce el análisis de suelo, turno real de riego o precio futuro. Los cálculos son comparaciones relativas, no recomendaciones garantizadas.':'Uses an approximate Lima sowing calendar. Soil test, actual irrigation allocation and future prices are not known. Results are relative comparisons, not guarantees.'}</p>
+  <p>{sampleNote?t.exampleNote:''}</p></div></div>}
+ return <div className="b-app">
+  <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
+  <header className="b-header"><div className="b-header-inner"><div className="b-brand"><span className="b-brand-mark"><Icon name="leaf" size={25}/></span><div><b>BIOTEX</b><small>NSPACE BIOTEX</small></div></div>
+  <span className="b-pilot">{t.pilot}</span>
+  <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></header>
+  <div className="b-progress-wrap"><nav className="b-progress" aria-label="Progreso">{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step||i===3&&!result} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div>
+  <main id="main" className="b-main">
+   {step===0&&<section className="b-layout">
+    <div className="b-intro"><span className="b-eyebrow">{t.region}</span><h1>{t.title}</h1><p>{t.subtitle}</p></div>
+    <div className="b-farm-grid">
+     <div className="b-card b-search-card"><h2><Icon name="pin"/>{t.search}</h2>
+      <form className="b-search" onSubmit={searchPlace}><label htmlFor="b-search" className="sr-only">{t.search}</label>
+       <input id="b-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.searchHint} autoComplete="off"/>
+       <button type="submit" className="b-btn b-btn-solid" disabled={searching}><Icon name="search" size={19}/>{searching?t.waitSearch:t.find}</button>
+      </form>
+      {searchError&&<p className="b-error" role="alert">{searchError}</p>}
+      {places.length>0&&<div className="b-place-results" role="list">{places.map((p,i)=><button key={i} type="button" role="listitem" onClick={()=>pickPlace(p)}><Icon name="pin" size={18}/><span>{p.name}</span></button>)}</div>}
+      <p className="b-map-label"><Icon name="pin" size={16}/>{place}</p>
+      <p className="b-muted">{t.mapHint}</p>
+      <div className="b-map-frame"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
+       <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
+       <FlyTo point={centre} polygon={field?fromGeo(field):null}/>
+       <DrawLayer enabled={drawing} points={points} onPoint={p=>{setPoints(x=>[...x,p]);setFieldError('')}} onFinish={finish}/>
+       {field&&<Polygon positions={fromGeo(field).map(p=>[p.lat,p.lng])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
+      </MapContainer>
+      <div className="b-map-actions">{drawing?<><button type="button" onClick={()=>setPoints(v=>v.slice(0,-1))} disabled={!points.length} className="b-btn b-btn-light"><Icon name="undo" size={16}/>{t.undo}</button>
+       <button type="button" className="b-btn b-btn-solid" onClick={finish} disabled={points.length<3}>{t.finish}</button>
+       <button type="button" className="b-btn b-btn-light" onClick={()=>{setDrawing(false);setPoints([]);setFieldError('')}}>{t.cancel}</button></>:
+       <button type="button" className="b-btn b-btn-solid" onClick={()=>{changeArea();setDrawing(true)}}>{field?t.changeField:t.draw}</button>}</div></div>
+      {fieldError&&<p role="alert" className="b-error">{fieldError}</p>}
+      {field&&<div className="b-field-ready" role="status"><Icon name="check"/><div><strong>{t.fieldReady}</strong><span>{t.area}: {area.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2})} ha</span></div></div>}
+      {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
+     </div>
+     <aside className="b-card b-examples"><h2>{t.examples}</h2><p>{t.exampleNote}</p>
+      {DEMOS.map((f,i)=><button key={f.id} type="button" className="b-example-choice" onClick={()=>setExample(f)}><span className="b-example-index">{String(i+1).padStart(2,'0')}</span>
+        <span><strong>{lang==='es'?'Terreno de ejemplo '+(i+1):'Example field '+(i+1)}</strong><small>Barranca · Pativilca / Supe</small></span><Icon name="right" size={19}/></button>)}
+      <p className="b-muted">{lang==='es'?'También puedes buscar tu propio distrito y marcar tu terreno.':'You can also search your district and mark your own field.'}</p>
+     </aside>
+    </div>
+    <div className="b-next"><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
+   </section>}
+   {step===1&&<section className="b-form-page"><div className="b-intro"><span className="b-eyebrow">02 / 04</span><h1>{t.historyTitle}</h1><p>{t.historyLead}</p></div>
+    <div className="b-entry-grid"><section className="b-card"><h2>{t.add}</h2>
+     <div className="b-input-row"><label>{t.crop}<select value={crop} onChange={e=>setCrop(e.target.value)}>{CROPS.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
+     <label>{t.month}<select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{Array.from({length:24},(_,i)=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label></div>
+     <button type="button" className="b-btn b-btn-solid b-add" onClick={addCrop}>{t.add}</button>
+     {entryError&&<p className="b-error" role="alert">{entryError}</p>}
+    </section><section className="b-card"><h2>{t.saved} <span className="b-count">{plantings.length}</span></h2>
+      {plantings.length===0?<p className="b-empty">{t.nothing}</p>:<ul className="b-planting-list">{current.map((p,i)=><li key={p.start_index}><span><strong>{labelCrop(p.crop_id,lang)}</strong><small>{monthYear(p.start_index,baseYear,lang)}</small></span><button type="button" aria-label={t.remove+' '+labelCrop(p.crop_id,lang)} onClick={()=>{setPlantings(removePlantingFromRotation(current,i));setResult(null)}}>{t.remove}</button></li>)}</ul>}
+    </section></div>
+    <details className="b-satellite"><summary><Icon name="info" size={20}/><span>{t.helpMe}</span><strong>{t.satellite}</strong></summary>
+      <div className="b-satellite-content"><p>{t.loadingHelp}</p>
+       {!history&&!historyBusy&&<button type="button" className="b-btn b-btn-light" onClick={loadImages}>{t.satellite}</button>}
+       {historyBusy&&<p className="b-loading" role="status"><span className="b-spinner"/>{t.loading}</p>}
+       {historyError&&<p className="b-error" role="alert">{t.satFail} <button type="button" onClick={loadImages}>{lang==='es'?'Reintentar':'Retry'}</button></p>}
+       {history&&<><p>{t.historyFound}</p>
+       {seasons.length===0&&<p className="b-note">{t.noSeasons}</p>}
+       <div className="b-season-grid">{seasons.map(c=><div className="b-season" key={c.start}>
+        <label>{t.possible} {monthYear(Math.max(0,ymNumber(c.start)-1-firstAugust),baseYear,lang)}?</label>
+        <div className="b-season-row"><select value={hintChoices[c.start]||''} onChange={e=>setHintChoices(v=>({...v,[c.start]:e.target.value}))}>
+         <option value="">{t.choose}</option>{CROPS.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select>
+        <button type="button" className="b-btn b-btn-light" disabled={!hintChoices[c.start]} onClick={()=>recordSeason(c)}>{t.record}</button></div>
+        {c.candidates[0]&&<small>{lang==='es'?'Una posibilidad según la imagen: ':'Possible crop from the image: '}{labelCrop(c.candidates[0].crop_id,lang)}. {lang==='es'?'Confirma tú.':'You decide.'}</small>}
+       </div>)}</div>
+       <details className="b-technical"><summary>{t.satMore}</summary><p>{history.sensor}. {t.satMonth}: {history.months_with_data}/{history.months_total}.</p></details>
+       </>}</div>
+    </details>
+    <div className="b-next between"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}><Icon name="left"/>{t.back}</button>
+     <button type="button" className="b-btn b-btn-primary" disabled={!current.length} onClick={()=>navigate(2)}>{t.next}<Icon name="right"/></button></div>
+   </section>}
+   {step===2&&<section className="b-form-page b-goal-page"><div className="b-intro"><span className="b-eyebrow">03 / 04</span><h1>{t.priorityTitle}</h1><p>{t.priorityLead}</p></div>
+    <section className="b-card"><div className="b-goal-options" role="group" aria-label={t.priorityTitle}>{(['water','soil','both'] as const).map(id=><button type="button" key={id} aria-pressed={goal===id} className={'b-goal '+(goal===id?'chosen':'')} onClick={()=>{setGoal(id);setResult(null)}}>
+     <span className="b-goal-icon"><Icon name={id==='soil'?'leaf':id==='water'?'water':'check'} size={28}/></span>
+     <strong>{id==='water'?t.priorityWater:id==='soil'?t.prioritySoil:t.priorityBoth}</strong>
+     <span className="b-radio" aria-hidden="true"/></button>)}</div>
+     <div className="b-input-row b-input-soft"><label>{t.income}<select value={confirmedOptions.includes(incomeCrop)?incomeCrop:''} onChange={e=>{setIncomeCrop(e.target.value);setResult(null)}}><option value="">{t.incomeAuto}</option>{confirmedOptions.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
+      <fieldset><legend>{t.scarcity}</legend><div className="b-choice-row">{(['escaso','normal','no_se'] as const).map(id=><button key={id} type="button" aria-pressed={scarcity===id} className={scarcity===id?'chosen':''} onClick={()=>{setScarcity(id);setResult(null)}}>{id==='escaso'?t.yes:id==='normal'?t.no:t.unknown}</button>)}</div></fieldset></div>
+    </section>
+    {planError&&<p className="b-error" role="alert">{planError}</p>}
+    {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
+    <div className="b-next between"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(1)}><Icon name="left"/>{t.back}</button>
+     <button type="button" className="b-btn b-btn-primary" disabled={!current.length||!supported||planBusy} onClick={showPlan}>{planBusy?<><span className="b-spinner"/>{t.working}</>:<>{t.action}<Icon name="right"/></>}</button></div>
+   </section>}
+   {step===3&&result&&<section className="b-result-page"><div className="b-intro"><span className="b-eyebrow">04 / 04</span><h1>{t.planTitle}</h1><p>{t.planLead}</p></div>
+    <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
+    {sampleNote&&<p className="b-note"><Icon name="info" size={18}/>{t.exampleNote}</p>}
+    {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
+    {preferred?mainCard(preferred):<div className="b-card b-no-recommend"><Icon name="info"/><h2>{t.noRecommend}</h2><p>{t.unavailable}</p></div>}
+    <div className="b-caution"><Icon name="alert" size={21}/><p>{t.warning}</p></div>
+    {other.length>0||original?<section className="b-compare-wrap"><button type="button" className="b-compare-trigger" aria-expanded={otherOpen} onClick={()=>setOtherOpen(v=>!v)}><span>{t.other}</span><span>{otherOpen?'−':'+'}</span></button>
+      {otherOpen&&<div className="b-other-cards">{[...other,...(original?[original]:[])].map(s=><article className="b-card b-other" key={s.id}>
+       <h3>{strategyName(s)}</h3><p>{cropsLine(s)}</p><div className="b-mini-kpis"><span>{t.keyWater}: {s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</span><span>{t.keySoil}: {s.indicators.bare_months}/24</span></div>
+       {s.plantings.length>0&&<details><summary>{t.planSchedule}</summary>{strip(s)}</details>}{technical(s)}
+      </article>)}</div>}</section>:null}
+    <div className="b-report-actions"><button type="button" onClick={goPrint} className="b-btn b-btn-primary"><Icon name="print"/>{t.report}</button>
+     <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
+   </section>}
+  </main>
+  <footer className="b-footer"><span>BIOTEX · NSPACE BIOTEX</span><span>NASA Space Apps Challenge 2026 · Field Shift</span></footer>
+  {printable()}
+ </div>
+}
