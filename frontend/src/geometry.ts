@@ -43,6 +43,9 @@ export function validatePolygon(points:GeoPoint[]):{valid:boolean;reason:string}
   for(let i=0;i<points.length;i++){
     const a=points[i],b=points[(i+1)%points.length]
     if(a.lat===b.lat&&a.lng===b.lng)return {valid:false,reason:'duplicate_vertices'}
+  }
+  for(let i=0;i<points.length;i++){
+    const a=points[i],b=points[(i+1)%points.length]
     for(let j=i+1;j<points.length;j++){
       if(j===i+1||(i===0&&j===points.length-1))continue
       if(intersects(a,b,points[j],points[(j+1)%points.length]))
