@@ -12,6 +12,14 @@ El siguiente piloto tiene como público objetivo a **agricultores peruanos** y s
 
 [Plan de producto, privacidad, arquitectura y criterios de aceptación v0.17](docs/roadmap-v0.17-huaral-farmer-vision.md).
 
+## Experiencia principal v0.18: entender mi chacra
+
+La interfaz predeterminada ahora se organiza en **Mi terreno → Cultivos para mi zona → Mi tablero e informe**, con ubicación inicial en Huando (Huaral), búsqueda por nombre de cultivo y una sola selección suficiente. Permite revisar opciones para investigar mediante **NASA POWER (5 años completos) + rangos generales FAO ECOCROP**, siempre con la advertencia de que **no existe validación de aptitud agronómica ni recomendación real de siembra**. El tablero combina gráficos de lluvia, temperatura y humedad con la opción de **Imprimir o guardar como PDF** desde el navegador.
+
+La fotografía del cultivo es **solo una vista previa local**: el reconocimiento visual con IA aún no está entrenado ni desplegado. Las funciones avanzadas continúan disponibles en `/?vista=tecnica`, sin saturar la interfaz del agricultor.
+
+[Alcance, ciencia y pruebas v0.18](docs/roadmap-v0.18-farmer-dashboard.md).
+
 ## Qué hace hoy la plataforma
 
 - Mapa central con búsqueda mundial de localidades, ubicación por clic, polígonos editables y mediciones aproximadas de área.
