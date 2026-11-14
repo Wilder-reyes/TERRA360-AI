@@ -1,0 +1,43 @@
+name: Import pinned FAO ECOCROP data
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/import_ecocrop.py'
+      - '.github/workflows/import-ecocrop.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-dataset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Import and verify immutable OpenCLIM FAO source
+        run: python scripts/import_ecocrop.py
+      - name: Verify sample and record count
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open('backend/app/data/ecocrop_species.json',encoding='utf-8'))
+          assert len(p['species'])==2568
+          assert not p['locally_validated']
+          assert p['git_blob_sha1']=='849cc89873ef766690b12ac8251db4639c642084'
+          assert all(x['id'].startswith('ecocrop_') for x in p['species'])
+          print('FAO ECOCROP snapshot validated')
+          PY
+      - name: Commit static snapshot into the private repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/app/data/ecocrop_species.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: pin FAO ECOCROP species snapshot with immutable source hash"
+            git push origin HEAD:main
+          else
+            echo "No data changes"
+          fi
