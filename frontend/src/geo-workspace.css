@@ -30,3 +30,7 @@
 @media(max-width:700px){.terra-geo-place-search{grid-template-columns:1fr;gap:6px}.terra-geo-place-search small{grid-row:2}}
 
 .terra-geo-terrain{padding:12px;background:#fff;border:1px solid #d6e5da;border-radius:12px;margin:13px 0}.terra-geo-terrain button{border:0;padding:10px 12px;border-radius:9px;background:#155d47;color:white;font-size:.8rem;font-weight:800}.terra-geo-terrain button:disabled{opacity:.55}.terra-geo-terrain-result{padding-top:12px}.terra-geo-terrain-result>strong{display:block;font-size:1.9rem;color:#24543d}.terra-geo-terrain-result>small{font-size:.76rem;color:#607666}.terra-geo-terrain-values{display:grid;gap:5px;margin:10px 0}.terra-geo-terrain-values span{background:#f1f7f2;padding:8px 9px;border-radius:7px;font-size:.78rem;color:#42614e}
+
+/* Drawing toolbar occupies the map's upper-left: put Leaflet zoom controls at lower-right. */
+.terra-geo-map .leaflet-top.leaflet-left{top:auto;left:auto;right:12px;bottom:46px}
+.terra-geo-map .leaflet-top.leaflet-left .leaflet-control{margin:0}

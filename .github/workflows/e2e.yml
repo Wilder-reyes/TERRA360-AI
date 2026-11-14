@@ -1,5 +1,13 @@
 name: TERRA360 farmer interface browser checks
 on:
+  pull_request:
+    paths:
+      - 'frontend/e2e/**'
+      - 'frontend/src/GeoWorkspace.tsx'
+      - 'frontend/src/ParcelNDVI.tsx'
+      - 'frontend/src/parcel-ndvi.css'
+      - 'frontend/playwright.config.ts'
+      - '.github/workflows/e2e.yml'
   push:
     branches: [main]
     paths:
