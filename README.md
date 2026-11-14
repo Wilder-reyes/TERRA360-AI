@@ -1,4 +1,24 @@
-# TERRA360 AI v0.7 — NASA Space Apps Challenge 2026
+# TERRA360 AI — prototipo público v0.8 (NASA Space Apps Challenge 2026)
+
+**Demo:** https://terra360-ai.netlify.app/ · **API:** https://terra360-api.onrender.com/api/health
+
+## Desarrollo en v0.8 (primera entrega del rediseño)
+
+- Mapa central de trabajo con ubicación, delimitación rectangular aproximada, fecha, leyendas, fotografía aérea de Esri y observaciones puntuales NASA POWER.
+- Consulta opcional de fechas Sentinel-2 para el área de búsqueda; no genera todavía un raster NDVI ni evalúa cultivos a partir de escenas.
+- Directorio exploratorio de 95 cultivos: búsqueda por nombre o taxón y familias botánicas, **no** validación de aptitud regional.
+- Comparaciones con nombres comprensibles: el usuario no necesita conocer los códigos internos de escenarios. La revisión de agua y suelo aparece separada de las alternativas de rotación.
+- Sin descarga de JSON en la interfaz agrícola; el intercambio JSON permanece interno entre frontend y API.
+- Las recomendaciones se abstienen si faltan datos de los perfiles nuevos.
+- Backend Render gratuito, frontend Netlify, integración GitHub y pruebas de frontend/backend.
+
+**Estado científico:** las 90 fichas adicionales son un directorio preliminar elaborado para exploración, NO registros importados ni parámetros climáticos validados por ECOCROP/GAEZ. ARIE AI sigue siendo un motor simbólico de restricciones, no un predictor entrenado; no garantiza cosecha, ahorro de agua, fertilidad o aptitud regional. Las capas raster de GPM/SMAP/SRTM y NDVI están pendientes de implementación real.
+
+Consulta el plan y requisitos completos en [docs/roadmap-v0.8.md](docs/roadmap-v0.8.md), [docs/farmer-first-ux-redesign.md](docs/farmer-first-ux-redesign.md) y [docs/farmer-validation-protocol.md](docs/farmer-validation-protocol.md).
+
+---
+
+## Historial del MVP v0.7
 
 **Field Shift: Adapting Farms with NASA Data** — herramienta explicable de apoyo a decisiones agrícolas. El usuario elige un lugar del mundo; **no existe ubicación por defecto**. El catálogo inicial se limita a cinco especies andinas con fuentes citadas, **no** constituye cobertura agronómica mundial.
 

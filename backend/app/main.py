@@ -9,7 +9,7 @@ from app.api.satellite_routes import router as satellite_router
 app = FastAPI(
     title="TERRA360 API",
     description="Earth observation and agricultural decision support for user-selected coordinates worldwide.",
-    version="0.7.0",
+    version="0.8.0",
 )
 app.add_middleware(
     CORSMiddleware,
