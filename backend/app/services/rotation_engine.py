@@ -615,6 +615,75 @@ def _strategy(key: str, plantings: list[dict], climate: dict, base: dict | None,
     }
 
 
+def highlight_for_farmer(strategies: list[dict], priorities: dict) -> dict:
+    """Highlight an evidence-supported alternative, never the first card by default.
+
+    Scores use only transparent, relative crop-water and bare-month changes.
+    A highlighted alternative must improve the weighted objective; otherwise we
+    explicitly abstain. The score is not a probability or a model prediction.
+    """
+    if not strategies:
+        return {"recommended_strategy_id": None}
+    s0 = next((s for s in strategies if s["id"] == "S0"), None)
+    if not s0:
+        return {"recommended_strategy_id": None}
+    base = s0["indicators"]
+    water_weight = max(0, int(priorities.get("water", 1)))
+    soil_weight = max(0, int(priorities.get("soil", 1)))
+    candidates = []
+    for strategy in strategies:
+        if strategy["id"] == "S0":
+            continue
+        ind = strategy["indicators"]
+        water_gain = (base["water_low_river_mm"] - ind["water_low_river_mm"]) / max(
+            50.0, base["water_low_river_mm"])
+        cover_gain = (base["bare_months"] - ind["bare_months"]) / 24.0
+        score = water_weight * water_gain + 2.0 * soil_weight * cover_gain
+        if score > 1e-6:
+            candidates.append((score, strategy["id"], water_gain, cover_gain))
+    if not candidates:
+        return {
+            "recommended_strategy_id": None,
+            "recommendation_reason_es": "Ninguna opción mejora lo suficiente tus prioridades actuales; revisa las demás posibilidades con un técnico.",
+            "recommendation_reason_en": "No option improves your current priorities enough; review the alternatives with a technician.",
+        }
+    score, chosen, water_gain, cover_gain = max(candidates, key=lambda x: (x[0], -int(x[1][1:])))
+    pct = round(abs(water_gain) * 100)
+    months = round(abs(cover_gain) * 24)
+    water_es = (
+        f"Se estima un {pct}% menos de agua para los cultivos en meses secos."
+        if water_gain > 0.001 else
+        f"Podría requerir cerca de {pct}% más agua para los cultivos en meses secos."
+        if water_gain < -0.001 else "La cantidad de agua estimada es similar a la actual."
+    )
+    water_en = (
+        f"Estimated crop-water demand in dry months is {pct}% lower."
+        if water_gain > 0.001 else
+        f"Estimated crop-water demand in dry months could be {pct}% higher."
+        if water_gain < -0.001 else "Estimated crop-water demand is similar to today."
+    )
+    bare_es = (
+        f"La tierra quedaría {months} meses menos sin cultivo."
+        if cover_gain > 0.001 else
+        f"La tierra quedaría {months} meses más sin cultivo."
+        if cover_gain < -0.001 else "El tiempo sin cultivo es similar."
+    )
+    bare_en = (
+        f"Soil would be without a crop for {months} fewer months."
+        if cover_gain > 0.001 else
+        f"Soil would be without a crop for {months} more months."
+        if cover_gain < -0.001 else "The time without a crop is similar."
+    )
+    return {
+        "recommended_strategy_id": chosen,
+        "recommendation_reason_es": water_es + " " + bare_es +
+            " Son estimaciones para comparar, no una promesa de ahorro.",
+        "recommendation_reason_en": water_en + " " + bare_en +
+            " These are comparisons, not guaranteed savings.",
+        "recommendation_method": "Weighted relative dry-season crop-water change and bare-month improvement; positive scores only.",
+    }
+
+
 def compare(current: list[dict], climate: dict, *, priorities: dict | None = None,
             water_turn: str = "normal", history: dict | None = None,
             current_origin: str = "farmer_declared", income_crop_id: str | None = None,
@@ -654,7 +723,9 @@ def compare(current: list[dict], climate: dict, *, priorities: dict | None = Non
             continue
         strategies.append(_strategy(key, plan, climate, base, history, water_turn, origin))
     seasons = load_catalog()["seasons"]
+    highlights = highlight_for_farmer(strategies, {"water": 1, "soil": 1, **priorities})
     return {
+        **highlights,
         "status": status,
         "income_crop": income_crop,
         "income_crop_origin": "farmer_selected" if income_crop_id else "most_frequent_in_current",
