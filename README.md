@@ -19,7 +19,8 @@
 | Sistema | Qué se usa | Qué NO permite afirmar |
 | --- | --- | --- |
 | NASA POWER | Lluvia, temperatura/humedad y periodos históricos de contexto regional | Agua disponible o sensores de parcela |
-| NASA GIBS IMERG/SMAP/MODIS/SRTM | Imágenes regionales originales del proveedor, no análisis de píxel propio | Precipitación, humedad o NDVI exactos en una parcela |
+| NASA GIBS IMERG/SMAP/MODIS/SRTM | Visualizaciones regionales originales del proveedor, separadas de análisis numéricos | Precipitación, humedad o NDVI exactos en una parcela |
+| NASA GPM IMERG Late V07 (por área) | Procesador geodésico de celdas originales de 0,1° con NetCDF NASA previamente preparado y abstención por dato faltante | Lluvia exacta de parcela; los granules NASA aún no se ingieren continuamente en producción |
 | ESA Sentinel-2 vía Planetary Computer | NDVI real por polígono en una escena y observaciones separadas por fecha con B04/B08, corrección BOA, máscara SCL y cobertura | Diagnóstico de salud, crecimiento, tendencias calibradas, rendimiento o aptitud agrícola |
 | FAO ECOCROP vía CGIAR | 2.568 fichas de estimaciones de requisitos ecológicos de calidad heterogénea | Aptitud local, producción garantizada o calendario confiable |
 | FAO GAEZ v5 | Documentación científica y vínculo para investigación | **Aún no hay rasters de aptitud GAEZ integrados** |
@@ -33,7 +34,7 @@
 - FastAPI, Python, Docker en Render Free.
 - Netlify enruta `/api/*` a Render; `EARTHDATA_TOKEN` solo en backend, nunca en frontend.
 - API: `GET /api/health`, `GET /api/arie/catalog`, `GET /api/arie/crops`, `POST /api/arie/evaluate`, `GET /api/environment/nasa-power/daily`, `GET /api/environment/terrain` y consultas históricas/satélite.
-- Descarga protegida de GPM deshabilitada en hosting público; visualizaciones NASA GIBS independientes.
+- Descarga protegida de GPM deshabilitada para solicitudes anónimas en hosting público. El nuevo endpoint NASA IMERG por área solo lee archivos oficiales ya preparados; si no los hay, responde sin inventar lluvia. Las visualizaciones NASA GIBS siguen siendo independientes.
 - CI: `.github/workflows/ci.yml`; pruebas de navegador: `.github/workflows/e2e.yml`; smoke público: `.github/workflows/smoke-production.yml`; actualización de ECOCROP: `.github/workflows/import-ecocrop.yml`.
 
 ## Ejecutar localmente (Windows PowerShell)
@@ -60,6 +61,6 @@ Abre `http://localhost:5173/`. No publiques archivos `.env`, tokens Earthdata, d
 
 ## Seguimiento y validación
 
-[Hoja de ruta actualizada v0.12](docs/roadmap-v0.12.md) · [Histórico v0.11](docs/roadmap-v0.11.md) · [Histórico v0.10](docs/roadmap-v0.10.md) · [Requisitos UX](docs/farmer-first-ux-redesign.md) · [Protocolo con agricultores](docs/farmer-validation-protocol.md) · [Capas NASA GIBS](docs/gibs-layers.md) · [GitHub Issues](https://github.com/Wilder-reyes/TERRA360-AI/issues).
+[Hoja de ruta actualizada v0.13](docs/roadmap-v0.13.md) · [Histórico v0.12](docs/roadmap-v0.12.md) · [Histórico v0.11](docs/roadmap-v0.11.md) · [Histórico v0.10](docs/roadmap-v0.10.md) · [Requisitos UX](docs/farmer-first-ux-redesign.md) · [Protocolo con agricultores](docs/farmer-validation-protocol.md) · [Capas NASA GIBS](docs/gibs-layers.md) · [GitHub Issues](https://github.com/Wilder-reyes/TERRA360-AI/issues).
 
 **El objetivo es que una persona sin conocimientos técnicos pueda ver, comprender y comparar información regional.** La validación agronómica real y la importación espacial GAEZ v5 siguen pendientes de datos y ensayos adicionales. El NDVI Sentinel-2 por polígono y por fechas separadas se calcula técnicamente con escenas reales, pero todavía no ha sido validado con mediciones de campo ni permite inferir tendencias agrícolas.

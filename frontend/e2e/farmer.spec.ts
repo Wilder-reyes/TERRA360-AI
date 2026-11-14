@@ -143,3 +143,71 @@ test('multiple Sentinel-2 dates expose quality gaps without declaring crop trend
  await expect(page.getByText(/NO demuestran una tendencia/)).toBeVisible()
  await expect(page.getByText(/No usado por ARIE/)).toBeVisible()
 })
+
+test('GPM polygon layer does not present invented rainfall when NASA file is absent',async({page})=>{
+ await page.route('**/api/environment/gpm-imerg/polygon-daily',async route=>{
+  const req=route.request().postDataJSON()
+  expect(req.polygon.type).toBe('Polygon')
+  expect(req.polygon.coordinates[0]).toHaveLength(5)
+  expect(req.target_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  await route.fulfill({contentType:'application/json',body:JSON.stringify({
+   status:'data_unavailable',source:'NASA GPM IMERG Late Daily V07',
+   source_url:'https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGDL_07/summary',
+   unit:'mm/day',date:req.target_date,native_resolution:'0.1°',
+   area_ha_approx:1.23,valid_area_percent_approx:0,grid_cell_count:0,
+   precipitation_mm_day:null,cells:[],limitations:[],
+   used_in_crop_decision:false,can_infer_field_rainfall:false
+  })})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:'Lluvia GPM por área'}).click()
+ await expect(page.getByRole('button',{name:'Consultar lluvia regional'})).toBeDisabled()
+ await expect(page.getByText(/Primero dibuja un polígono o rectángulo/)).toBeVisible()
+ await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
+ await page.getByRole('button',{name:'Buscar',exact:true}).click()
+ await page.getByRole('button',{name:/Calca.*Cusco.*Perú/}).click()
+ for(let i=0;i<6;i++)await page.locator('.leaflet-control-zoom-in').click()
+ const map=page.locator('.terra-geo-map')
+ const box=await map.boundingBox()
+ expect(box).not.toBeNull()
+ await page.getByRole('button',{name:'Delimitar área aproximada'}).click()
+ await map.click({position:{x:Math.round(box!.width/2-45),y:Math.round(box!.height/2-40)}})
+ await map.click({position:{x:Math.round(box!.width/2+45),y:Math.round(box!.height/2+40)}})
+ await page.getByRole('button',{name:'Consultar lluvia regional'}).click()
+ await expect(page.getByText(/No hay un archivo diario NASA autorizado/)).toBeVisible()
+ await expect(page.getByText(/no se crean datos dentro de cada celda/i)).toBeVisible()
+ await expect(page.getByText(/no se usan para elegir cultivos/i)).toBeVisible()
+ await expect(page.getByText(/mm\/día/i)).toHaveCount(0)
+})
+
+test('GPM polygon shows coarse area overlap and quality when valid sample is returned',async({page})=>{
+ await page.route('**/api/environment/gpm-imerg/polygon-daily',async route=>{
+  await route.fulfill({contentType:'application/json',body:JSON.stringify({
+   status:'available',date:'2026-11-08',
+   source:'NASA GPM IMERG Late Daily V07',
+   source_url:'https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGDL_07/summary',
+   unit:'mm/day',native_resolution:'0.1°',
+   area_ha_approx:1.23,valid_area_percent_approx:100,
+   grid_cell_count:1,valid_grid_cell_count:1,precipitation_mm_day:5.125,
+   cells:[{center_latitude:-13.35,center_longitude:-71.95,
+           overlap_area_percent_approx:100,precipitation_mm_day:5.125,valid:true}],
+   limitations:[],used_in_crop_decision:false,can_infer_field_rainfall:false
+  })})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:'Lluvia GPM por área'}).click()
+ await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
+ await page.getByRole('button',{name:'Buscar',exact:true}).click()
+ await page.getByRole('button',{name:/Calca.*Cusco.*Perú/}).click()
+ for(let i=0;i<6;i++)await page.locator('.leaflet-control-zoom-in').click()
+ const map=page.locator('.terra-geo-map')
+ const box=await map.boundingBox()
+ expect(box).not.toBeNull()
+ await page.getByRole('button',{name:'Delimitar área aproximada'}).click()
+ await map.click({position:{x:Math.round(box!.width/2-45),y:Math.round(box!.height/2-40)}})
+ await map.click({position:{x:Math.round(box!.width/2+45),y:Math.round(box!.height/2+40)}})
+ await page.getByRole('button',{name:'Consultar lluvia regional'}).click()
+ await expect(page.getByText('5.13 mm/día').first()).toBeVisible()
+ await expect(page.getByText(/Una sola celda de 0,1°/)).toBeVisible()
+ await expect(page.getByText(/NO la resolución del satélite/)).toBeVisible()
+})
