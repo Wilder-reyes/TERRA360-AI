@@ -1,0 +1,29 @@
+# TERRA360 AI — Netlify frontend deployment from the GitHub monorepo.
+# Netlify discovers this file at the repository root and builds only frontend/.
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Future client-side routes return the SPA shell, while real static files
+# (such as assets and favicon) continue to be served directly.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
+
+# IMPORTANT:
+# Configure VITE_API_URL in Netlify -> Site configuration -> Environment variables
+# after deploying the FastAPI backend to an HTTPS public URL.
+# The VITE_ prefix makes its contents PUBLIC in browser JavaScript.
+# NEVER put EARTHDATA_TOKEN, passwords, API secrets, or .env here.
