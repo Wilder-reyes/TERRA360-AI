@@ -25,3 +25,15 @@ async def sample_selected_layer(payload: GAEZRequest):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except GAEZError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@router.post("/selected-layer/raw-cell")
+async def raw_original_cell(payload: GAEZRequest):
+    """Real pinned FAO GeoTIFF byte code; never returns crop suitability %."""
+    from app.services.gaez_original_raw import selected_original_cell, GAEZOriginalError
+    try:
+        return await run_in_threadpool(selected_original_cell, payload.polygon)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except GAEZOriginalError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
