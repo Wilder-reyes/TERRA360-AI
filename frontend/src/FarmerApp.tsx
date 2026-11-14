@@ -114,6 +114,11 @@ function FarmerDashboard({data,loading,metric,onMetric,days,onDays,guidance,sele
     {guidance?<><div className="f-historic-facts"><span>Temperatura media: <strong>{number(guidance.climate.temperature_mean_c)} °C</strong></span><span>Lluvia anual media: <strong>{number(guidance.climate.annual_rain_mm)} mm</strong></span></div><HistoricalChart guidance={guidance}/><p className="f-small">Promedio descriptivo de {guidance.climate.complete_years} años completos. No es pronóstico ni cantidad de agua disponible para riego.</p></>:<p className="f-muted">Todavía no se consultaron años completos.</p>}
    </div>
   </div>
+  {guidance&&<div className="f-panel f-report-candidates">
+   <div className="f-panel-title"><h3>Otros cultivos para conversar con un especialista</h3><p>Solo se compararon rangos generales de temperatura y lluvia de especies. No es una lista de cultivos aptos para tu chacra.</p></div>
+   <ul className="f-report-crop-list">{guidance.candidates.filter(item=>item.status==='climate_reference_to_review').slice(0,5).map(item=><li key={item.id}><strong>{item.name}</strong><span>Temperatura regional dentro de referencia general; falta verificar agua, suelo y variedad.</span></li>)}</ul>
+   {!guidance.candidates.some(item=>item.status==='climate_reference_to_review')&&<p className="f-muted">Todavía no contamos con referencias completas para mostrar opciones basadas en la temperatura regional.</p>}
+  </div>}
   <div className="f-panel f-report-next">
    <h3>Antes de sembrar, ¿qué falta comprobar?</h3>
    <ul><li>¿Tienes agua de riego disponible durante la campaña?</li><li>¿Cómo está el suelo de tu chacra?</li><li>¿Qué variedad plantarás y en qué fecha?</li><li>¿Hay plagas, costos o mercado que debas considerar?</li></ul>
@@ -143,6 +148,7 @@ export default function FarmerApp(){
  const [guideLoading,setGuideLoading]=useState(false)
  const [guideError,setGuideError]=useState('')
  const [water,setWater]=useState<'unknown'|'yes'|'no'>('unknown')
+ const [showAllCrops,setShowAllCrops]=useState(false)
  const [reportHelp,setReportHelp]=useState('')
  const guideEpoch=useRef(0)
  function go(next:Page){setPage(next);window.scrollTo({top:0,behavior:'smooth'})}
@@ -238,7 +244,8 @@ export default function FarmerApp(){
      {guideError&&<StatusMessage message={guideError} kind="error"/>}
      {guidance&&<><div className="f-evidence-summary"><strong>Datos regionales de {guidance.period.start_year} a {guidance.period.end_year}</strong><span>Temperatura media: {number(guidance.climate.temperature_mean_c)} °C</span><span>Lluvia anual media: {number(guidance.climate.annual_rain_mm)} mm</span><span>Años completos: {guidance.climate.complete_years}/5</span></div>
       {guidance.status==='insufficient_data'&&<StatusMessage message="No encontramos suficientes años completos. No se puede comparar el clima con las referencias de los cultivos."/>}
-      <div className="f-candidates">{guidance.candidates.map(item=><CandidateCard key={item.id} item={item} selected={selectedCrop?.id===item.id} onChoose={chooseCrop}/>)}</div>
+      <div className="f-candidates">{(showAllCrops?guidance.candidates:guidance.candidates.slice(0,6)).map(item=><CandidateCard key={item.id} item={item} selected={selectedCrop?.id===item.id} onChoose={chooseCrop}/>)}</div>
+      {guidance.candidates.length>6&&<button type="button" className="f-btn f-btn-outline" onClick={()=>setShowAllCrops(v=>!v)}>{showAllCrops?'Mostrar menos cultivos':'Ver más cultivos'}</button>}
       {selectedCrop&&guidance.selected_crop?.id===selectedCrop.id&&!guidance.candidates.some(item=>item.id===guidance.selected_crop?.id)&&<div className="f-selected-guidance"><h3>Tu cultivo: {guidance.selected_crop.name}</h3><p>{guidance.selected_crop.reason}</p></div>}
       <StatusMessage message={guidance.limitation}/>
       <p className="f-small">Estas fichas se muestran en un orden fijo, no por rendimiento ni por aptitud. No se ha verificado la variedad, el suelo, el agua ni el calendario.</p>
