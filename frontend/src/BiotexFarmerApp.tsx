@@ -282,7 +282,7 @@ export default function BiotexFarmerApp(){
   const priorities=goal==='water'?{water:2,soil:0,income:1,pests:1}:goal==='soil'?{water:0,soil:2,income:1,pests:1}:{water:2,soil:2,income:1,pests:1}
   const payload={
    zone:province?'barranca':null,latitude:point.lat,longitude:point.lng,
-   current,priorities,water_turn:scarcity,current_source:sampleNote?'team_demo':source,
+   current,priorities,water_turn:scarcity,current_source:source,
    income_crop_id:confirmedOptions.includes(incomeCrop)?incomeCrop:null,
    use_team_templates_as_fallback:false,
    history:source==='satellite_confirmed'&&history?{sensor:history.sensor,start:history.period.start,end:history.period.end,months_with_data:history.months_with_data}:null
