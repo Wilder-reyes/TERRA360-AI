@@ -119,3 +119,8 @@
 .r-manual-controls .r-btn{min-width:160px}
 .r-manual-remove{margin-left:12px;border:1px solid #dbbbb0;background:#fff7f4;color:#8a2a1f;border-radius:7px;padding:3px 8px;font-size:.78rem;min-height:30px}
 @media(max-width:720px){.r-manual-controls{grid-template-columns:1fr}.r-manual-controls .r-btn{width:100%}}
+
+/* v0.22.1: explicit farmer income crop; still usable on small screens. */
+.r-income{margin:14px 0;padding:12px;border:1px solid var(--r-edge);border-radius:12px}
+.r-income legend{font-weight:800;color:var(--r-dark);padding:0 6px}
+.r-income-select{min-height:44px;width:100%;max-width:520px;border:1px solid #aec9b6;border-radius:10px;padding:8px 12px;background:#fff;color:var(--r-text);font:inherit}

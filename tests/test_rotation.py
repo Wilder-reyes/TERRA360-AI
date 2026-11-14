@@ -142,6 +142,32 @@ class EngineTests(unittest.TestCase):
         E.simulate(plan, self.clim)  # no overlap error
 
 
+class FarmerIncomePriorityTests(unittest.TestCase):
+    def setUp(self):
+        self.clim = coastal_climate()
+        self.current = [
+            {"crop_id": "maiz_amarillo_duro", "start_index": 0},
+            {"crop_id": "camote", "start_index": 8},
+            {"crop_id": "camote", "start_index": 16},
+        ]
+
+    def test_default_income_crop_is_most_frequent_not_always_maize(self):
+        with patch.object(E, "search", return_value=None):
+            r = E.compare(self.current, self.clim)
+        self.assertEqual(r["income_crop"], "camote")
+        self.assertEqual(r["income_crop_origin"], "most_frequent_in_current")
+
+    def test_user_selected_income_crop_is_respected(self):
+        with patch.object(E, "search", return_value=None):
+            r = E.compare(self.current, self.clim, income_crop_id="maiz_amarillo_duro")
+        self.assertEqual(r["income_crop"], "maiz_amarillo_duro")
+        self.assertEqual(r["income_crop_origin"], "farmer_selected")
+
+    def test_income_crop_must_be_in_current_rotation(self):
+        with self.assertRaises(E.RotationError):
+            E.compare(self.current, self.clim, income_crop_id="pallar")
+
+
 class DetectionTests(unittest.TestCase):
     def months(self, values):
         out, y, m = [], 2021, 1

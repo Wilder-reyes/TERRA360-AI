@@ -30,7 +30,7 @@ type Strategy={id:'S0'|'S1'|'S2';key:'current'|'water'|'soil';title_es:string;ti
  icons:{water:string;soil_cover:string;nitrogen:string;pests:string;heat:string};sections:Record<Section,{es:string[];en:string[]}>}
 type Context={index:number;calendar_month:number;year:number;low_river:boolean;hot:boolean;et0_mm_month:number;tmax_c:number;basin_rain_mm?:number|null}
 type BasinRain={status:string;message_es?:string;message_en?:string;source?:string;basin_es?:string;basin_en?:string;years?:string[];years_count?:number;last_season?:{season:string;rain_mm:number;percent_of_normal:number|null}|null;note_es?:string;note_en?:string}
-type CompareResult={status:string;upper_basin_rain?:BasinRain;income_crop?:string;strategies:Strategy[];window?:{context:Context[]};climate?:{period:string;hot_months:number[];annual_et0_mm:number;limitations:string[];limitations_en?:string[];cell_adjustment:{reason_es:string;reason_en:string}|null};disclaimer_es?:string;disclaimer_en?:string;message_es?:string;message_en?:string}
+type CompareResult={status:string;upper_basin_rain?:BasinRain;income_crop?:string;income_crop_origin?:'farmer_selected'|'most_frequent_in_current';strategies:Strategy[];window?:{context:Context[]};climate?:{period:string;hot_months:number[];annual_et0_mm:number;limitations:string[];limitations_en?:string[];cell_adjustment:{reason_es:string;reason_en:string}|null};disclaimer_es?:string;disclaimer_en?:string;message_es?:string;message_en?:string}
 type Planting={crop_id:string;start_index:number}
 
 const CROPS:Record<string,{es:string;en:string;icon:string;color:string}>={
@@ -68,7 +68,7 @@ const T={
   windowNote:(a:string,b:string)=>`Para comparar usamos tus últimos 24 meses completos: ${a} a ${b}.`,noCampaigns:'No vimos campañas claras en esos 24 meses.',
   useTemplate:'Probar rotación ficticia de demostración',historyError:'No pudimos leer el historial satelital.',retry:'Reintentar',
   manualLead:'Añade los cultivos y meses en que realmente sembraste. No se identifican automáticamente desde el satélite.',manualCrop:'Cultivo',manualMonth:'Mes de siembra',manualAdd:'Añadir siembra',manualRemove:'Quitar',manualLimit:'Máximo 10 siembras en 24 meses.',manualDuplicate:'Ya hay una siembra en ese mes. Elige otro mes.',backToHistory:'Volver al historial satelital',partial:'No fue posible calcular ambas alternativas con estas restricciones; no usamos plantillas ficticias como resultados.',demoOnly:'Solo demostración: estos cultivos son una muestra ficticia, no datos de tu parcela.',manualTitle:'Tu rotación actual',confirmed:(n:number)=>`${n} campaña(s) confirmada(s).`,next:'Siguiente →',back:'← Volver',
-  s3Title:'¿Qué te importa más?',s3Lead:'Mueve cada barra. Esto cambia cómo buscamos las dos ideas.',
+  s3Title:'¿Qué te importa más?',s3Lead:'Mueve cada barra. Esto cambia cómo buscamos las dos ideas.',incomePick:'¿Cuál es tu cultivo de ingreso?',incomeAuto:'No sé: usar el más frecuente en mi rotación',incomeHint:'BIOTEX mantendrá este cultivo en las opciones cuando priorices tus ingresos.',incomeProvenance:(crop:string,manual:boolean)=>manual?`Cultivo de ingreso elegido por ti: ${crop}.`:`Cultivo de ingreso estimado por frecuencia en tu rotación: ${crop}. Puedes cambiarlo en el paso anterior.`,
   prio:{water:'Ahorrar agua',soil:'Mejorar el suelo',income:'Mantener mi cultivo de ingreso',pests:'Menos plagas'},levels:['Poco','Normal','Mucho'],
   turnQ:'¿Cómo suele estar tu turno de agua entre mayo y noviembre?',turn:{normal:'Normal',escaso:'Escaso',no_se:'No sé'},compare:'Comparar 3 rotaciones →',comparing:'Calculando con NASA POWER y el catálogo de cultivos…',
   s4Title:'Tu forma de sembrar y dos ideas para cuidar tu suelo y tu agua',
@@ -99,7 +99,7 @@ const T={
   windowNote:(a:string,b:string)=>`To compare we use your last 24 complete months: ${a} to ${b}.`,noCampaigns:'We did not see clear seasons in those 24 months.',
   useTemplate:'Try a sample rotation (demo only)',historyError:'We could not read the satellite history.',retry:'Retry',
   manualLead:'Add the crops and months you actually planted. Crops are not automatically identified from space.',manualCrop:'Crop',manualMonth:'Sowing month',manualAdd:'Add planting',manualRemove:'Remove',manualLimit:'Maximum 10 plantings over 24 months.',manualDuplicate:'There is already a planting in that month. Choose another.',backToHistory:'Return to satellite history',partial:'Both alternatives could not be calculated under these constraints; sample templates were not substituted as results.',demoOnly:'Demo only: this is a fictitious sample rotation, not real field data.',manualTitle:'Your current rotation',confirmed:(n:number)=>`${n} season(s) confirmed.`,next:'Next →',back:'← Back',
-  s3Title:'What matters most to you?',s3Lead:'Move each bar. This changes how we search for the two ideas.',
+  s3Title:'What matters most to you?',s3Lead:'Move each bar. This changes how we search for the two ideas.',incomePick:'Which crop supports your farm income?',incomeAuto:'Not sure: use the most frequent crop in my rotation',incomeHint:'BIOTEX will retain this crop in the alternatives when income matters to you.',incomeProvenance:(crop:string,manual:boolean)=>manual?`Income crop chosen by you: ${crop}.`:`Income crop inferred from rotation frequency: ${crop}. You can change it in the previous step.`,
   prio:{water:'Save water',soil:'Improve the soil',income:'Keep my income crop',pests:'Fewer pests'},levels:['Low','Normal','High'],
   turnQ:'How is your irrigation turn usually between May and November?',turn:{normal:'Normal',escaso:'Scarce',no_se:"I don't know"},compare:'Compare 3 rotations →',comparing:'Computing with NASA POWER and the crop catalogue…',
   s4Title:'Your way of planting and two ideas to care for your soil and water',
@@ -269,6 +269,7 @@ export default function RotationApp(){
  const [manualError,setManualError]=useState('')
  const [priorities,setPriorities]=useState({water:1,soil:1,income:1,pests:1})
  const [turn,setTurn]=useState<'normal'|'escaso'|'no_se'>('normal')
+ const [incomeCrop,setIncomeCrop]=useState('')
  const [result,setResult]=useState<CompareResult|null>(null)
  const [comparing,setComparing]=useState(false)
  const [compareError,setCompareError]=useState('')
@@ -283,7 +284,7 @@ export default function RotationApp(){
  const examples=[...TEAM_FIELDS,...TEST_FIELDS].filter(f=>f.zone===zone)
 
  function chooseExample(f:ExampleField){setDrawing(false);setVertices([]);setField({polygon:f.polygon,label:lang==='es'?f.label_es:f.label_en,note:lang==='es'?f.note_es:f.note_en});resetDownstream()}
- function resetDownstream(){epoch.current++;setHistory(null);setHistoryError('');setAnswers({});setTemplateCurrent(null);setManualCurrent(null);setManualError('');setResult(null)}
+ function resetDownstream(){epoch.current++;setHistory(null);setHistoryError('');setAnswers({});setTemplateCurrent(null);setManualCurrent(null);setManualError('');setIncomeCrop('');setResult(null)}
  function finishDrawing(){
   const v=validatePolygon(vertices)
   if(!v.valid){setDrawError(t.drawError+' '+(t.drawReasons[v.reason]||''));return}
@@ -340,6 +341,7 @@ export default function RotationApp(){
   return out
  },[windowCampaigns,answers,windowStart])
  const current=manualCurrent??templateCurrent??currentFromHistory
+ const incomeOptions=[...new Set(current.map(p=>p.crop_id))]
  function addManualPlanting(){
   const baseline=manualCurrent??(templateCurrent?[]:currentFromHistory)
   const next=addPlantingToRotation(baseline,manualCrop,manualMonth)
@@ -356,7 +358,7 @@ export default function RotationApp(){
   try{
    const summary=history&&!manualCurrent&&!templateCurrent?{sensor:history.sensor,start:history.period.start,end:history.period.end,months_with_data:history.months_with_data}:null
    const current_source=templateCurrent?'team_demo':manualCurrent?'farmer_declared':'satellite_confirmed'
-   const r=await fetch(API+'/api/rotation/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zone,current,priorities,water_turn:turn,history:summary,current_source,use_team_templates_as_fallback:false})})
+   const r=await fetch(API+'/api/rotation/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zone,current,priorities,water_turn:turn,history:summary,current_source,income_crop_id:incomeOptions.includes(incomeCrop)?incomeCrop:null,use_team_templates_as_fallback:false})})
    if(!r.ok){let d='';try{d=(await r.json()).detail}catch{/* */};throw Error(typeof d==='string'&&d?d:await httpErrorMessage(r,lang==='en'))}
    const v=await r.json() as CompareResult
    if(my!==epoch.current)return
@@ -450,6 +452,14 @@ export default function RotationApp(){
     <h1>{t.s3Title}</h1><p>{t.s3Lead}</p>
     <div className="r-sliders">{(Object.keys(priorities) as (keyof typeof priorities)[]).map(k=><label key={k} className="r-slider"><span>{t.prio[k]}</span>
      <input type="range" min={0} max={2} step={1} value={priorities[k]} onChange={e=>{setPriorities(p=>({...p,[k]:Number(e.target.value)}));setResult(null)}} aria-valuetext={t.levels[priorities[k]]}/><b>{t.levels[priorities[k]]}</b></label>)}</div>
+    <fieldset className="r-turn r-income">
+     <legend>{t.incomePick}</legend>
+     <select className="r-income-select" value={incomeOptions.includes(incomeCrop)?incomeCrop:''} onChange={e=>{setIncomeCrop(e.target.value);setResult(null)}}>
+      <option value="">{t.incomeAuto}</option>
+      {incomeOptions.map(id=><option key={id} value={id}>{cropName(id,lang)}</option>)}
+     </select>
+     <p className="r-small">{t.incomeHint}</p>
+    </fieldset>
     <fieldset className="r-turn"><legend>{t.turnQ}</legend>{(['normal','escaso','no_se'] as const).map(v=><button key={v} type="button" aria-pressed={turn===v} className={'r-chip'+(turn===v?' on':'')} onClick={()=>{setTurn(v);setResult(null)}}>{t.turn[v]}</button>)}</fieldset>
     {compareError&&<p className="r-error" role="alert">{compareError}</p>}
     <div className="r-nav"><button type="button" className="r-btn r-btn-outline" onClick={()=>go(2)}>{t.back}</button><button type="button" className="r-btn" disabled={comparing||current.length===0} onClick={()=>void runCompare()}>{comparing?t.comparing:t.compare}</button></div>
@@ -458,6 +468,7 @@ export default function RotationApp(){
    {step===4&&result&&<section className="r-panel r-compare" id="rotation-report">
     <h1>{t.s4Title}</h1>
     <p className="r-disclaimer">{lang==='es'?(result.disclaimer_es||t.disclaimer):(result.disclaimer_en||t.disclaimer)}</p>
+    {result.income_crop&&<p className="r-note">{t.incomeProvenance(cropName(result.income_crop,lang),result.income_crop_origin==='farmer_selected')}</p>}
     {result.strategies.length===0?<p className="r-note">{t.abstain} {lang==='es'?result.message_es:result.message_en}</p>:<>
      <div className="r-print-meta">{field?.label} · {ZONES[zone].name} · {new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US')}</div>
      {result.status==='partial'&&<p className="r-note" role="status">{t.partial}</p>}

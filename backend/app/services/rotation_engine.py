@@ -584,8 +584,8 @@ def icons(ind: dict, base: dict | None) -> dict:
 
 TITLES = {
     "current": ("S0", "Lo que haces hoy", "What you do today"),
-    "water": ("S1", "Idea 1: gasta menos agua cuando el río baja", "Idea 1: use less water when the river is low"),
-    "soil": ("S2", "Idea 2: tu suelo siempre cubierto", "Idea 2: keep your soil always covered"),
+    "water": ("S1", "Idea 1: prioriza el agua en estiaje", "Idea 1: prioritise dry-season water"),
+    "soil": ("S2", "Idea 2: prioriza la cobertura del suelo", "Idea 2: prioritise soil cover"),
 }
 
 
@@ -617,7 +617,7 @@ def _strategy(key: str, plantings: list[dict], climate: dict, base: dict | None,
 
 def compare(current: list[dict], climate: dict, *, priorities: dict | None = None,
             water_turn: str = "normal", history: dict | None = None,
-            current_origin: str = "farmer_declared",
+            current_origin: str = "farmer_declared", income_crop_id: str | None = None,
             fallback: dict | None = None) -> dict:
     priorities = {k: int(v) for k, v in (priorities or {}).items() if k in ("water", "soil", "income", "pests")}
     for k, v in priorities.items():
@@ -630,8 +630,13 @@ def compare(current: list[dict], climate: dict, *, priorities: dict | None = Non
     s0 = fit_to_cycle(normalize_plantings(current))
     base_sim = simulate(s0, climate)
     base = {**base_sim["indicators"], "_timeline": base_sim["timeline"]}
-    income_crop = max((p["crop_id"] for p in s0),
-                      key=lambda cid: (cid == "maiz_amarillo_duro", sum(p["crop_id"] == cid for p in s0)))
+    # Respect the farmer's declared income crop. The old maize-first tie-breaker
+    # overwrote farmers' actual economic priorities whenever maize was present.
+    current_ids = [p["crop_id"] for p in s0]
+    if income_crop_id is not None and income_crop_id not in current_ids:
+        raise RotationError("El cultivo de ingreso debe estar en tu rotación actual.")
+    income_crop = income_crop_id or max(dict.fromkeys(current_ids),
+                                        key=lambda cid: current_ids.count(cid))
     ref = {"low": max(base["water_low_river_mm"], 50.0), "total": max(base["water_total_mm"], 100.0)}
     strategies = [_strategy("current", s0, climate, None, history, water_turn, current_origin)]
     # S1 may not leave the field bare longer than today (at least 2 months allowed).
@@ -652,6 +657,7 @@ def compare(current: list[dict], climate: dict, *, priorities: dict | None = Non
     return {
         "status": status,
         "income_crop": income_crop,
+        "income_crop_origin": "farmer_selected" if income_crop_id else "most_frequent_in_current",
         "priorities": {"water": 1, "soil": 1, "income": 1, "pests": 1, **priorities},
         "water_turn": water_turn,
         "window": {

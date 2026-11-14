@@ -18,7 +18,7 @@ All indicators are **relative to the current rotation**. They are not yield, pro
 - **Explicit confirmation:** a satellite-suggested crop is not automatically selected. The farmer must select a crop or say they do not remember.
 - **Manual history:** an optional form allows entering up to 10 plantings (crop + sowing month) over the 24-month comparison window. This is labeled as farmer-declared rather than satellite-detected.
 - **Demo provenance:** the sample maize rotation is labeled as fictitious, not a real farmer field. `current_source` reports `farmer_declared`, `satellite_confirmed` or `team_demo`.
-- **No synthetic results:** `use_team_templates_as_fallback` defaults to false. If the constrained optimizer cannot find S1 or S2, the UI reports a partial comparison rather than silently displaying a predefined plan.
+- **Income crop:** the farmer can explicitly choose the crop supporting their income; the comparator keeps this crop when that priority is active. If none is selected, the most frequent crop in S0 is a declared fallback, not a hidden preference for maize.\n- **No synthetic results:** `use_team_templates_as_fallback` defaults to false. If the constrained optimizer cannot find S1 or S2, the UI reports a partial comparison rather than silently displaying a predefined plan.
 - **GeoJSON limits:** malformed/non-finite coordinates return HTTP 422; manual GeoJSON follows the same parcel area limits as drawn fields.
 - **NASA GPM IMERG basin climatology:** when `backend/app/data/imerg_basin_seed.json` is absent, the app displays an unavailable state rather than inventing precipitation. Basin precipitation is not river discharge or the farmer's irrigation entitlement.
 - **Validation status:** documented methods and automated tests are not field validation. Crop water is a relative Kc × ET0 estimate, not measured irrigation needs or yield.
@@ -67,7 +67,7 @@ Other views: `/?vista=clima` (previous farmer weather dashboard) and `/?vista=te
 | `GET /api/rotation/crops` | Team crop catalogue (13 crops) and coastal seasons |
 | `GET /api/rotation/climate?zone=huaral` | Monthly ET0, Tmax, solar radiation and warmest months from NASA POWER |
 | `POST /api/rotation/history` `{polygon, start_year}` | Monthly NDVI series and detected seasons. Returns `202 {"status":"processing"}` while a new field is computed; repeat the same POST. |
-| `POST /api/rotation/compare` | `{zone, current:[{crop_id,start_index}], priorities:{water,soil,income,pests}, water_turn, history, current_source, use_team_templates_as_fallback:false}` → real-field S0/S1/S2 (possibly partial), benefits, risks and uncertainties ES/EN |
+| `POST /api/rotation/compare` | `{zone, current:[{crop_id,start_index}], priorities:{water,soil,income,pests}, water_turn, history, current_source, income_crop_id, use_team_templates_as_fallback:false}` → real-field S0/S1/S2 (possibly partial), benefits, risks and uncertainties ES/EN |
 | `GET /api/rotation/upper-basin-rain?zone=huaral` | "Water to come": GPM IMERG monthly rain over the upper basin (climatology and recent seasons, % of normal). Precomputed with an Earthdata token; abstains if not available. |
 | `GET /api/rotation/templates` | Team S0/S1/S2 test rotations (`start_index` 0 = August of year 1) |
 
