@@ -4,7 +4,6 @@
 import {useEffect,useMemo,useRef,useState} from 'react'
 import {Area,AreaChart,Bar,BarChart,CartesianGrid,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts'
 import {FarmerMap} from './FarmerMap'
-import {CropPhotoGuide} from './CropPhotoGuide'
 import {HUANDO_PILOT} from './pilot'
 import {API,readableApiError,httpErrorMessage} from './network'
 import {computeClimate,safeDateUTC,type ApiResult,type Position,type RecordRow} from './domain'
@@ -228,13 +227,13 @@ export default function FarmerApp(){
    </>}
    {page==='cultivos'&&<section className="f-crops-page">
     {!point?<div className="f-panel f-empty-focus"><h2>Primero elige dónde está tu terreno</h2><p>Necesitamos una ubicación para consultar los datos de NASA de esa zona.</p><button type="button" className="f-btn f-btn-primary" onClick={()=>go('terreno')}>Ir a mi terreno</button></div>:<>
-    <div className="f-panel f-crop-start"><div><span className="f-eyebrow">2 · MIS CULTIVOS</span><h2>Busca tu cultivo o toma una foto</h2><p>Elige un solo cultivo para comenzar. La búsqueda funciona aunque no uses la cámara.</p></div>
+    <div className="f-panel f-crop-start"><div><span className="f-eyebrow">2 · MIS CULTIVOS</span><h2>Encuentra tu cultivo por su nombre</h2><p>Elige un cultivo de la lista o escríbelo en el buscador. Con uno es suficiente para comenzar.</p></div>
      <div className="f-crop-pickers"><div className="f-manual-search"><label htmlFor="f-crop-search">¿Qué cultivo tienes o quieres sembrar?</label><input id="f-crop-search" className="f-input" type="search" value={cropQuery} onChange={e=>setCropQuery(e.target.value)} placeholder="Ej. tomate, camote, frijol"/>
        <div className="f-popular"><span>Buscar rápido:</span>{popular.map(([id,name])=><button type="button" key={id} onClick={()=>chooseCrop(id,name)}>{name}</button>)}</div>
        {cropLoading&&<p role="status">Buscando cultivos…</p>}{cropError&&<StatusMessage kind="error" message={cropError}/>}
        {cropMatches.length>0&&<ul className="f-crop-results">{cropMatches.map(item=><li key={item.id}><button type="button" onClick={()=>{chooseCrop(item.id,item.name);setCropQuery('');setCropMatches([])}}><strong>{item.name}</strong><span>Seleccionar</span></button></li>)}</ul>}
        {selectedCrop&&<div className="f-selected-crop"><span>Cultivo elegido: <strong>{selectedCrop.name}</strong></span><button type="button" onClick={()=>{setSelectedCrop(null);setGuidance(null)}}>Cambiar</button></div>}
-     </div><CropPhotoGuide/></div>
+     </div></div>
     </div>
     <div className="f-panel f-guidance-block"><div className="f-panel-title"><span className="f-eyebrow">OPCIONES PARA INVESTIGAR</span><h2>¿Qué cultivos podría revisar en esta zona?</h2><p>Usamos años completos de NASA POWER y referencias generales de FAO. Esto no comprueba si puedes sembrarlos en tu chacra.</p></div>
      <div className="f-water-prompt"><strong>¿Tu chacra tiene agua de riego?</strong><div role="group" aria-label="Agua de riego">{([['yes','Sí'],['no','No'],['unknown','No sé']] as const).map(([id,label])=><button type="button" key={id} className={water===id?'active':''} aria-pressed={water===id} onClick={()=>setWater(id)}>{label}</button>)}</div></div>
