@@ -1,59 +1,57 @@
-# Publicar TERRA360 AI en Netlify (sitio gratuito)
+# Netlify + Render — despliegue TERRA360 AI (demo)
 
-## Repositorio preparado
+## Estado de los servicios
 
-GitHub privado: `Wilder-reyes/TERRA360-AI` — rama `main`.
+- GitHub privado: `Wilder-reyes/TERRA360-AI`, rama `main`
+- Backend FastAPI: `https://terra360-api.onrender.com` — Render Free
+- Frontend Netlify: la URL de producción se obtiene del panel de Netlify; una URL del tipo `<hash>--<nombre>.netlify.app` identifica una compilación específica, mientras `https://<nombre>.netlify.app` suele ser la URL de producción del sitio.
 
-El archivo `netlify.toml` en la raíz ya configura el monorepositorio para compilar React + Vite:
+## Conexión automática, sin exponer credenciales
 
-| Opción Netlify | Valor efectivo |
-|---|---|
-| Base directory | `frontend` |
-| Build command | `npm run build` |
-| Publish directory | `frontend/dist` (se define como `dist` en `netlify.toml`) |
-| Node | `22` |
-| Production branch | `main` |
-| Framework | Vite / React |
-| URL | Netlify asigna un `*.netlify.app` disponible |
+El archivo `netlify.toml`, en la raíz del repositorio, configura:
 
-El archivo versionado prevalece sobre los valores de construcción editados en la interfaz de Netlify. Si Netlify autocompleta otras rutas, utiliza la configuración anterior y evita duplicar `frontend/frontend`.
+```toml
+[build]
+base = "frontend"
+command = "npm run build"
+publish = "dist"
 
-## Paso 1. Conectar el repositorio
+[[redirects]]
+from = "/api/*"
+to = "https://terra360-api.onrender.com/api/:splat"
+status = 200
+force = true
 
-1. En Netlify, pulsa el repositorio `Wilder-reyes/TERRA360-AI`.
-2. Verifica `main` y la configuración descrita.
-3. Pulsa la acción para desplegar el sitio cuando el plan seleccionado sea el gratuito.
-4. Espera el resultado del deploy en el panel (no presupongas que ya está publicado).
-5. Conserva la URL real `https://<nombre>.netlify.app`.
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+```
 
-## Paso 2. Activar funciones reales (necesario antes de presentar la demo completa)
+React en modo producción usa rutas relativas como `/api/arie/catalog`, que Netlify redirige de forma transparente al servidor Render. **No configures `VITE_API_URL` en Netlify para este esquema**; si lo añadiste, elimínalo y ejecuta un nuevo deploy para evitar que el navegador intente acceder directamente a Render.
 
-Netlify sirve **solo la interfaz estática React**. La API `FastAPI`, ARIE AI y las consultas NASA se ejecutan en un hosting Python independiente, por ejemplo Render con Docker:
+Se puede publicar la interfaz sin claves; `EARTHDATA_TOKEN` se configura solo en Render como variable privada. El Blueprint desactiva las descargas GPM de gran tamaño (`GPM_DOWNLOADS_ENABLED=false`) para proteger el hosting gratuito, mientras NASA POWER y Planetary Computer siguen siendo públicos.
 
-- Publica `backend/Dockerfile` usando `render.yaml` en el repositorio.
-- Obtén la URL real HTTPS de tu backend (`https://<servicio>.onrender.com`) y comprueba `/api/health`.
-- Netlify → Site configuration → Environment variables: crea `VITE_API_URL` con esa URL HTTPS del backend **sin barra final**.
-- Ejecuta un **nuevo deploy** de Netlify para que Vite inserte la URL pública en el JavaScript.
-- Render → Environment: configura `CORS_ORIGINS=https://<nombre>.netlify.app` con el origen exacto, sin barra final; añade URLs de preview solo si realmente las utilizas y entiendes sus implicaciones.
-- Prueba en la web: cargar catálogo, seleccionar ubicación, consultar NASA POWER y evaluar ARIE AI.
+## Comprobación después del deploy
 
-**Importante:** mientras no exista `VITE_API_URL`, el frontend se puede compilar y publicar, pero las consultas al backend **no funcionan**. No presentes el sitio estático como una demo integrada hasta completar estos pasos.
+1. Abre la dirección de producción de Netlify.
+2. Comprueba `https://<nombre-real>.netlify.app/api/health`: debe devolver un JSON con `status: ok` desde FastAPI, **no HTML**. Si devuelve HTML, Netlify no aplicó la regla del proxy.
+3. Comprueba `https://<nombre-real>.netlify.app/api/arie/catalog`: debe devolver JSON del catálogo.
+4. Ingresa a la web y selecciona un punto del mundo. Comprueba que NASA POWER responda y se pueda evaluar la rotación.
+5. Si Render está inactivo (plan gratuito), la primera solicitud puede tardar y a veces es necesario reintentar después de que la instancia arranque.
 
-## Token NASA Earthdata
+## Problemas frecuentes
 
-- Guarda `EARTHDATA_TOKEN` **exclusivamente** en las variables privadas del backend (Render), nunca en Netlify, GitHub, JavaScript, `netlify.toml` o capturas.
-- NASA POWER y Planetary Computer STAC no requieren ese token en estas rutas.
-- El Blueprint usa `GPM_DOWNLOADS_ENABLED=false` porque la descarga de granulares GPM para visitantes anónimos puede agotar el servidor.
-- Habilita descargas GPM solo después de controlar concurrencia, límites de uso, almacenamiento y acceso protegido; un token no protege por sí solo un endpoint público.
+- **JSON sustituido por HTML:** confirma que Netlify desplegó el commit con la regla `/api/*` antes del fallback `/*`.
+- **La web consulta Render directamente:** elimina `VITE_API_URL` en Netlify y vuelve a desplegar.
+- **`503` para GPM:** desactivado intencionalmente para evitar gastos y abuso. No equivale a un token incorrecto.
+- **`502` o `504`:** revisa el estado y logs de Render; la primera activación del plan Free puede ser lenta.
+- **Token NASA:** no lo compartas por chat, no lo pongas en Netlify, y no lo confirmes copiando su valor.
 
-## Diagnóstico
+## Seguridad y honestidad científica
 
-- Error `Failed to fetch` o `/api/arie/catalog` 404: define `VITE_API_URL` y vuelve a desplegar.
-- Error CORS en navegador: añade exactamente el dominio Netlify a `CORS_ORIGINS` en Render.
-- Error 502/503: revisa salud de API, límites de hosting y disponibilidad de datos externos.
-- Si Netlify muestra `publish directory not found`, verifica que `dist` se resuelva desde la carpeta `frontend`.
+- Datos NASA de cuadrícula no son mediciones directas dentro de la parcela.
+- ARIE ofrece comparaciones estructurales y advertencias: no certifica rendimientos ni ahorro cuantitativo de agua.
+- Se debe verificar el sitio real en navegador y consultar la API antes de describir la demo como plenamente operativa.
 
-Fuentes oficiales:
-- https://docs.netlify.com/build/configure-builds/monorepos/
-- https://docs.netlify.com/build/configure-builds/file-based-configuration/
-- https://docs.netlify.com/build/configure-builds/environment-variables/
+Fuentes: https://docs.netlify.com/manage/routing/redirects/rewrites-proxies/ ; https://docs.netlify.com/build/configure-builds/file-based-configuration/

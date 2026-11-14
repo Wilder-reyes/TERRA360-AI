@@ -1,5 +1,5 @@
-# TERRA360 AI — Netlify frontend deployment from the GitHub monorepo.
-# Netlify discovers this file at the repository root and builds only frontend/.
+# TERRA360 AI — deploy the React frontend from a GitHub monorepo on Netlify.
+# The backend is deployed separately at Render (https://terra360-api.onrender.com).
 [build]
   base = "frontend"
   command = "npm run build"
@@ -8,8 +8,16 @@
 [build.environment]
   NODE_VERSION = "22"
 
-# Future client-side routes return the SPA shell, while real static files
-# (such as assets and favicon) continue to be served directly.
+# Public same-origin reverse proxy: the React app requests /api/... .
+# Netlify forwards to Render server-side. Do NOT put Earthdata credentials here.
+# This rule must be BEFORE the single-page-app fallback.
+[[redirects]]
+  from = "/api/*"
+  to = "https://terra360-api.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Preserve deep links for React without turning API endpoints into index.html.
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -22,8 +30,7 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "DENY"
 
-# IMPORTANT:
-# Configure VITE_API_URL in Netlify -> Site configuration -> Environment variables
-# after deploying the FastAPI backend to an HTTPS public URL.
-# The VITE_ prefix makes its contents PUBLIC in browser JavaScript.
-# NEVER put EARTHDATA_TOKEN, passwords, API secrets, or .env here.
+# Do not configure VITE_API_URL in Netlify: in production the app uses
+# relative /api paths, and the rewrite above forwards them to Render.
+# If VITE_API_URL is already configured, remove it and redeploy.
+# EARTHDATA_TOKEN belongs exclusively in the Render backend secret environment.
