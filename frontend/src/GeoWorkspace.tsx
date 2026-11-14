@@ -5,11 +5,12 @@ import {approximatePolygonHectares, validatePolygon} from './geometry'
 import type {ApiResult, Position, RecordRow} from './domain'
 import './geo-workspace.css'
 
-type Layer = 'rain' | 'temperature' | 'humidity' | 'scenes' | 'gpm_map' | 'smap_map' | 'ndvi_map'
+type Layer = 'rain' | 'temperature' | 'humidity' | 'scenes' | 'gpm_map' | 'smap_map' | 'ndvi_map' | 'srtm_map'
 type Base = 'streets' | 'satellite'
 type Scene = {date:string;cloud_cover_percent:number;satellite:string;scene_id:string}
 type SceneResponse = {scenes:Scene[];status:string;source_url:string}
 type Area = [Position,Position]
+type Place={id:number;name:string;country?:string;admin1?:string;latitude:number;longitude:number}
 type Seasonality={source:string;period:{from:number;to:number};coverage_ok:boolean;months:{month:number;years_with_data:number;median_rain_mm:number|null}[]}
 type History={source:string;period:{start_year:number;end_year:number};records:{year:number;status:'complete'|'partial'|'unavailable';precipitation_total_mm:number|null}[]}
 
@@ -71,6 +72,11 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const en=language==='en'
   const [layer,setLayer]=useState<Layer>('rain')
   const [base,setBase]=useState<Base>('streets')
+  const [placeQuery,setPlaceQuery]=useState('')
+  const [placeResults,setPlaceResults]=useState<Place[]>([])
+  const [placeLoading,setPlaceLoading]=useState(false)
+  const [placeError,setPlaceError]=useState('')
+  const [rasterFailed,setRasterFailed]=useState(false)
   const [area,setArea]=useState<Area|null>(null)
   const [polygon,setPolygon]=useState<Position[]|null>(null)
   const [polygonDrawing,setPolygonDrawing]=useState(false)
@@ -90,11 +96,12 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const maxAnnualRain=Math.max(0,...fullHistory.map(y=>y.precipitation_total_mm||0))
   const current=useMemo(()=>records.find(r=>r.date===date)||records[records.length-1]||null,[records,date])
   const unit=layer==='rain'?'mm':layer==='temperature'?'°C':layer==='humidity'?'%':''
-  const nasaLayer=layer==='gpm_map'?'IMERG_Precipitation_Rate':layer==='smap_map'?'SMAP_L4_Analyzed_Surface_Soil_Moisture':layer==='ndvi_map'?'MODIS_Terra_NDVI_8Day':null
+  const nasaLayer=layer==='gpm_map'?'IMERG_Precipitation_Rate':layer==='smap_map'?'SMAP_L4_Analyzed_Surface_Soil_Moisture':layer==='ndvi_map'?'MODIS_Terra_NDVI_8Day':layer==='srtm_map'?'SRTM_Color_Index':null
   const rasterDate=current?.date||last
+  useEffect(()=>{setRasterFailed(false)},[layer,rasterDate])
   const value=layer==='rain'?current?.PRECTOTCORR:layer==='temperature'?current?.T2M:layer==='humidity'?current?.RH2M:null
   const shownValue=value===null||value===undefined||!Number.isFinite(value)?'—':Number(value).toFixed(1)
-  const title=layer==='rain'?(en?'Rain on this date':'Lluvia de ese día'):layer==='temperature'?(en?'Air temperature':'Temperatura del aire'):layer==='humidity'?(en?'Air humidity':'Humedad del aire'):layer==='gpm_map'?(en?'Satellite rainfall map':'Mapa de lluvia satelital'):layer==='smap_map'?(en?'Regional soil moisture':'Humedad regional del suelo'):layer==='ndvi_map'?(en?'Vegetation index image':'Índice de vegetación'):(en?'Satellite scenes':'Imágenes disponibles')
+  const title=layer==='rain'?(en?'Rain on this date':'Lluvia de ese día'):layer==='temperature'?(en?'Air temperature':'Temperatura del aire'):layer==='humidity'?(en?'Air humidity':'Humedad del aire'):layer==='gpm_map'?(en?'Satellite rainfall map':'Mapa de lluvia satelital'):layer==='smap_map'?(en?'Regional soil moisture':'Humedad regional del suelo'):layer==='ndvi_map'?(en?'Vegetation index image':'Índice de vegetación'):layer==='srtm_map'?(en?'Elevation and relief':'Elevación y relieve'):(en?'Satellite scenes':'Imágenes disponibles')
   function choosePoint(p:Position){setArea(null);setPolygon(null);setPolygonDrawing(false);setDraftVertices([]);setDraw(false);setCorner(null);onPick(p)}
   function chooseCorner(p:Position){
     if(!corner){setCorner(p);return}
@@ -115,6 +122,18 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
     const candidate=polygon.map((v,i)=>i===index?p:v)
     if(!validatePolygon(candidate).valid){setPolygonError(en?'This corner would make the outline invalid.':'Esa esquina haría que el contorno no sea válido.');return false}
     setPolygon(candidate);setPolygonError('');return true
+  }
+  async function searchPlace(){
+    if(placeLoading||placeQuery.trim().length<3)return
+    setPlaceLoading(true);setPlaceError('');setPlaceResults([])
+    try{
+      const params=new URLSearchParams({name:placeQuery.trim().slice(0,90),count:'6',language:en?'en':'es',format:'json'})
+      const response=await fetch('https://geocoding-api.open-meteo.com/v1/search?'+params.toString())
+      if(!response.ok)throw new Error('geocoding failed')
+      const result=await response.json() as {results?:Place[]}
+      setPlaceResults((result.results||[]).filter(p=>Number.isFinite(p.latitude)&&Number.isFinite(p.longitude)))
+    }catch{setPlaceError(en?'We could not find that place. Try another town or city.':'No pudimos buscar esa localidad. Prueba con otra ciudad o distrito.')}
+    finally{setPlaceLoading(false)}
   }
   async function findScenes(){
     if(!point||loadingScenes)return
@@ -137,11 +156,20 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
       </div>
       <div className="terra-geo-base"><button type="button" aria-pressed={base==='streets'} className={base==='streets'?'active':''} onClick={()=>setBase('streets')}>{en?'Map':'Mapa'}</button><button type="button" aria-pressed={base==='satellite'} className={base==='satellite'?'active':''} onClick={()=>setBase('satellite')}>{en?'Aerial photo':'Foto aérea'}</button></div>
     </div>
+    <div className="terra-geo-place-search">
+      <div><label htmlFor="terra-place-search">{en?'Find a place on the map':'Busca una localidad en el mapa'}</label>
+      <div className="terra-geo-place-input"><input id="terra-place-search" type="search" value={placeQuery} onChange={e=>setPlaceQuery(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void searchPlace()}} placeholder={en?'Town, city or region…':'Distrito, ciudad o región…'} maxLength={90}/>
+      <button type="button" onClick={()=>void searchPlace()} disabled={placeLoading||placeQuery.trim().length<3}>{placeLoading?(en?'Searching…':'Buscando…'):(en?'Find place':'Buscar')}</button></div>
+      {placeError&&<p role="alert">{placeError}</p>}
+      {placeResults.length>0&&<ul className="terra-geo-place-results">{placeResults.map(p=><li key={p.id}><button type="button" onClick={()=>{choosePoint({lat:p.latitude,lng:p.longitude});setPlaceResults([])}}>{[p.name,p.admin1,p.country].filter(Boolean).join(' · ')}</button></li>)}</ul>}
+      </div>
+      <small>{en?'Place names from GeoNames via Open-Meteo. Never a property survey.':'Localidades de GeoNames vía Open-Meteo. No identifica los límites de tu terreno.'}</small>
+    </div>
     <div className="terra-geo-shell">
       <div className="terra-geo-mapbox">
         <MapContainer center={[12,0]} zoom={2} scrollWheelZoom={false} className="terra-geo-map">
           {base==='streets'?<TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>:<TileLayer attribution='Tiles &copy; Esri, Maxar, Earthstar Geographics' url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>}
-          {nasaLayer&&rasterDate&&point&&<WMSTileLayer key={`${nasaLayer}-${rasterDate}`} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi" layers={nasaLayer} styles="" format="image/png" transparent={true} version="1.1.1" time={rasterDate} opacity={0.76} attribution='NASA GIBS / ESDIS'/>}
+          {nasaLayer&&(rasterDate||layer==='srtm_map')&&point&&<WMSTileLayer key={`${nasaLayer}-${layer==='srtm_map'?'static':rasterDate}`} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi" layers={nasaLayer} styles="" format="image/png" transparent={true} version="1.1.1" time={layer==='srtm_map'?undefined:rasterDate} opacity={0.76} attribution='NASA GIBS / ESDIS' eventHandlers={{tileerror:()=>setRasterFailed(true)}}/>}
           <Recenter point={point}/>
           <MapSelection draw={draw} polygonDrawing={polygonDrawing} onPoint={choosePoint} onCorner={chooseCorner} onPolygonVertex={p=>{setDraftVertices(v=>v.length>=100?v:[...v,p]);setPolygonError('')}}/>
           {point&&<Marker position={[point.lat,point.lng]} icon={markerIcon}><Popup>{en?'Your selected reference point':'Punto de referencia elegido'}<br/>{point.lat.toFixed(5)}, {point.lng.toFixed(5)}</Popup></Marker>}
@@ -168,16 +196,18 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
       <aside className="terra-geo-inspector">
         <div className="terra-geo-layer-title"><strong>{en?'What do you want to explore?':'¿Qué quieres explorar?'}</strong><small>{en?'Select one view':'Elige una vista'}</small></div>
         <div className="terra-geo-layer-pills">
-          {([['rain',en?'Rain':'Lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
+          {([['rain',en?'Rain':'Lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
         </div>
         {nasaLayer?<div className="terra-geo-reading terra-geo-raster-reading">
-          <small>NASA GIBS · {layer==='gpm_map'?'GPM IMERG':layer==='smap_map'?'SMAP L4':'MODIS NDVI (8 días)'}</small>
+          <small>NASA GIBS · {layer==='gpm_map'?'GPM IMERG':layer==='smap_map'?'SMAP L4':layer==='ndvi_map'?'MODIS NDVI (8 días)':'SRTM v3'}</small>
           <h3>{title}</h3>
-          <label className="terra-geo-date">{en?'Observation date':'Fecha de observación'}<select value={current?.date||last} onChange={e=>setDate(e.target.value)} disabled={!records.length}>{records.slice().reverse().map(r=><option key={r.date} value={r.date}>{r.date}</option>)}</select></label>
-          <p>{layer==='gpm_map'?(en?'Daily visualisation of satellite-based precipitation rate. The colours do not measure rain accumulated on your specific field.':'Visualización diaria de la intensidad de lluvia estimada por satélite. Los colores no miden la lluvia acumulada en tu parcela.'):layer==='smap_map'?(en?'SMAP model-based surface soil moisture, with approximately 9 km cells. Not a soil sensor reading at your field.':'Humedad superficial estimada por el modelo SMAP, aproximadamente a 9 km de resolución. No es la lectura de un sensor de tu terreno.'):(en?'A NASA MODIS 8-day vegetation index image (roughly 250 m); not a Sentinel-2 field-health diagnosis. The selected day may have no image.':'Imagen de índice de vegetación MODIS de NASA, compuesta en 8 días (aprox. 250 m). No es un diagnóstico de salud de tus cultivos ni un análisis Sentinel-2. Puede no haber imagen para esa fecha.')}</p>
+          {layer!=='srtm_map'&&<label className="terra-geo-date">{en?'Observation date':'Fecha de observación'}<select value={current?.date||last} onChange={e=>setDate(e.target.value)} disabled={!records.length}>{records.slice().reverse().map(r=><option key={r.date} value={r.date}>{r.date}</option>)}</select></label>}
+          <p>{layer==='gpm_map'?(en?'Daily visualisation of satellite-based precipitation rate. The colours do not measure rain accumulated on your specific field.':'Visualización diaria de la intensidad de lluvia estimada por satélite. Los colores no miden la lluvia acumulada en tu parcela.'):layer==='smap_map'?(en?'SMAP model-based surface soil moisture, with approximately 9 km cells. Not a soil sensor reading at your field.':'Humedad superficial estimada por el modelo SMAP, aproximadamente a 9 km de resolución. No es la lectura de un sensor de tu terreno.') :layer==='ndvi_map'?(en?'A NASA MODIS vegetation index visualization (roughly 250 m), not a Sentinel-2 field diagnosis.':'Visualización de vegetación NASA MODIS (aprox. 250 m), no diagnóstico de salud ni imagen Sentinel-2.'):(en?'NASA SRTM v3 elevation colours are based on historical radar mapping. The colours describe broad relief, not a measured slope or elevation at your plot.':'Los colores de elevación NASA SRTM v3 proceden de un mapa topográfico histórico. No equivalen a una pendiente ni altura medida en tu parcela.')}</p>
           <p>{en?'This is a NASA-provided colour map; the image may have gaps, cloud-related limitations or missing dates. It is not a measurement from the selected rectangle.':'Es un mapa de colores proporcionado por NASA. Puede tener zonas sin datos o fechas no disponibles. No es una medición del rectángulo seleccionado.'}</p>
-          <a href={`https://worldview.earthdata.nasa.gov/?l=${nasaLayer}&t=${rasterDate}`} target="_blank" rel="noreferrer">{en?'See the original NASA colour legend':'Ver la leyenda de colores original en NASA'}</a>
-          <p className="terra-geo-raster-source">{en?'Source: NASA GIBS/Worldview · Date: ':'Fuente: NASA GIBS/Worldview · Fecha: '}{rasterDate||'—'}</p>
+          {rasterFailed&&<p role="alert">{en?'Some NASA map tiles failed to load. Choose another date or try later.':'Algunas imágenes NASA no pudieron cargarse. Elige otra fecha o vuelve a intentarlo.'}</p>}
+          {point&&<img className="terra-geo-nasa-legend" alt={en?'Legend supplied by NASA GIBS; colours and units vary by layer':'Leyenda proporcionada por NASA GIBS; colores y unidades según la capa'} src={`https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?service=WMS&version=1.1.1&request=GetLegendGraphic&format=image/png&layer=${nasaLayer}&style=default`} onError={e=>{e.currentTarget.style.display='none'}}/>}
+          <a href={`https://worldview.earthdata.nasa.gov/?l=${nasaLayer}${layer==='srtm_map'?'':`&t=${rasterDate}`}`} target="_blank" rel="noreferrer">{en?'See NASA original map and legend':'Ver el mapa y leyenda originales de NASA'}</a>
+          <p className="terra-geo-raster-source">{en?'Source: NASA GIBS/Worldview · Date: ':'Fuente: NASA GIBS/Worldview · Fecha: '}{layer==='srtm_map'?(en?'static reference map':'mapa estático'):rasterDate||'—'}</p>
           {!point&&<p>{en?'Choose a point first.':'Primero elige una ubicación.'}</p>}
         </div>:layer==='scenes'?<div className="terra-geo-reading">
           <small>{en?'Sentinel-2 · ESA/Copernicus':'Sentinel-2 · ESA/Copernicus'}</small>
