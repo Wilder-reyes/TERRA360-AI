@@ -67,6 +67,7 @@ def main() -> None:
         ("Render backend health", lambda: verify_health(BACKEND)),
         ("Render full FAO catalog search", lambda: verify_search(BACKEND)),
         ("Render SRTM terrain route contract", lambda: verify_terrain_contract(BACKEND)),
+        ("Production Sentinel-2 real parcel NDVI", lambda: verify_ndvi(BACKEND)),
         ("Render ARIE decision", lambda: verify_decision(BACKEND)),
         ("Render real NASA POWER", lambda: verify_nasa(BACKEND)),
         ("anonymous Netlify home page", verify_html),
@@ -108,6 +109,34 @@ def verify_search(host: str = SITE):
 def verify_terrain_contract(host: str = BACKEND):
     spec=json_from("/openapi.json",host=host)
     assert "/api/environment/terrain" in spec.get("paths", {}), "Missing SRTM endpoint; public provider should not be called automatically"
+
+
+
+def verify_ndvi(host: str = BACKEND):
+    """Read real COG pixels from the production Render API, not a mocked dataset."""
+    spec = json_from("/openapi.json", host=host)
+    route = "/api/environment/sentinel-2/parcel-ndvi"
+    assert route in spec.get("paths", {}), "Backend has not deployed Sentinel-2 route"
+    parcel = {"type":"Polygon","coordinates":[[
+        [-71.95720,-13.32270],[-71.95490,-13.32270],
+        [-71.95490,-13.32050],[-71.95720,-13.32050],
+        [-71.95720,-13.32270]
+    ]]}
+    obj = json_from(route, {"polygon":parcel,"days":240,"cloud_limit":50}, host=host)
+    if obj.get("status") != "available":
+        raise AssertionError(f"Sentinel-2 raster in production inconclusive: status={obj.get('status')}")
+    scene = obj.get("scene") or {}
+    metrics = obj.get("metrics") or {}
+    ndvi = metrics.get("ndvi") or {}
+    assert scene.get("id") and scene.get("date") and scene.get("processing_baseline"), scene
+    assert metrics.get("valid_pixels", 0) >= 20
+    assert metrics.get("valid_fraction_percent", 0) >= 60
+    assert -1 <= ndvi.get("mean", 99) <= 1
+    assert obj.get("used_in_crop_decision") is False
+    print("Sentinel-2 production: date=",scene["date"],
+          "pixels=",metrics["valid_pixels"],
+          "mean_ndvi=",ndvi["mean"],
+          "valid_percent=",metrics["valid_fraction_percent"])
 
 
 def verify_decision(host: str = SITE):
