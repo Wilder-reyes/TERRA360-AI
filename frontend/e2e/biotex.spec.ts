@@ -45,7 +45,7 @@ test('Barranca-focused farmer landing starts in ordinary Spanish and moves throu
 })
 
 test('Location search lets farmers jump to another town without coordinates or code',async({page})=>{
- await page.route(/nominatim\\.openstreetmap\\.org\\/search/,route=>route.fulfill({
+ await page.route('https://nominatim.openstreetmap.org/search**',route=>route.fulfill({
   status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify([
    {display_name:'Huacho, Huaura, Lima, Perú',lat:'-11.120',lon:'-77.604'}
   ])}))
