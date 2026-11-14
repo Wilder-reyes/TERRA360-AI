@@ -30,11 +30,20 @@ def fetch(path: str, body: dict | None = None) -> tuple[int, bytes, str]:
         try:
             with urlopen(req, timeout=TIMEOUT) as response:
                 return response.status, response.read(3_000_000), response.headers.get("content-type", "")
-        except (URLError, HTTPError, TimeoutError) as exc:
+        except HTTPError as exc:
+            failure = exc
+            if exc.code in (401, 403):
+                raise RuntimeError(f"HTTP {exc.code} at {path}: anonymous access denied. Check Netlify > Visitor access > Production visibility = Public.") from exc
+            if exc.code == 404:
+                raise RuntimeError(f"HTTP 404 at {path}: verify production site URL and deployment.") from exc
+            if attempt < 2:
+                time.sleep(7 * (attempt + 1))
+        except (URLError, TimeoutError) as exc:
             failure = exc
             if attempt < 2:
                 time.sleep(7 * (attempt + 1))
-    raise RuntimeError(f"Could not reach public demo: {path} ({type(failure).__name__})") from failure
+    code = getattr(failure, "code", "network error")
+    raise RuntimeError(f"Public demo unavailable: {path} (HTTP/status {code})") from failure
 
 
 def json_from(path: str, body: dict | None = None) -> dict:
