@@ -26,3 +26,11 @@ Thumbs.db
 /backend/models/
 /backend/data/
 !frontend/.env.production.example
+
+# Local satellite-history cache (TERRA360_CACHE_DIR)
+/backend/.cache/
+*.tsbuildinfo
+.vercel
+.env*
+!.env.example
+!frontend/.env.production.example

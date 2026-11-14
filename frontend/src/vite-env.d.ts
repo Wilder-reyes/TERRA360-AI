@@ -20,6 +20,6 @@ declare module 'react-leaflet' {
   export const CircleMarker: ComponentType<any>
   export const WMSTileLayer: ComponentType<any>
   export const Popup: ComponentType<any>
-  export function useMap(): {setView:(center:[number,number],zoom:number)=>void;getZoom:()=>number}
+  export function useMap(): {setView:(center:[number,number],zoom:number)=>void;getZoom:()=>number;fitBounds:(bounds:[number,number][],options?:{maxZoom?:number;padding?:[number,number]})=>void}
   export function useMapEvents(events:{click:(e:{latlng:{lat:number;lng:number}})=>void}):void
 }
