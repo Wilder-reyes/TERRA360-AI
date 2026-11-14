@@ -149,7 +149,7 @@ test('GPM polygon layer does not present invented rainfall when NASA file is abs
   const req=route.request().postDataJSON()
   expect(req.polygon.type).toBe('Polygon')
   expect(req.polygon.coordinates[0]).toHaveLength(5)
-  expect(req.target_date).toMatch(/^\\d{4}-\\d{2}-\\d{2}$/)
+  expect(req.target_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   await route.fulfill({contentType:'application/json',body:JSON.stringify({
    status:'data_unavailable',source:'NASA GPM IMERG Late Daily V07',
    source_url:'https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGDL_07/summary',
