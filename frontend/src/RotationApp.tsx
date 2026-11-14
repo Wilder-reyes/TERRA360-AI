@@ -222,7 +222,7 @@ function StrategyCard({s,ctx,lang,maxWater,incomeCrop,open,onToggle}:{s:Strategy
  const t=T[lang];const r=s.relative_to_current;const ind=s.indicators
  const word=(v:string)=>(t as unknown as Record<string,string>)[v]||v
  const keepsIncome=!!incomeCrop&&s.plantings.some(p=>p.crop_id===incomeCrop)
- return <article className={'r-strategy r-'+s.key}>
+ return <article className={'r-strategy r-s-'+s.key}>
   <header><span className="r-tag">{s.id}</span><h3>{lang==='es'?s.title_es:s.title_en}</h3><small>{t.origin[s.origin]||s.origin}</small></header>
   {s.key==='water'&&r?.improves_low_river_water===false&&<p className="r-warn" role="note">⚠️ {t.noImprove}</p>}
   <Timeline s={s} ctx={ctx} lang={lang} maxWater={maxWater}/>

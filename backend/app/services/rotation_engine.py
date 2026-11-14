@@ -32,6 +32,17 @@ START_CAL_MONTH = 8  # August
 MONTH_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"]
 MONTH_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 RESIDUE_SCORE = {"alto": 2, "medio": 1, "bajo": 0}
+# English display names (the team catalogue only has Spanish names).
+NAMES_EN = {
+    "maiz_amarillo_duro": "Yellow hard maize", "maiz_chala": "Forage maize", "camote": "Sweet potato",
+    "papa": "Potato", "frijol_grano_seco": "Canary bean", "frijol_castilla": "Cowpea", "vainita": "Green bean",
+    "pallar": "Lima bean", "arveja_verde": "Green pea", "cebolla": "Red onion", "zanahoria": "Carrot",
+    "brocoli_col": "Broccoli / cabbage", "alfalfa": "Alfalfa",
+}
+
+
+def name_en(cid: str) -> str:
+    return NAMES_EN.get(cid, crop(cid)["name_es"])
 
 
 class RotationError(ValueError):
@@ -453,6 +464,7 @@ def sections(key: str, ind: dict, base: dict | None, plantings: list[dict], clim
     seasons = load_catalog()["seasons"]
     low_es, low_en = _months(seasons["river_low_months"], "es"), _months(seasons["river_low_months"], "en")
     names = [crop(p["crop_id"])["name_es"] for p in plantings]
+    names_en = [name_en(p["crop_id"]) for p in plantings]
     peak = sorted(ind["_timeline"], key=lambda m: -m["water_mm"])[:3]
     peak_es, peak_en = _months([m["calendar_month"] for m in peak], "es"), _months([m["calendar_month"] for m in peak], "en")
     hist_es = (f"Historial estimado por satélite ({history.get('sensor', 'HLS/Sentinel-2')}) de {history.get('start', '?')} a {history.get('end', '?')}, "
@@ -484,7 +496,7 @@ def sections(key: str, ind: dict, base: dict | None, plantings: list[dict], clim
     approx = [crop(c)["name_es"] for c in ind["approximate_crops"]]
     if approx:
         gaps_es.append("Datos aproximados (proxy o por verificar) para: " + ", ".join(approx) + ".")
-        gaps_en.append("Approximate data (proxy or to verify) for: " + ", ".join(approx) + ".")
+        gaps_en.append("Approximate data (proxy or to verify) for: " + ", ".join(name_en(x) for x in ind["approximate_crops"]) + ".")
     risks_es, risks_en = [], []
 
     risks_es += ["Plagas y enfermedades propias de cada cultivo nuevo.", "Salinidad del suelo y calidad del agua.",
@@ -493,7 +505,7 @@ def sections(key: str, ind: dict, base: dict | None, plantings: list[dict], clim
                  "Whether there is a buyer for each harvest (market).", "Available machinery, seed and labour."]
     for hit in ind["heat_sensitive_hits"]:
         risks_es.append(f"{hit['name_es']}: su etapa sensible ({hit['stage']}) cae en los meses más cálidos de la zona ({_months(hit['months'], 'es')}).")
-        risks_en.append(f"{hit['name_es']}: its sensitive stage ({hit['stage']}) falls in the zone's warmest months ({_months(hit['months'], 'en')}).")
+        risks_en.append(f"{name_en(hit['crop_id'])}: its heat-sensitive stage falls in the zone's warmest months ({_months(hit['months'], 'en')}).")
     if ind["same_family_consecutive"]:
         risks_es.append(f"Repite la misma familia {ind['same_family_consecutive']} vez/veces seguidas: puede mantener plagas del suelo.")
         risks_en.append(f"Same botanical family repeated {ind['same_family_consecutive']} time(s) in a row: soil pests may persist.")
@@ -503,7 +515,7 @@ def sections(key: str, ind: dict, base: dict | None, plantings: list[dict], clim
                   f"Tu terreno queda sin cultivo {ind['bare_months']} de 24 meses ({ind['bare_months_low_river']} en estiaje).",
                   f"El mayor consumo de agua del cultivo cae en {peak_es}; el estiaje es {low_es}.",
                   f"{ind['water_low_river_share_percent']:.0f} % del agua del cultivo se pide en meses de río bajo."]
-        why_en = [f"This is what you do today: {', '.join(names)}.",
+        why_en = [f"This is what you do today: {', '.join(names_en)}.",
                   f"Your field is left without a crop {ind['bare_months']} of 24 months ({ind['bare_months_low_river']} in the low-river season).",
                   f"Peak crop water use falls in {peak_en}; the low-river season is {low_en}.",
                   f"{ind['water_low_river_share_percent']:.0f}% of crop water is needed in low-river months."]

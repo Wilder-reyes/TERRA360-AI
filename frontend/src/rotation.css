@@ -73,8 +73,8 @@
 .r-strategy header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
 .r-strategy header h3{margin:0;flex:1;min-width:200px}.r-strategy header small{color:var(--r-muted);font-size:.75rem;width:100%}
 .r-tag{background:#173a2e;color:#fff;border-radius:7px;padding:2px 8px;font-weight:800;font-size:.8rem}
-.r-water .r-tag{background:var(--r-low)}.r-soil .r-tag{background:#3c8a4a}
-.r-strategy.r-water .r-tag{background:var(--r-low)}.r-strategy.r-soil .r-tag{background:#3c8a4a}
+/* Strategy cards use r-s-* so they never collide with .r-water (bar grid) or .r-current (rotation box). */
+.r-strategy.r-s-water .r-tag{background:var(--r-low)}.r-strategy.r-s-soil .r-tag{background:#3c8a4a}
 .r-timeline{margin:8px 0}
 .r-cell{height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.85rem;overflow:hidden}
 .r-cell.bare{background:repeating-linear-gradient(45deg,#c9a77c 0 3px,#efe3d0 3px 6px)}
