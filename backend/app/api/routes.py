@@ -21,19 +21,21 @@ from app.connectors.gpm_imerg import (
 
 router = APIRouter(prefix="/api", tags=["TERRA360"])
 
-PILOT_NAME = "Calca, Cusco, Peru"
-PILOT_LATITUDE = -13.32175
-PILOT_LONGITUDE = -71.95605
+PILOT_NAME = "Huando, Huaral, Lima, Perú"
+PILOT_LATITUDE = -11.47918514
+PILOT_LONGITUDE = -77.18041962
+PILOT_SECTOR_CODE = "15060105"
+PILOT_SOURCE = "https://siea.midagri.gob.pe/portal/media/attachments/publicaciones/superficie/sectores/2024/Padron_Nacional_SE_2024_0403.pdf"
 
 
 def point_metadata(latitude: float, longitude: float) -> dict:
-    """Never label a user-selected coordinate as the Calca town reference."""
+    """Never confuse an official sector centroid with a surveyed farm."""
     is_pilot = abs(latitude - PILOT_LATITUDE) < 0.00001 and abs(longitude - PILOT_LONGITUDE) < 0.00001
     return {
         "name": PILOT_NAME if is_pilot else "User-selected reference point",
         "latitude": latitude,
         "longitude": longitude,
-        "coordinate_type": "town_reference_point" if is_pilot else "user_selected_query_point_not_surveyed_parcel",
+        "coordinate_type": "official_sector_centroid_not_parcel" if is_pilot else "user_selected_query_point_not_surveyed_parcel",
     }
 
 
@@ -78,12 +80,21 @@ async def pilot():
         "name": PILOT_NAME,
         "latitude": PILOT_LATITUDE,
         "longitude": PILOT_LONGITUDE,
-        "coordinate_type": "town_reference_point",
+        "coordinate_type": "official_sector_centroid_not_parcel",
+        "sector_code": PILOT_SECTOR_CODE,
+        "district": "Huaral",
+        "province": "Huaral",
+        "region": "Lima",
+        "country": "Perú",
+        "boundary_validated": False,
+        "agricultural_area_ha_2024": 1434.31,
         "warning": (
-            "This is the town reference point, "
-            "not a surveyed agricultural parcel."
+            "Centroide estadístico publicado por MIDAGRI para Huando, Huaral. "
+            "No corresponde a una chacra, un terreno registrado ni un polígono "
+            "agrícola verificado. El usuario debe marcar su propio terreno."
         ),
-        "source": "Coordinate reference from published locality information",
+        "source": "MIDAGRI SIEA Padrón Nacional de Sectores Estadísticos 2024",
+        "source_url": PILOT_SOURCE,
     }
 
 
