@@ -5,6 +5,7 @@ from app.api.routes import router
 from app.api.arie_routes import router as arie_router
 from app.api.history_routes import router as history_router
 from app.api.satellite_routes import router as satellite_router
+from app.api.terrain_routes import router as terrain_router
 
 app = FastAPI(
     title="TERRA360 API",
@@ -23,3 +24,4 @@ app.include_router(arie_router)
 app.include_router(history_router)
 
 app.include_router(satellite_router)
+app.include_router(terrain_router)
