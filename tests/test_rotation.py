@@ -319,6 +319,22 @@ class FarmerRecommendationTests(unittest.TestCase):
         r = E.highlight_for_farmer(worse, {"water": 2, "soil": 2})
         self.assertIsNone(r["recommended_strategy_id"])
 
+    def test_parcel_location_overrides_zone_centroid_for_climate(self):
+        """Recommendations for a selected field use its location, not a zone marker."""
+        coordinates = []
+
+        async def fake(lat, lon, client=None, coastal=True):
+            coordinates.append((lat, lon))
+            return coastal_climate()
+
+        with patch("app.api.rotation_routes.monthly_climate", fake):
+            r = TestClient(app).post("/api/rotation/compare", json={
+                "zone": "barranca", "latitude": -10.695, "longitude": -77.735,
+                "current": E.TEMPLATES["current"],
+            })
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(coordinates, [(-10.695, -77.735)])
+
     def test_custom_location_has_no_invented_basin_rain(self):
         clim = coastal_climate()
 
