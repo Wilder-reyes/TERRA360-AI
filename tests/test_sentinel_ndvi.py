@@ -92,6 +92,47 @@ class NDVIPixelTests(TestCase):
         self.assertEqual(r.status_code, 503)
 
 
+    def test_real_windowed_geotiff_geometry_and_scl_resampling(self):
+        import tempfile
+        from pathlib import Path
+        import rasterio
+        from pyproj import Transformer
+        from rasterio.transform import from_origin
+        from app.services.sentinel_ndvi import process_scene
+
+        x, y = Transformer.from_crs("EPSG:4326", "EPSG:32719", always_xy=True).transform(
+            -71.9559, -13.3215)
+        polygon, area = validate_parcel(POLYGON)
+        with tempfile.TemporaryDirectory() as root:
+            base = Path(root)
+            paths = {}
+            for name, value, dimension, resolution in [
+                ("B04", 3000, 80, 10),
+                ("B08", 5000, 80, 10),
+                ("SCL", 4, 40, 20),
+            ]:
+                path = base / f"{name}.tif"
+                arr = np.full((dimension, dimension), value,
+                              dtype="uint8" if name == "SCL" else "uint16")
+                with rasterio.open(path, "w", driver="GTiff", height=dimension,
+                                   width=dimension, count=1, dtype=arr.dtype,
+                                   crs="EPSG:32719",
+                                   transform=from_origin(x - 400, y + 400,
+                                                         resolution, resolution),
+                                   nodata=0) as dst:
+                    dst.write(arr, 1)
+                paths[name] = str(path)
+            scene = {"properties":{"s2:processing_baseline":"05.10"}}
+            with patch("app.services.sentinel_ndvi._safe_signed_asset",
+                       side_effect=lambda item, key: paths[key]):
+                metrics = process_scene(scene, polygon, area)
+        self.assertEqual(metrics["status"], "available")
+        self.assertGreater(metrics["valid_pixels"], 20)
+        self.assertEqual(metrics["ndvi"]["mean"], .3333)
+        self.assertGreater(metrics["valid_fraction_percent"], 75)
+
+
+
 class NDVICatalogTests(TestCase):
     def test_search_real_catalog_shape_but_mocked_rasters(self):
         item = {"id":"S2_scene_example", "properties":{
