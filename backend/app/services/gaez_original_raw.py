@@ -36,7 +36,7 @@ DATASET_LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/"
 MAX_SIZE = 1024 * 1024
 FAILED_RETRY_DELAY = 90
 _LOCK = threading.RLock()
-_last_failure = 0.0
+_last_failure: float | None = None
 
 
 class GAEZOriginalError(RuntimeError):
@@ -61,7 +61,8 @@ def _cached_source_path() -> Path:
     with _LOCK:
         if _verified_tiff(path):
             return path
-        if time.monotonic()-_last_failure < FAILED_RETRY_DELAY:
+        if (_last_failure is not None and
+                time.monotonic()-_last_failure < FAILED_RETRY_DELAY):
             raise GAEZOriginalError("FAO original is temporarily unavailable; retry later.")
         temp_path = path.with_name(path.name+".part")
         try:
