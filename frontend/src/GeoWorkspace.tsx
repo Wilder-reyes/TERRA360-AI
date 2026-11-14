@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useState} from 'react'
-import {CircleMarker, MapContainer, Marker, Popup, Rectangle, TileLayer, WMSTileLayer, useMap, useMapEvents} from 'react-leaflet'
+import {CircleMarker, MapContainer, Marker, Popup, Polygon, Polyline, Rectangle, TileLayer, WMSTileLayer, useMap, useMapEvents} from 'react-leaflet'
 import L from 'leaflet'
+import {approximatePolygonHectares, validatePolygon} from './geometry'
 import type {ApiResult, Position, RecordRow} from './domain'
 import './geo-workspace.css'
 
@@ -9,6 +10,8 @@ type Base = 'streets' | 'satellite'
 type Scene = {date:string;cloud_cover_percent:number;satellite:string;scene_id:string}
 type SceneResponse = {scenes:Scene[];status:string;source_url:string}
 type Area = [Position,Position]
+
+const vertexIcon = L.divIcon({className:'terra-poly-vertex',html:'<span aria-hidden="true"></span>',iconSize:[17,17],iconAnchor:[8,8]})
 
 const markerIcon = L.divIcon({
   className:'terra-geo-pin',
@@ -23,10 +26,10 @@ function Recenter({point}:{point:Position|null}) {
   return null
 }
 
-function MapSelection({draw,corner,onPoint,onCorner}:{draw:boolean;corner:Position|null;onPoint:(p:Position)=>void;onCorner:(p:Position)=>void}) {
+function MapSelection({draw,polygonDrawing,onPoint,onCorner,onPolygonVertex}:{draw:boolean;polygonDrawing:boolean;onPoint:(p:Position)=>void;onCorner:(p:Position)=>void;onPolygonVertex:(p:Position)=>void}) {
   useMapEvents({click(e){
     const p={lat:Number(e.latlng.lat.toFixed(6)),lng:Number(e.latlng.lng.toFixed(6))}
-    if(draw){onCorner(p)}else{onPoint(p)}
+    if(polygonDrawing){onPolygonVertex(p)}else if(draw){onCorner(p)}else{onPoint(p)}
   }})
   return null
 }
@@ -67,6 +70,10 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const [layer,setLayer]=useState<Layer>('rain')
   const [base,setBase]=useState<Base>('streets')
   const [area,setArea]=useState<Area|null>(null)
+  const [polygon,setPolygon]=useState<Position[]|null>(null)
+  const [polygonDrawing,setPolygonDrawing]=useState(false)
+  const [draftVertices,setDraftVertices]=useState<Position[]>([])
+  const [polygonError,setPolygonError]=useState('')
   const [corner,setCorner]=useState<Position|null>(null)
   const [draw,setDraw]=useState(false)
   const [date,setDate]=useState('')
@@ -83,13 +90,26 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const value=layer==='rain'?current?.PRECTOTCORR:layer==='temperature'?current?.T2M:layer==='humidity'?current?.RH2M:null
   const shownValue=value===null||value===undefined||!Number.isFinite(value)?'—':Number(value).toFixed(1)
   const title=layer==='rain'?(en?'Rain on this date':'Lluvia de ese día'):layer==='temperature'?(en?'Air temperature':'Temperatura del aire'):layer==='humidity'?(en?'Air humidity':'Humedad del aire'):layer==='gpm_map'?(en?'Satellite rainfall map':'Mapa de lluvia satelital'):layer==='smap_map'?(en?'Regional soil moisture':'Humedad regional del suelo'):(en?'Satellite scenes':'Imágenes disponibles')
-  function choosePoint(p:Position){setArea(null);setDraw(false);setCorner(null);onPick(p)}
+  function choosePoint(p:Position){setArea(null);setPolygon(null);setPolygonDrawing(false);setDraftVertices([]);setDraw(false);setCorner(null);onPick(p)}
   function chooseCorner(p:Position){
     if(!corner){setCorner(p);return}
     if(Math.abs(corner.lat-p.lat)<.00001||Math.abs(corner.lng-p.lng)<.00001||Math.abs(corner.lng-p.lng)>180){return}
     const a:Area=[corner,p]
-    setArea(a);setCorner(null);setDraw(false)
+    setArea(a);setPolygon(null);setCorner(null);setDraw(false)
     onPick({lat:Number(((corner.lat+p.lat)/2).toFixed(6)),lng:Number(((corner.lng+p.lng)/2).toFixed(6))})
+  }
+  function finishPolygon(){
+    const check=validatePolygon(draftVertices)
+    if(!check.valid){setPolygonError(en?'The outline crosses itself, is too large or needs more corners.':'El contorno se cruza, es muy grande o necesita más esquinas.');return}
+    setPolygon(draftVertices);setDraftVertices([]);setPolygonDrawing(false);setPolygonError('');setArea(null)
+    const center={lat:Number((draftVertices.reduce((v,p)=>v+p.lat,0)/draftVertices.length).toFixed(6)),lng:Number((draftVertices.reduce((v,p)=>v+p.lng,0)/draftVertices.length).toFixed(6))}
+    onPick(center)
+  }
+  function moveVertex(index:number,p:Position){
+    if(!polygon)return false
+    const candidate=polygon.map((v,i)=>i===index?p:v)
+    if(!validatePolygon(candidate).valid){setPolygonError(en?'This corner would make the outline invalid.':'Esa esquina haría que el contorno no sea válido.');return false}
+    setPolygon(candidate);setPolygonError('');return true
   }
   async function findScenes(){
     if(!point||loadingScenes)return
@@ -118,19 +138,27 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           {base==='streets'?<TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>:<TileLayer attribution='Tiles &copy; Esri, Maxar, Earthstar Geographics' url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>}
           {nasaLayer&&rasterDate&&point&&<WMSTileLayer key={`${nasaLayer}-${rasterDate}`} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi" layers={nasaLayer} styles="" format="image/png" transparent={true} version="1.1.1" time={rasterDate} opacity={0.76} attribution='NASA GIBS / ESDIS'/>}
           <Recenter point={point}/>
-          <MapSelection draw={draw} corner={corner} onPoint={choosePoint} onCorner={chooseCorner}/>
+          <MapSelection draw={draw} polygonDrawing={polygonDrawing} onPoint={choosePoint} onCorner={chooseCorner} onPolygonVertex={p=>{setDraftVertices(v=>v.length>=100?v:[...v,p]);setPolygonError('')}}/>
           {point&&<Marker position={[point.lat,point.lng]} icon={markerIcon}><Popup>{en?'Your selected reference point':'Punto de referencia elegido'}<br/>{point.lat.toFixed(5)}, {point.lng.toFixed(5)}</Popup></Marker>}
 
           {point&&layer==='scenes'&&<Rectangle bounds={boundsForPoint(point)} pathOptions={{color:'#a45d2b',weight:2,dashArray:'7 5',fillOpacity:.07}}><Popup>{en?'Approximate scene search area, not a field boundary':'Área aproximada de búsqueda de imágenes, no límites de tu terreno'}</Popup></Rectangle>}
+          {polygon&&<Polygon positions={polygon.map(p=>[p.lat,p.lng])} pathOptions={{color:'#147449',weight:3,fillColor:'#4bc28b',fillOpacity:.13}}><Popup>{en?'Approximate polygon, not surveyed':'Polígono aproximado, no medición catastral'}</Popup></Polygon>}
+          {polygon&&polygon.map((v,i)=><Marker key={`vertex-${i}`} position={[v.lat,v.lng]} draggable={true} icon={vertexIcon} eventHandlers={{dragend:(e:any)=>{const q=e.target.getLatLng();if(!moveVertex(i,{lat:q.lat,lng:q.lng}))e.target.setLatLng([v.lat,v.lng])}}}><Popup>{en?'Drag to adjust corner':'Arrastra para ajustar la esquina'} {i+1}</Popup></Marker>)}
+          {draftVertices.length>=2&&<Polyline positions={draftVertices.map(v=>[v.lat,v.lng])} pathOptions={{color:'#147449',weight:2,dashArray:'5 7'}}/>}
           {area&&<Rectangle bounds={boundsForArea(area)} pathOptions={{color:'#0d694a',weight:3,fillColor:'#42bd91',fillOpacity:.12}}><Popup>{en?'Approximate area drawn by the user; not surveyed':'Área aproximada dibujada, no delimitación catastral'}</Popup></Rectangle>}
           {point&&current&&layer!=='scenes'&&value!==null&&value!==undefined&&<CircleMarker center={[point.lat,point.lng]} radius={24} pathOptions={{color:layer==='rain'?'#287bb5':layer==='temperature'?'#c26d24':'#6b5ca9',weight:3,fillOpacity:.28}}><Popup>{title}: {shownValue} {unit}<br/>{current.date}<br/>{en?'Regional observation only':'Dato regional, no medición del terreno'}</Popup></CircleMarker>}
 
         </MapContainer>
         <div className="terra-geo-draw-actions">
-          <button type="button" aria-pressed={draw} onClick={()=>{setDraw(v=>!v);setCorner(null)}}>{draw?(corner?(en?'Pick opposite corner':'Marca la esquina opuesta'):(en?'Pick first corner':'Marca la primera esquina')):(en?'Draw approximate area':'Delimitar área aproximada')}</button>
+          <button type="button" aria-pressed={draw} onClick={()=>{setDraw(v=>!v);setPolygonDrawing(false);setDraftVertices([]);setCorner(null)}}>{draw?(corner?(en?'Pick opposite corner':'Marca la esquina opuesta'):(en?'Pick first corner':'Marca la primera esquina')):(en?'Draw approximate area':'Delimitar área aproximada')}</button>
+          <button type="button" aria-pressed={polygonDrawing} onClick={()=>{setPolygonDrawing(v=>!v);setDraw(false);setCorner(null);setDraftVertices([]);setPolygonError('')}}>{polygonDrawing?(en?'Stop adding corners':'Dejar de marcar esquinas'):(en?'Draw polygon':'Dibujar polígono')}</button>
+          {polygonDrawing&&<button type="button" onClick={finishPolygon} disabled={draftVertices.length<3}>{en?'Finish outline':'Terminar contorno'} ({draftVertices.length})</button>}
+          {polygonDrawing&&draftVertices.length>0&&<button type="button" onClick={()=>setDraftVertices(v=>v.slice(0,-1))}>{en?'Undo corner':'Deshacer esquina'}</button>}
+          {polygon&&<button type="button" onClick={()=>{setPolygon(null);setPolygonDrawing(false)}}>{en?'Clear polygon':'Borrar polígono'}</button>}
           {area&&<button type="button" onClick={()=>{setArea(null);setCorner(null);setDraw(false)}}>{en?'Clear area':'Borrar área'}</button>}
         </div>
-        <div className="terra-geo-map-caption">{area?(en?`Drawn area: approximately ${approxHectares(area).toLocaleString('en-US',{maximumFractionDigits:1})} hectares; not surveyed.`:`Área dibujada: aproximadamente ${approxHectares(area).toLocaleString('es-PE',{maximumFractionDigits:1})} hectáreas; sin medición catastral.`):(en?'Click the map to choose a point.':'Haz clic para elegir un punto.')}</div>
+        {polygonError&&<p role="alert" className="terra-geo-poly-error">{polygonError}</p>}
+        <div className="terra-geo-map-caption">{polygon?(en?`Drawn polygon: about ${approximatePolygonHectares(polygon).toLocaleString('en-US',{maximumFractionDigits:2})} hectares; not surveyed.`:`Polígono dibujado: aproximadamente ${approximatePolygonHectares(polygon).toLocaleString('es-PE',{maximumFractionDigits:2})} hectáreas; no catastral.`):area?(en?`Drawn area: approximately ${approxHectares(area).toLocaleString('en-US',{maximumFractionDigits:1})} hectares; not surveyed.`:`Área dibujada: aproximadamente ${approxHectares(area).toLocaleString('es-PE',{maximumFractionDigits:1})} hectáreas; sin medición catastral.`):(en?'Click the map to choose a point.':'Haz clic para elegir un punto.')}</div>
       </div>
       <aside className="terra-geo-inspector">
         <div className="terra-geo-layer-title"><strong>{en?'What do you want to explore?':'¿Qué quieres explorar?'}</strong><small>{en?'Select one view':'Elige una vista'}</small></div>
@@ -162,7 +190,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           {!point&&<p>{en?'Choose a point on the map first.':'Primero elige un punto en el mapa.'}</p>}
           {data&&<small>{data.period.start} — {data.period.end}</small>}
         </div>}
-        <div className="terra-geo-key"><strong>{en?'How to read this map':'Cómo interpretar el mapa'}</strong><p><span className="terra-geo-legend-dot"/> {en?'Colored circle: regional value for one NASA POWER query point. It is not a gridded field map.':'Círculo de color: valor regional para un punto de consulta NASA POWER. No es un mapa de cada parcela.'}</p><p><span className="terra-geo-legend-line"/> {en?'Green rectangle: approximate area you drew.':'Rectángulo verde: área aproximada que dibujaste.'}</p><p>{en?'Base map: OSM streets or Esri aerial imagery. The aerial photo is NOT a computed Sentinel-2 or NASA vegetation layer.':'Fondo: calles de OSM o foto aérea de Esri. La fotografía NO es un análisis de vegetación NASA ni de Sentinel-2.'}</p><p>{en?'NASA GIBS satellite maps are visual layers. The numeric point readings come from NASA POWER, a different product. Sentinel-2 vegetation indices and slope rasters are not computed here.':'Los mapas satelitales NASA GIBS son capas visuales. Los valores numéricos del punto provienen de NASA POWER, que es otro producto. Aún no calculamos índices de vegetación Sentinel-2 ni mapas de pendiente.'}</p></div>
+        <div className="terra-geo-key"><strong>{en?'How to read this map':'Cómo interpretar el mapa'}</strong><p><span className="terra-geo-legend-dot"/> {en?'Colored circle: regional value for one NASA POWER query point. It is not a gridded field map.':'Círculo de color: valor regional para un punto de consulta NASA POWER. No es un mapa de cada parcela.'}</p><p><span className="terra-geo-legend-line"/> {en?'Green outline: the approximate area you drew.':'Contorno verde: área aproximada que dibujaste.'}</p><p>{en?'Base map: OSM streets or Esri aerial imagery. The aerial photo is NOT a computed Sentinel-2 or NASA vegetation layer.':'Fondo: calles de OSM o foto aérea de Esri. La fotografía NO es un análisis de vegetación NASA ni de Sentinel-2.'}</p><p>{en?'NASA GIBS satellite maps are visual layers. The numeric point readings come from NASA POWER, a different product. Sentinel-2 vegetation indices and slope rasters are not computed here.':'Los mapas satelitales NASA GIBS son capas visuales. Los valores numéricos del punto provienen de NASA POWER, que es otro producto. Aún no calculamos índices de vegetación Sentinel-2 ni mapas de pendiente.'}</p></div>
       </aside>
     </div>
   </section>
