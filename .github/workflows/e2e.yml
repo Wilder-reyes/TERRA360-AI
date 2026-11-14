@@ -7,6 +7,8 @@ on:
       - 'frontend/src/ParcelNDVI.tsx'
       - 'frontend/src/SentinelSeries.tsx'
       - 'frontend/src/GpmPolygon.tsx'
+      - 'frontend/src/SmapRegional.tsx'
+      - 'frontend/src/smap-regional.css'
       - 'frontend/src/gpm-polygon.css'
       - 'frontend/src/sentinel-series.css'
       - 'frontend/src/parcel-ndvi.css'
