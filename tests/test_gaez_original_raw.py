@@ -95,7 +95,7 @@ class GAEZRawCellTests(TestCase):
                  patch.object(source,"OFFICIAL_BYTES",len(bytes_blob)), \
                  patch("app.services.gaez_original_raw.tempfile.gettempdir",return_value=tmp), \
                  patch("app.services.gaez_original_raw.httpx.Client",return_value=client), \
-                 patch.object(source,"_last_failure",0.0):
+                 patch.object(source,"_last_failure",None):
                 first=source._cached_source_path()
                 self.assertTrue(first.is_file())
                 self.assertEqual(first.read_bytes(),bytes_blob)
@@ -114,7 +114,7 @@ class GAEZRawCellTests(TestCase):
                  patch.object(source,"OFFICIAL_BYTES",len(bytes_blob)), \
                  patch("app.services.gaez_original_raw.tempfile.gettempdir",return_value=tmp), \
                  patch("app.services.gaez_original_raw.httpx.Client",return_value=client), \
-                 patch.object(source,"_last_failure",0.0):
+                 patch.object(source,"_last_failure",None):
                 with self.assertRaises(source.GAEZOriginalError):
                     source._cached_source_path()
                 self.assertEqual(list(Path(tmp).glob("*.tif")),[])
