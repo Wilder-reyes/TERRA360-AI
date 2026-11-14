@@ -41,6 +41,8 @@ class ExtendedCropDirectoryTests(unittest.TestCase):
         self.assertFalse(output['is_yield_prediction'])
         self.assertFalse(output['is_irrigation_prescription'])
         self.assertEqual(output['ai_decision']['confidence'],'limited_not_field_validated')
+        self.assertIsNone(output['ai_decision']['chosen_for_review'])
+        self.assertEqual(output['ai_decision']['status'],'exploratory_catalog_only')
         self.assertIn('exploratory_profiles',[w['code'] for w in output['ai_decision']['warnings']])
 
     def test_unknown_crop_and_more_than_five_are_rejected(self):

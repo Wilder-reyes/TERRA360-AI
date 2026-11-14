@@ -108,7 +108,12 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
 
     # No inferred water ranking is permitted without independently confirmed
     # local crop-stage ETc + irrigation/soil supply.
-    if farmer_priority == "income":
+    if exploratory:
+        status = "exploratory_catalog_only"
+        chosen_for_review = None
+        headline = "Todavía no podemos comparar estos cultivos para tu terreno."
+        reason = "Algunas especies solo tienen una ficha básica; antes debemos verificar sus necesidades y compatibilidad con tu zona."
+    elif farmer_priority == "income":
         status = "income_comparison_not_evaluable"
         chosen_for_review = None
         headline = "No puedo afirmar qué cultivo dejará más ingresos sin precios y costos locales."
@@ -137,6 +142,7 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
                   "Para comparar agua, fertilidad o ingresos hacen falta más datos locales.")
 
     headline_en = {
+        'exploratory_catalog_only': 'We cannot compare these crops for your field yet.',
         'water_comparison_not_evaluable': 'There is not enough evidence to identify a lower-water rotation.',
         'income_comparison_not_evaluable': 'We cannot identify a more profitable crop without local prices and costs.',
         'farmer_constraint_conflict': 'Some of the crops conflict with the market access you reported.',
@@ -144,6 +150,7 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
         'no_evidence_to_rank_rotations': 'There is not enough evidence to name a best rotation.',
     }[status]
     reason_en = {
+        'exploratory_catalog_only': 'Some profiles contain names and families only; local growing requirements need verification first.',
         'water_comparison_not_evaluable': 'Regional weather and generic crop coefficients do not quantify field irrigation needs.',
         'income_comparison_not_evaluable': 'Reported market access cannot establish profitability without local prices and costs.',
         'farmer_constraint_conflict': 'Your declared market restriction requires a change to the proposed crops.',
