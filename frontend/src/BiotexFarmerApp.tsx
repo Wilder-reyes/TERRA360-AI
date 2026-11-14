@@ -165,10 +165,14 @@ function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Poi
  const map=useMap()
  useEffect(()=>{if(enabled)map.doubleClickZoom.disable();else map.doubleClickZoom.enable();return()=>map.doubleClickZoom.enable()},[map,enabled])
  useMapEvents({
-  click(e){if(!enabled)return;const first=points[0];if(first&&points.length>=3&&map.latLngToContainerPoint(first).distanceTo(e.containerPoint)<24){onFinish();return}
-   if(points.length&&map.latLngToContainerPoint(points[points.length-1]).distanceTo(e.containerPoint)<10)return
-   if(points.length<100)onPoint({lat:e.latlng.lat,lng:e.latlng.lng})},
-  dblclick(e){if(enabled&&points.length>=3){e.originalEvent.preventDefault();onFinish()}}
+  click(e){if(!enabled)return
+   const clicked={lat:e.latlng.lat,lng:e.latlng.lng}
+   const pixelGap=(p:Point)=>{const a=map.latLngToContainerPoint([p.lat,p.lng]);const b=map.latLngToContainerPoint([clicked.lat,clicked.lng]);return Math.hypot(a.x-b.x,a.y-b.y)}
+   const first=points[0]
+   if(first&&points.length>=3&&pixelGap(first)<24){onFinish();return}
+   if(points.length&&pixelGap(points[points.length-1])<10)return
+   if(points.length<100)onPoint(clicked)},
+  dblclick(){if(enabled&&points.length>=3)onFinish()}
  })
  if(!enabled)return null
  return <>{points.length>1&&<Polyline positions={points.map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F7C85C',weight:4}}/>}
