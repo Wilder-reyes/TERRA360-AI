@@ -52,7 +52,11 @@ async def crop_guidance(
     if selected_crop and selected_crop not in CROPS:
         raise HTTPException(422, detail="El cultivo seleccionado no existe en el catálogo.")
     from app.api.history_routes import history
-    hist = await history(latitude=latitude, longitude=longitude, years=5)
+    from datetime import date
+    hist = await history(
+        latitude=latitude, longitude=longitude,
+        years=5, end_year=date.today().year - 1,
+    )
     result = build_crop_guidance(hist["records"], selected_crop)
     return {
         **result,
