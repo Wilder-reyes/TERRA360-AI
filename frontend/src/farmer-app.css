@@ -162,7 +162,6 @@
 .farmer-map-extra .farmer-place-search{margin:9px 0;padding:12px}
 .farmer-map-source-footnote{line-height:1.45;margin:9px 0 0;font-size:.74rem}
 .farmer-map-simple .leaflet-control-attribution{max-width:50%;font-size:9px;background:#fffc;white-space:normal;text-align:right}
-.farmer-map-simple .leaflet-pane,.farmer-map-simple .leaflet-control-container{position:absolute}
 @media(max-width:1050px){
  .farmer-map-simple .farmer-map-head{display:block}
  .farmer-map-simple .farmer-map-head .f-btn{margin-top:9px}
