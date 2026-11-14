@@ -1,5 +1,5 @@
 // AI-assisted: farmer-first BIOTEX interface. Scientific calculations remain on the server.
-import {useEffect,useMemo,useRef,useState} from 'react'
+import {useEffect,useMemo,useRef,useState,type ReactNode,type FormEvent} from 'react'
 import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {API,httpErrorMessage,readableApiError} from './network'
 import {approximatePolygonHectares,validatePolygon} from './geometry'
@@ -72,11 +72,11 @@ const LABELS={
  recommended:'Opción destacada para tu chacra',noRecommend:'Aún no encontramos una opción claramente mejor.',
  current:'Tu forma de sembrar',alternative:'Otra opción para revisar',other:'Ver otras opciones',keyWater:'Agua en meses secos',keySoil:'Meses sin cultivo',fewer:'menos',more:'más',
  waterTrade:'Consumo de agua estimado respecto a lo que haces hoy',coverage:'meses de 24 con la tierra descubierta',
- where:'Chacra',when:'Fecha',areaPrint:'Superficie aproximada',planSchedule:'Calendario para los próximos 24 meses',
+ where:'Chacra',when:'Fecha',areaPrint:'Superficie aproximada',planSchedule:'Ejemplo de rotación para 24 meses',
  year1:'Primer año',year2:'Segundo año',noCrop:'Sin cultivo previsto',sowing:'Siembra',
  benefits:'Qué puede mejorar',risks:'Qué debes tener en cuenta',verify:'Por confirmar en tu chacra',
  compare:'Comparación de opciones',details:'Cómo hicimos el análisis',warning:'Estos cálculos son orientativos: antes de cambiar tu siembra, revísalos con un técnico agrícola.',
- report:'Guardar mi plan en PDF',startOver:'Revisar mis respuestas',sources:'Fuentes y límites',
+ report:'Imprimir o guardar PDF',startOver:'Revisar mis respuestas',sources:'Fuentes y límites',
  evidence:'Datos usados',reportTech:'Datos técnicos y cálculos',printFooter:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',
  unsupported:'Aquí todavía no tenemos un calendario de cultivos local comprobado. Puedes marcar y revisar tu terreno, pero las recomendaciones de siembra están disponibles para la costa de Lima.',
  missingPlan:'Necesitamos al menos un cultivo registrado para preparar tu plan.',
@@ -116,11 +116,11 @@ const LABELS={
  recommended:'Highlighted option for your field',noRecommend:'We have not found a clearly better option yet.',
  current:'Your current planting',alternative:'Another option to review',other:'See other options',keyWater:'Water in dry months',keySoil:'Months without crops',fewer:'less',more:'more',
  waterTrade:'Estimated crop water compared with your current planting',coverage:'out of 24 months without a crop',
- where:'Field',when:'Date',areaPrint:'Approximate area',planSchedule:'24-month planting calendar',
+ where:'Field',when:'Date',areaPrint:'Approximate area',planSchedule:'Illustrative 24-month rotation',
  year1:'Year one',year2:'Year two',noCrop:'No crop planned',sowing:'Sown',
  benefits:'What could improve',risks:'What to consider',verify:'Check on your field',
  compare:'Comparison of options',details:'How this was calculated',warning:'These are estimates. Review them with an agricultural technician before changing crops.',
- report:'Save my plan as PDF',startOver:'Review my answers',sources:'Sources and limitations',
+ report:'Print or save PDF',startOver:'Review my answers',sources:'Sources and limitations',
  evidence:'Data used',reportTech:'Technical calculations',printFooter:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',
  unsupported:'We do not yet have a verified local crop calendar here. You can mark and review the field, but planting options are available for coastal Lima.',
  missingPlan:'Add at least one crop before preparing your plan.',
@@ -131,6 +131,7 @@ const LABELS={
 function labelCrop(id:string,lang:Lang){return (NAMES[id]||[id,id])[lang==='es'?0:1]}
 function mon(i:number,lang:Lang){const m=(7+i)%12;return (lang==='es'?MONTHS_ES:MONTHS_EN)[m]}
 function monthYear(index:number,baseYear:number,lang:Lang){const d=new Date(Date.UTC(baseYear,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}
+function planMonth(index:number,lang:Lang){return mon(index,lang)+' · '+(lang==='es'?'año ':'year ')+(index<12?'1':'2')}
 function ymNumber(s:string){return Number(s.slice(0,4))*12+Number(s.slice(5,7))-1}
 function recentAugust(){const now=new Date();const year=now.getUTCFullYear(),m=now.getUTCMonth()+1;return (m>=8?year:year-1)-2}
 function simpleDate(lang:Lang){return new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US',{year:'numeric',month:'long',day:'numeric'})}
@@ -139,10 +140,9 @@ function toGeo(p:Point[]):GeoPolygon{return{type:'Polygon',coordinates:[[...p.ma
 function centroid(p:GeoPolygon):Point{const a=fromGeo(p);return{lat:a.reduce((x,v)=>x+v.lat,0)/a.length,lng:a.reduce((x,v)=>x+v.lng,0)/a.length}}
 function coastalLima(p:Point){return p.lat>=-12.35&&p.lat<=-10.20&&p.lng>=-78.35&&p.lng<=-76.55}
 function isBarranca(p:Point){return p.lat>=-10.95&&p.lat<=-10.40&&p.lng>=-78.07&&p.lng<=-77.35}
-function metric(n:number){return Math.round(Math.abs(n)).toLocaleString('es-PE')}
 
 function Icon({name,size=20}:{name:'search'|'pin'|'check'|'left'|'right'|'undo'|'leaf'|'water'|'print'|'alert'|'info',size?:number}){
- const shapes:Record<string,React.ReactNode>={
+ const shapes:Record<string,ReactNode>={
   search:<><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4.5 4.5"/></>,
   pin:<><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
   check:<path d="m4 12 5 5L20 6"/>,
@@ -187,6 +187,7 @@ export default function BiotexFarmerApp(){
  const [searchError,setSearchError]=useState('')
  const [field,setField]=useState<GeoPolygon|null>(null)
  const [fieldLabel,setFieldLabel]=useState('')
+ const [isDemoField,setIsDemoField]=useState(false)
  const [drawing,setDrawing]=useState(false)
  const [points,setPoints]=useState<Point[]>([])
  const [fieldError,setFieldError]=useState('')
@@ -198,6 +199,8 @@ export default function BiotexFarmerApp(){
  const [historyBusy,setHistoryBusy]=useState(false)
  const [historyError,setHistoryError]=useState('')
  const [hintChoices,setHintChoices]=useState<Record<string,string>>({})
+ const [satelliteAccepted,setSatelliteAccepted]=useState(false)
+ const [manualEntered,setManualEntered]=useState(false)
  const [goal,setGoal]=useState<'water'|'soil'|'both'>('both')
  const [incomeCrop,setIncomeCrop]=useState('')
  const [scarcity,setScarcity]=useState<'normal'|'escaso'|'no_se'>('no_se')
@@ -213,17 +216,17 @@ export default function BiotexFarmerApp(){
  const confirmedOptions=[...new Set(plantings.map(p=>p.crop_id))]
  const supported=coastalLima(point)
  const province=isBarranca(point)
- const sampleNote=fieldLabel.toLowerCase().includes('ejemplo')
- const source=history&&Object.keys(hintChoices).length?'satellite_confirmed':'farmer_declared'
- const ctx=useMemo(()=>({lang,baseYear,place,area,fieldLabel}),[lang,baseYear,place,area,fieldLabel])
+ const sampleNote=isDemoField
+ const source=history&&satelliteAccepted&&!manualEntered?'satellite_confirmed':'farmer_declared'
  const current=useMemo(()=>plantings.slice().sort((a,b)=>a.start_index-b.start_index),[plantings])
+ const mapPolygon=useMemo(()=>field?fromGeo(field):null,[field])
 
  useEffect(()=>{document.documentElement.lang=lang},[lang])
  function navigate(s:Step){setStep(s);window.scrollTo({top:0,behavior:'smooth'})}
- function resetAfterField(){request.current++;setPlantings([]);setHistory(null);setHintChoices({});setResult(null);setPlanError('');setHistoryError('')}
- function changeArea(){setField(null);setFieldLabel('');setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
- function setExample(f:typeof DEMOS[number]){const p=f.polygon;setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
- async function searchPlace(e:React.FormEvent){
+ function resetAfterField(){request.current++;setPlantings([]);setHistory(null);setHistoryBusy(false);setHintChoices({});setSatelliteAccepted(false);setManualEntered(false);setResult(null);setPlanBusy(false);setPlanError('');setHistoryError('')}
+ function changeArea(){setField(null);setFieldLabel('');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+ function setExample(f:typeof DEMOS[number]){const p=f.polygon;setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setIsDemoField(true);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+ async function searchPlace(e:FormEvent){
   e.preventDefault();const q=query.trim();if(q.length<3){setSearchError(t.notFound);return}
   setSearching(true);setSearchError('');setPlaces([])
   try{
@@ -240,16 +243,16 @@ export default function BiotexFarmerApp(){
  function finish(){const check=validatePolygon(points);const ha=approximatePolygonHectares(points)
   if(!check.valid){setFieldError(t.invalidShape);return}
   if(ha<0.1||ha>500){setFieldError(t.invalidArea);return}
-  setField(toGeo(points));setFieldLabel(lang==='es'?'Chacra marcada por ti':'Field marked by you');setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+  setField(toGeo(points));setFieldLabel(lang==='es'?'Chacra marcada por ti':'Field marked by you');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
  function addCrop(){const x=addPlantingToRotation(plantings,crop,cropMonth)
   if(x.status!=='added'){setEntryError(x.status==='duplicate'?t.duplicate:t.limit);return}
-  setPlantings(x.current);setEntryError('');setResult(null)}
+  setPlantings(x.current);setManualEntered(true);setEntryError('');setResult(null)}
  function recordSeason(c:Campaign){
   const id=hintChoices[c.start];if(!id)return
   const start=ymNumber(c.start)-1-firstAugust
   const idx=Math.max(0,Math.min(23,start))
   const r=addPlantingToRotation(plantings,id,idx)
-  if(r.status==='added'){setPlantings(r.current);setEntryError('');setResult(null)}
+  if(r.status==='added'){setPlantings(r.current);setSatelliteAccepted(true);setEntryError('');setResult(null)}
   else setEntryError(r.status==='duplicate'?t.duplicate:t.limit)
  }
  async function loadImages(){
@@ -328,13 +331,13 @@ export default function BiotexFarmerApp(){
   {preferred?<><h2>{t.recommended}: {strategyName(preferred)}</h2><p>{result[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']}</p>
    <div className="b-print-kpis">{consequences(preferred).map((x,i)=><div key={i}><span>{x.title}</span><b>{x.value}</b></div>)}</div>
    <h3>{t.planSchedule}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Año':'Year'}</th><th>{t.sowing}</th><th>{t.crop}</th><th>{lang==='es'?'Duración':'Duration'}</th></tr></thead>
-    <tbody>{schedule(preferred).map((p,i)=><tr key={i}><td>{p.start_index<12?'1':'2'}</td><td>{monthYear(p.start_index,baseYear,lang)}</td><td>{labelCrop(p.crop_id,lang)}</td><td>{p.months} {lang==='es'?'meses':'months'}</td></tr>)}</tbody></table>
+    <tbody>{schedule(preferred).map((p,i)=><tr key={i}><td>{p.start_index<12?'1':'2'}</td><td>{planMonth(p.start_index,lang)}</td><td>{labelCrop(p.crop_id,lang)}</td><td>{p.months} {lang==='es'?'meses':'months'}</td></tr>)}</tbody></table>
    <div className="b-print-grid"><section><h3>{t.benefits}</h3><ul>{preferred.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section><section><h3>{t.risks}</h3><ul>{preferred.sections.risks[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
   </>:<h2>{t.noRecommend}</h2>}
   <h3>{t.compare}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Opción':'Option'}</th><th>{t.keyWater}</th><th>{t.keySoil}</th></tr></thead>
   <tbody>{result.strategies.map(s=><tr key={s.id}><td>{strategyName(s)}</td><td>{s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</td><td>{s.indicators.bare_months} / 24</td></tr>)}</tbody></table>
   <div className="b-print-small"><h3>{t.sources}</h3>
-  <p>NASA POWER (2001–2025); NASA HLS v2.0 {source==='satellite_confirmed'?'(con confirmación humana)':''}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
+  <p>NASA POWER (2001–2025); NASA HLS v2.0 {source==='satellite_confirmed'?(lang==='es'?'(cultivo confirmado por el agricultor)':'(farmer-confirmed crop)'):''}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
   <p>{lang==='es'?'Solo se utiliza un calendario agrícola aproximado de Lima; no se conoce el análisis de suelo, turno real de riego o precio futuro. Los cálculos son comparaciones relativas, no recomendaciones garantizadas.':'Uses an approximate Lima sowing calendar. Soil test, actual irrigation allocation and future prices are not known. Results are relative comparisons, not guarantees.'}</p>
   <p>{sampleNote?t.exampleNote:''}</p></div></div>}
  return <div className="b-app">
@@ -358,9 +361,9 @@ export default function BiotexFarmerApp(){
       <p className="b-muted">{t.mapHint}</p>
       <div className="b-map-frame"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
        <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
-       <FlyTo point={centre} polygon={field?fromGeo(field):null}/>
+       <FlyTo point={centre} polygon={mapPolygon}/>
        <DrawLayer enabled={drawing} points={points} onPoint={p=>{setPoints(x=>[...x,p]);setFieldError('')}} onFinish={finish}/>
-       {field&&<Polygon positions={fromGeo(field).map(p=>[p.lat,p.lng])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
+       {field&&<Polygon positions={(mapPolygon||[]).map(p=>[p.lat,p.lng])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
       </MapContainer>
       <div className="b-map-actions">{drawing?<><button type="button" onClick={()=>setPoints(v=>v.slice(0,-1))} disabled={!points.length} className="b-btn b-btn-light"><Icon name="undo" size={16}/>{t.undo}</button>
        <button type="button" className="b-btn b-btn-solid" onClick={finish} disabled={points.length<3}>{t.finish}</button>
