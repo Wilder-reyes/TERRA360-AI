@@ -20,6 +20,7 @@ declare module 'react-leaflet' {
   export const WMSTileLayer: ComponentType<any>
   export const GeoJSON: ComponentType<any>
   export const Popup: ComponentType<any>
+  export const Tooltip: ComponentType<any>
   export function useMap(): {
     setView:(center:[number,number],zoom:number)=>void
     getZoom:()=>number

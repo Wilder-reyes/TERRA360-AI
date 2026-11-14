@@ -17,7 +17,8 @@
   "capabilities": {
     "regional_rain_forecast": "experimental_pretrained_zero_shot",
     "crop_suitability": "historical_regional_gaez_v5_not_field_validated",
-    "erosion": "insufficient_data",
-    "water_stress": "insufficient_data"
+    "erosion": "experimental_rain_and_dsm_slope_screening",
+    "water_stress": "experimental_modeled_soil_and_climatic_deficit_proxy",
+    "risk_alerts": "regional_screening_not_locally_calibrated"
   }
 }

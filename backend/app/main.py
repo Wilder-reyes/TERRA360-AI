@@ -12,6 +12,7 @@ from app.api.smap_routes import router as smap_router
 from app.api.gaez_routes import router as gaez_router
 from app.api.agro_routes import router as agro_router
 from app.api.suitability_routes import router as suitability_router
+from app.api.risk_routes import router as risk_router
 
 app = FastAPI(
     title="TERRA360 API",
@@ -37,3 +38,4 @@ app.include_router(smap_router)
 app.include_router(gaez_router)
 app.include_router(agro_router)
 app.include_router(suitability_router)
+app.include_router(risk_router)

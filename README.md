@@ -9,6 +9,7 @@
 - Mapa central con búsqueda mundial de localidades, ubicación por clic, polígonos editables y mediciones aproximadas de área.
 - Datos históricos regionales de NASA POWER y gráficos de lluvia en el panel del mapa.
 - Mapa de **aptitud agrícola histórica** FAO/IIASA GAEZ v5 para maíz, papa y cebada en una ventana de estudio de Cusco: aptas, moderadas, poco aptas, sin datos y agua. Cuatro escenarios de agua/manejo y clases originales consultables. [Método y uso](docs/agricultural-suitability.md).
+- **Alertas agrícolas regionales** en nueve puntos de Cusco: déficit de lluvia, temperaturas extremas, precipitaciones intensas y señales de posible erosión/estrés hídrico. Datos reales ERA5, pronóstico ECMWF de siete días y relieve Copernicus; evidencia, umbrales y caducidad visibles. [Método y actualización de datos](docs/agricultural-risk-alerts.md).
 - Capas visuales de NASA GIBS: precipitación IMERG, humedad de suelo SMAP, NDVI MODIS y relieve SRTM, con fuente, fecha, escala y enlace a leyenda oficial. No se extraen píxeles de estos mosaicos para calcular la salud de cultivos.
 - Altitud y gradiente orientativo de cinco muestras SRTM90m a través de OpenTopoData, bajo consulta explícita y con cuota. No es una medición de campo.
 - Catálogo ampliado con **2.568 especies FAO ECOCROP + 95 fichas originales** (pueden existir especies repetidas). Búsqueda por nombres comunes, científicos y sinónimos. La fuente ECOCROP es experticia publicada, no aptitud local validada.
@@ -28,6 +29,7 @@
 | NASA SMAP SPL3SMP_E V006 | Lector HDF5 de humedad superficial DCA AM y calidad de la celda nativa 9 km | Sensor en parcela o agua de zona radicular; requiere granule NSIDC real autenticado |
 | FAO GAEZ v5 | Doce extractos verificados RES05-SIX de maíz/papa/cebada, clima 2001–2020 y secano/riego con insumos bajos/altos, con agrupación regional de clases | No es humedad actual medida, éxito de cosecha, diagnóstico de parcela ni recomendación validada. La consulta antigua del código bruto de yuca continúa separada |
 | OpenTopoData SRTM90m | Altitud y gradiente ilustrativo de la zona (5 muestras) | Pendiente medida dentro del polígono |
+| ECMWF IFS / ERA5 vía Open-Meteo y Copernicus DEM GLO-90 | Indicadores regionales de vigilancia con referencia 1991–2020, pronóstico y relieve | Avisos oficiales, daño agrícola validado, humedad medida, pérdida de suelo o dosis de riego |
 
 **Fuente de las especies:** FAO ECOCROP mediante [CGIAR Climate Action Data Hub](https://cgiar-climate-data-hub.github.io/catalog/ecocrop/), con procedencia inmutable de OpenCLIM y licencia CC BY 4.0. **Attribution:** Source data from the FAO EcoCrop database, Food and Agriculture Organization of the United Nations. [Método reproducible](scripts/import_ecocrop.py).
 
@@ -67,6 +69,8 @@ Abre `http://localhost:5173/`. No publiques archivos `.env`, tokens Earthdata, d
 [Plan de ML/DL para aptitud agrícola, riesgos y recomendación de cultivos](docs/ml-dl-agricultural-decisions-plan.md).
 
 [Mapa de aptitud agrícola: fuentes, clases y reproducción](docs/agricultural-suitability.md). En el mapa, selecciona **Aptitud agrícola → cultivo → escenario → Mostrar aptitud**. Implementación local en la rama de trabajo; no se ha desplegado al sitio público.
+
+[Alertas agrícolas: reglas, fuentes y renovación del informe](docs/agricultural-risk-alerts.md). En el mapa, selecciona **Alertas agrícolas** y un indicador o punto. Las alertas vencidas se retiran; la actualización periódica requiere ejecutar el preparador y todavía no está activada en producción.
 
 [Primera implementación: modelo preentrenado de lluvia](docs/pretrained-rain-demo.md) · [Alcance del piloto](docs/ml-pilot-scope.md). En el mapa, selecciona **Predicción de lluvia → Ir al piloto de Calca → Consultar estimación de lluvia**.
 

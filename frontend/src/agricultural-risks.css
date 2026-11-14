@@ -1,0 +1,26 @@
+.terra-risks{min-width:0;grid-column:1/-1}
+.terra-geo-risks .terra-geo-key,.terra-geo-risks .terra-geo-draw-actions,.terra-geo-risks .terra-geo-map-caption{display:none}
+.terra-geo-risks .terra-geo-layer-pills{max-height:118px;overflow:auto;align-content:start}.terra-geo-risks .terra-geo-layer-pills .active{order:-1}
+.terra-risk-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0}.terra-risk-actions .terra-geo-fetch{margin:0;font-size:.78rem;cursor:pointer}
+.terra-risk-focus{border:0;background:transparent;padding:6px 0;font-size:.76rem;color:#155d47;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.terra-risk-period{display:grid;gap:5px;padding:11px;border:1px solid #d1ded8;border-radius:9px;background:#f0f6f5;color:#36585d;font-size:.73rem;line-height:1.45}
+.terra-risk-filter{display:grid;gap:6px;color:#365e46;font-size:.79rem;font-weight:750;margin:14px 0}.terra-risk-filter select{min-width:0;width:100%;padding:9px 7px;border:1px solid #c3d4ca;border-radius:8px;background:#fff;color:#234f3b;font-size:.79rem}
+.terra-risk-legend{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.72rem;color:#526a59}
+.terra-risk-legend i,.terra-risk-points i{display:inline-block;width:10px;height:10px;flex-shrink:0;border-radius:50%;margin-right:5px}
+.terra-risks .terra-risk-caution,.terra-risks .terra-risk-message{padding:10px 12px;background:#fbf5e9;border-left:3px solid #b98b39;color:#70532b;font-size:.75rem;margin:13px 0}
+.terra-risk-points{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:16px 0}
+.terra-risk-points button{padding:8px 5px;border:1px solid #d6e2d9;border-radius:7px;background:#fff;cursor:pointer;min-width:0;text-align:left;color:#2f5040}
+.terra-risk-points button.selected{border:2px solid #365e46;padding:7px 4px;background:#edf5ef}.terra-risk-points strong{display:flex;align-items:center;font-size:.75rem}
+.terra-risk-points small{display:block;font-size:.62rem;line-height:1.3;margin-top:4px;overflow-wrap:anywhere}
+.terra-risk-detail>h4{font-size:.83rem;margin:16px 0 12px;color:#315541}.terra-risk-card{margin:12px 0;padding:12px;background:#fff;border:1px solid #d8e2db;border-left:4px solid #89939c;border-radius:7px}
+.terra-risk-card.level-high{border-left-color:#b2453e}.terra-risk-card.level-monitor{border-left-color:#bb8524}.terra-risk-card.level-no_signal{border-left-color:#4f7c87}
+.terra-risk-card-heading{display:grid;gap:5px}.terra-risk-card-heading h4{font-size:.83rem;margin:0;color:#315541}.terra-risk-card-heading strong{font-size:.7rem;color:#506b5c}
+.terra-risk-card.level-high .terra-risk-card-heading strong{color:#a63e38}.terra-risk-card.level-monitor .terra-risk-card-heading strong{color:#8b611d}
+.terra-risks .terra-risk-card p{font-size:.76rem;line-height:1.5}
+.terra-risk-card dl{display:grid;gap:8px;margin:12px 0;font-size:.72rem;color:#526a59}.terra-risk-card dl>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px}.terra-risk-card dd{margin:0;text-align:right;white-space:nowrap;font-weight:750;color:#315541}.terra-risk-card small{font-size:.66rem}
+.terra-risks details{font-size:.76rem;margin-top:12px;color:#355646}.terra-risks summary{cursor:pointer;font-weight:750}.terra-risks a{color:#155d47;text-underline-offset:3px}
+.terra-risks .terra-risk-official{font-size:.78rem;font-weight:700;margin-top:16px}.terra-risk-method{padding-top:10px;border-top:1px solid #d9e3db}
+.terra-risks button:focus-visible,.terra-risks select:focus-visible,.terra-risks summary:focus-visible{outline:3px solid #2779b0;outline-offset:3px}
+.terra-risk-point-label{padding:2px 5px;border:0;box-shadow:0 1px 4px #0002;font-size:10px;color:#234f3b}
+.terra-risk-map-label{position:absolute;z-index:600;left:12px;top:12px;max-width:calc(100% - 24px);background:#fffef5f2;border:1px solid #cad6cc;border-radius:8px;padding:9px 12px;font-size:.73rem;color:#284837;pointer-events:none;line-height:1.5}.terra-risk-map-label strong,.terra-risk-map-label span{display:block}
+@media(min-width:851px){.terra-geo-risks:not(.terra-geo-compact) .terra-geo-shell{height:820px;grid-template-columns:minmax(0,1.6fr) minmax(320px,1fr)}.terra-geo-risks:not(.terra-geo-compact) .terra-geo-inspector{max-height:820px}}

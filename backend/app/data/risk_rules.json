@@ -1,0 +1,104 @@
+{
+  "version": "regional-screening-v1",
+  "name": "Alertas agrícolas regionales · piloto Cusco",
+  "name_en": "Regional agricultural alerts · Cusco pilot",
+  "bbox": [
+    -72.5,
+    -13.875,
+    -71.625,
+    -13.125
+  ],
+  "baseline_years": [
+    1991,
+    2020
+  ],
+  "minimum_baseline_years": 25,
+  "timezone": "America/Lima",
+  "thresholds": {
+    "drought_percentile_monitor": 10,
+    "drought_percentile_high": 5,
+    "frost_monitor_c": 0,
+    "frost_high_c": -3,
+    "heat_monitor_c": 35,
+    "heat_high_c": 40,
+    "rain_day_monitor_mm": 20,
+    "rain_day_high_mm": 40,
+    "rain_3day_monitor_mm": 50,
+    "rain_3day_high_mm": 80,
+    "soil_percentile_monitor": 20,
+    "soil_percentile_high": 10,
+    "water_deficit_monitor_mm": 10,
+    "water_deficit_high_mm": 20,
+    "erosion_slope_p75_degrees": 10
+  },
+  "hazards": [
+    {
+      "id": "drought",
+      "name": "Riesgo de sequía",
+      "name_en": "Drought signal",
+      "action": "Monitorea la lluvia y las fuentes de agua; contrasta el déficit con información local antes de planificar labores.",
+      "action_en": "Monitor rainfall and water sources; check the deficit locally before planning fieldwork."
+    },
+    {
+      "id": "temperature",
+      "name": "Temperaturas extremas",
+      "name_en": "Extreme temperatures",
+      "action": "Revisa el pronóstico local y la sensibilidad del cultivo y su etapa antes de programar labores.",
+      "action_en": "Check the local forecast and crop and growth-stage sensitivity before scheduling fieldwork."
+    },
+    {
+      "id": "excess_rain",
+      "name": "Exceso de precipitaciones",
+      "name_en": "Heavy precipitation",
+      "action": "Revisa drenaje y acumulación de agua y consulta los avisos de SENAMHI antes de programar labores.",
+      "action_en": "Check drainage and water accumulation and consult SENAMHI advisories before scheduling fieldwork."
+    },
+    {
+      "id": "erosion",
+      "name": "Posible erosión",
+      "name_en": "Possible erosion",
+      "action": "Inspecciona escorrentía y suelo expuesto en laderas. La señal de lluvia y pendiente requiere comprobar cobertura y propiedades del suelo.",
+      "action_en": "Inspect runoff and exposed soil on slopes. The rainfall and slope signal needs local cover and soil checks."
+    },
+    {
+      "id": "water_stress",
+      "name": "Posible estrés hídrico",
+      "name_en": "Possible water stress",
+      "action": "Comprueba la humedad de la zona radicular y el acceso al agua antes de tomar decisiones de riego; no se calcula una dosis de riego.",
+      "action_en": "Check root-zone moisture and water access before irrigation decisions; no irrigation amount is calculated."
+    }
+  ],
+  "limitations": [
+    "Experimental regional screening thresholds defined by TERRA360, not calibrated crop-specific damage limits or official SENAMHI warnings.",
+    "Nine regional monitoring points, not a continuous hazard map, property boundaries or safe zones between points.",
+    "ERA5 and ECMWF IFS 0.25-degree estimates (~27 km); terrain and valleys can differ from the model grid.",
+    "Drought is a 30-day rainfall percentile signal, not SPI, an official drought declaration or a loss probability.",
+    "Soil water is modeled over 0–100 cm and delayed seven days; water stress is a proxy without crop coefficients, measured roots or irrigation records.",
+    "Erosion combines predicted rain and neighborhood DSM slope only; missing soil erodibility, cover, slope length and conservation practices prevent estimating soil loss.",
+    "No signal does not mean safe. Missing or expired data never become a no-risk classification."
+  ],
+  "sources": [
+    {
+      "id": "forecast",
+      "name": "ECMWF IFS 0.25° vía Open-Meteo",
+      "model": "ecmwf_ifs025",
+      "url": "https://open-meteo.com/en/docs",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+      "id": "history",
+      "name": "Copernicus ERA5 0.25° vía Open-Meteo",
+      "model": "era5",
+      "url": "https://open-meteo.com/en/docs/historical-weather-api",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    {
+      "id": "terrain",
+      "name": "Copernicus DEM GLO-90 · DSM, edición 2021",
+      "url": "https://registry.opendata.aws/copernicus-dem/",
+      "license_url": "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM"
+    }
+  ],
+  "official_warnings_url": "https://www.senamhi.gob.pe/?p=aviso-meteorologico",
+  "attribution": "Weather data: Open-Meteo, ECMWF and Copernicus Climate Change Service, CC BY 4.0. Terrain statistics produced using Copernicus WorldDEM-90 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved. Derived indicators and screening rules: TERRA360."
+}

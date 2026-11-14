@@ -12,6 +12,8 @@
 
 **Tercer incremento:** [mapa de aptitud histórica regional](agricultural-suitability.md) con doce extractos FAO/IIASA GAEZ v5 verificados para maíz, papa y cebada, cuatro escenarios de agua/manejo y tres grupos de aptitud, separando faltantes y agua. Incluye API, cuadrícula nativa interactiva, fuentes y controles de cobertura. Integra los cinco factores mediante el modelo agroecológico publicado; no mide humedad actual ni sustituye la validación local. Haba, recomendaciones aprendidas, alertas y expansión nacional siguen pendientes.
 
+**Cuarto incremento:** [alertas agrícolas regionales](agricultural-risk-alerts.md) para nueve puntos de Cusco: déficit de lluvia frente a ventanas 1991–2020, frío/calor y lluvia intensa previstos, posible erosión por lluvia/relieve y señal de estrés hídrico por suelo modelado/déficit climático. API y mapa con evidencia, cobertura y caducidad; datos reales preparados y pruebas. Sin validación agronómica ni renovación periódica desplegada. Las alertas de este incremento son reglas exploratorias, no clasificaciones aprendidas o avisos oficiales.
+
 ## 1. Objetivo y resultado para el agricultor
 
 Permitir que una persona seleccione una zona y una temporada para responder:

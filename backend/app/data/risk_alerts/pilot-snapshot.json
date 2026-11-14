@@ -1,0 +1,4587 @@
+{
+  "method_version": "regional-screening-v1",
+  "issued_at": "2026-11-14T19:16:10.058936Z",
+  "expires_at": "2026-11-15T00:00:00-05:00",
+  "forecast_start": "2026-11-15",
+  "forecast_end": "2026-11-21",
+  "history_start": "2026-10-09",
+  "history_end": "2026-11-07",
+  "points": [
+    {
+      "id": "P01",
+      "latitude": -13.25,
+      "longitude": -72.25,
+      "history_grid": [
+        -13.25,
+        -72.25
+      ],
+      "forecast_grid": [
+        -13.25,
+        -72.25
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 2.0,
+          "soil_m3_m3": 0.296,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 1.6,
+          "soil_m3_m3": 0.297,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 3.3,
+          "soil_m3_m3": 0.299,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.3,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.3,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.303,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.302,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 3.3,
+          "soil_m3_m3": 0.302,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 2.7,
+          "soil_m3_m3": 0.304,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 4.4,
+          "soil_m3_m3": 0.307,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 1.9,
+          "soil_m3_m3": 0.31,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.31,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 3.2,
+          "soil_m3_m3": 0.311,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 7.7,
+          "soil_m3_m3": 0.314,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 9.3,
+          "soil_m3_m3": 0.318,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.319,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 2.2,
+          "soil_m3_m3": 0.316,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 7.3,
+          "soil_m3_m3": 0.314,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 5.5,
+          "soil_m3_m3": 0.317,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 6.3,
+          "soil_m3_m3": 0.319,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 4.2,
+          "soil_m3_m3": 0.32,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.318,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 2.1,
+          "soil_m3_m3": 0.316,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 0.9,
+          "soil_m3_m3": 0.31,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 2.8,
+          "soil_m3_m3": 0.308,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 5.5,
+          "soil_m3_m3": 0.307,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 3.0,
+          "soil_m3_m3": 0.307,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 5.3,
+          "soil_m3_m3": 0.311,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 3.9,
+          "soil_m3_m3": 0.312,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 4.1,
+          "soil_m3_m3": 0.311,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 5.2,
+          "soil_m3_m3": null,
+          "tmin_c": 5.5,
+          "tmax_c": 16.0,
+          "et0_mm": 3.31
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": null,
+          "tmin_c": 3.9,
+          "tmax_c": 18.6,
+          "et0_mm": 5.14
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": null,
+          "tmin_c": 5.1,
+          "tmax_c": 18.6,
+          "et0_mm": 5.21
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": null,
+          "tmin_c": 4.3,
+          "tmax_c": 16.0,
+          "et0_mm": 4.02
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": null,
+          "tmin_c": 5.2,
+          "tmax_c": 19.6,
+          "et0_mm": 5.21
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 2.6,
+          "soil_m3_m3": null,
+          "tmin_c": 1.4,
+          "tmax_c": 18.0,
+          "et0_mm": 5.15
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": null,
+          "tmin_c": 2.2,
+          "tmax_c": 18.0,
+          "et0_mm": 5.01
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 178.5,
+          "soil_7d_m3_m3": 0.4055714285714286
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 136.2,
+          "soil_7d_m3_m3": 0.38057142857142856
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 152.5,
+          "soil_7d_m3_m3": 0.4085714285714286
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 182.8,
+          "soil_7d_m3_m3": 0.4062857142857143
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 131.4,
+          "soil_7d_m3_m3": 0.36828571428571427
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 154.8,
+          "soil_7d_m3_m3": 0.39285714285714285
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 133.5,
+          "soil_7d_m3_m3": 0.34414285714285714
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 147.7,
+          "soil_7d_m3_m3": 0.35057142857142853
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 110.8,
+          "soil_7d_m3_m3": 0.387
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 161.4,
+          "soil_7d_m3_m3": 0.42014285714285715
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 136.6,
+          "soil_7d_m3_m3": 0.39257142857142857
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 193.0,
+          "soil_7d_m3_m3": 0.418
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 167.0,
+          "soil_7d_m3_m3": 0.4084285714285714
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 162.6,
+          "soil_7d_m3_m3": 0.406
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 136.1,
+          "soil_7d_m3_m3": 0.38142857142857145
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 202.0,
+          "soil_7d_m3_m3": 0.413
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 160.5,
+          "soil_7d_m3_m3": 0.401
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 152.0,
+          "soil_7d_m3_m3": 0.39842857142857147
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 146.2,
+          "soil_7d_m3_m3": 0.3737142857142857
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 136.4,
+          "soil_7d_m3_m3": 0.39485714285714285
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 155.8,
+          "soil_7d_m3_m3": 0.4148571428571428
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 178.9,
+          "soil_7d_m3_m3": 0.42814285714285716
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 210.6,
+          "soil_7d_m3_m3": 0.41385714285714287
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 156.5,
+          "soil_7d_m3_m3": 0.407
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 132.9,
+          "soil_7d_m3_m3": 0.37585714285714283
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 190.7,
+          "soil_7d_m3_m3": 0.398
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 183.3,
+          "soil_7d_m3_m3": 0.38342857142857145
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 236.9,
+          "soil_7d_m3_m3": 0.4227142857142857
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 168.70000000000002,
+          "soil_7d_m3_m3": 0.358
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 189.4,
+          "soil_7d_m3_m3": 0.3842857142857143
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 41.56,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P02",
+      "latitude": -13.25,
+      "longitude": -72.0,
+      "history_grid": [
+        -13.25,
+        -72.0
+      ],
+      "forecast_grid": [
+        -13.25,
+        -72.0
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 4.6,
+          "soil_m3_m3": 0.222,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 2.2,
+          "soil_m3_m3": 0.222,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 2.2,
+          "soil_m3_m3": 0.222,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.224,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": 0.222,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.222,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.22,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 7.4,
+          "soil_m3_m3": 0.222,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 3.4,
+          "soil_m3_m3": 0.226,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.229,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.229,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.229,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 3.0,
+          "soil_m3_m3": 0.229,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 3.0,
+          "soil_m3_m3": 0.231,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 6.4,
+          "soil_m3_m3": 0.235,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 2.0,
+          "soil_m3_m3": 0.237,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 5.2,
+          "soil_m3_m3": 0.237,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 5.0,
+          "soil_m3_m3": 0.234,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 6.7,
+          "soil_m3_m3": 0.238,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 6.5,
+          "soil_m3_m3": 0.239,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 4.3,
+          "soil_m3_m3": 0.241,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.24,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": 0.24,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": 0.235,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 1.3,
+          "soil_m3_m3": 0.234,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.232,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 1.5,
+          "soil_m3_m3": 0.229,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.228,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.227,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.226,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 3.4,
+          "soil_m3_m3": null,
+          "tmin_c": 3.6,
+          "tmax_c": 13.0,
+          "et0_mm": 3.37
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": null,
+          "tmin_c": 3.1,
+          "tmax_c": 15.7,
+          "et0_mm": 5.35
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": null,
+          "tmin_c": 4.0,
+          "tmax_c": 16.8,
+          "et0_mm": 5.29
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 1.5,
+          "soil_m3_m3": null,
+          "tmin_c": 0.8,
+          "tmax_c": 13.5,
+          "et0_mm": 3.73
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": null,
+          "tmin_c": 4.7,
+          "tmax_c": 16.2,
+          "et0_mm": 5.56
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": null,
+          "tmin_c": 3.4,
+          "tmax_c": 15.6,
+          "et0_mm": 5.01
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": null,
+          "tmin_c": 3.4,
+          "tmax_c": 14.0,
+          "et0_mm": 4.71
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 128.8,
+          "soil_7d_m3_m3": 0.307
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 157.3,
+          "soil_7d_m3_m3": 0.3147142857142857
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 143.5,
+          "soil_7d_m3_m3": 0.34957142857142853
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 164.9,
+          "soil_7d_m3_m3": 0.31757142857142856
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 81.7,
+          "soil_7d_m3_m3": 0.25771428571428573
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 138.9,
+          "soil_7d_m3_m3": 0.32271428571428573
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 121.10000000000001,
+          "soil_7d_m3_m3": 0.257
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 153.5,
+          "soil_7d_m3_m3": 0.25757142857142856
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 60.0,
+          "soil_7d_m3_m3": 0.2761428571428572
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 172.2,
+          "soil_7d_m3_m3": 0.3232857142857143
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 126.9,
+          "soil_7d_m3_m3": 0.30457142857142855
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 184.4,
+          "soil_7d_m3_m3": 0.3312857142857143
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 121.5,
+          "soil_7d_m3_m3": 0.27671428571428575
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 124.7,
+          "soil_7d_m3_m3": 0.31014285714285716
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 132.0,
+          "soil_7d_m3_m3": 0.2765714285714286
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 179.5,
+          "soil_7d_m3_m3": 0.3414285714285714
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 137.3,
+          "soil_7d_m3_m3": 0.3092857142857143
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 130.2,
+          "soil_7d_m3_m3": 0.30357142857142855
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 134.1,
+          "soil_7d_m3_m3": 0.2875714285714286
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 127.1,
+          "soil_7d_m3_m3": 0.307
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 104.7,
+          "soil_7d_m3_m3": 0.31642857142857145
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 121.1,
+          "soil_7d_m3_m3": 0.3127142857142857
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 187.1,
+          "soil_7d_m3_m3": 0.348
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 94.0,
+          "soil_7d_m3_m3": 0.2867142857142857
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 111.8,
+          "soil_7d_m3_m3": 0.287
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 182.6,
+          "soil_7d_m3_m3": 0.301
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 163.0,
+          "soil_7d_m3_m3": 0.29657142857142854
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 213.70000000000002,
+          "soil_7d_m3_m3": 0.32257142857142856
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 124.39999999999999,
+          "soil_7d_m3_m3": 0.21414285714285713
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 130.4,
+          "soil_7d_m3_m3": 0.24928571428571428
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 33.827,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P03",
+      "latitude": -13.25,
+      "longitude": -71.75,
+      "history_grid": [
+        -13.25,
+        -71.75
+      ],
+      "forecast_grid": [
+        -13.25,
+        -71.75
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 8.5,
+          "soil_m3_m3": 0.361,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 15.0,
+          "soil_m3_m3": 0.366,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 7.7,
+          "soil_m3_m3": 0.367,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 2.2,
+          "soil_m3_m3": 0.366,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 2.7,
+          "soil_m3_m3": 0.363,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 2.2,
+          "soil_m3_m3": 0.36,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 2.9,
+          "soil_m3_m3": 0.357,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 26.5,
+          "soil_m3_m3": 0.362,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 1.4,
+          "soil_m3_m3": 0.361,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 3.8,
+          "soil_m3_m3": 0.358,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 14.9,
+          "soil_m3_m3": 0.36,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 7.9,
+          "soil_m3_m3": 0.363,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 6.3,
+          "soil_m3_m3": 0.367,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 4.2,
+          "soil_m3_m3": 0.367,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 6.6,
+          "soil_m3_m3": 0.365,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 10.0,
+          "soil_m3_m3": 0.359,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 9.2,
+          "soil_m3_m3": 0.359,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 14.3,
+          "soil_m3_m3": 0.365,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 11.8,
+          "soil_m3_m3": 0.371,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 13.0,
+          "soil_m3_m3": 0.374,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 16.0,
+          "soil_m3_m3": 0.382,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 4.4,
+          "soil_m3_m3": 0.381,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 3.2,
+          "soil_m3_m3": 0.38,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 12.6,
+          "soil_m3_m3": 0.382,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 2.1,
+          "soil_m3_m3": 0.377,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 1.8,
+          "soil_m3_m3": 0.373,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 1.5,
+          "soil_m3_m3": 0.368,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 3.2,
+          "soil_m3_m3": 0.364,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": 0.359,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.354,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 17.0,
+          "soil_m3_m3": null,
+          "tmin_c": 6.2,
+          "tmax_c": 12.6,
+          "et0_mm": 3.06
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 1.7,
+          "soil_m3_m3": null,
+          "tmin_c": 3.6,
+          "tmax_c": 16.9,
+          "et0_mm": 4.95
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": null,
+          "tmin_c": 2.0,
+          "tmax_c": 16.5,
+          "et0_mm": 4.79
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 3.1,
+          "soil_m3_m3": null,
+          "tmin_c": 5.4,
+          "tmax_c": 14.2,
+          "et0_mm": 3.25
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": null,
+          "tmin_c": 6.1,
+          "tmax_c": 16.1,
+          "et0_mm": 5.14
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 1.6,
+          "soil_m3_m3": null,
+          "tmin_c": 5.2,
+          "tmax_c": 15.9,
+          "et0_mm": 4.95
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 2.0,
+          "soil_m3_m3": null,
+          "tmin_c": 5.2,
+          "tmax_c": 13.5,
+          "et0_mm": 4.09
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 218.4,
+          "soil_7d_m3_m3": 0.39771428571428574
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 289.6,
+          "soil_7d_m3_m3": 0.393
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 223.0,
+          "soil_7d_m3_m3": 0.4062857142857143
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 250.4,
+          "soil_7d_m3_m3": 0.3982857142857143
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 173.2,
+          "soil_7d_m3_m3": 0.35842857142857143
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 249.3,
+          "soil_7d_m3_m3": 0.39542857142857146
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 229.9,
+          "soil_7d_m3_m3": 0.39142857142857146
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 298.4,
+          "soil_7d_m3_m3": 0.3921428571428572
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 117.2,
+          "soil_7d_m3_m3": 0.3597142857142857
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 242.6,
+          "soil_7d_m3_m3": 0.4
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 219.0,
+          "soil_7d_m3_m3": 0.39285714285714285
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 271.5,
+          "soil_7d_m3_m3": 0.39542857142857146
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 193.9,
+          "soil_7d_m3_m3": 0.3792857142857143
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 232.8,
+          "soil_7d_m3_m3": 0.3802857142857143
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 250.5,
+          "soil_7d_m3_m3": 0.3772857142857143
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 284.7,
+          "soil_7d_m3_m3": 0.40014285714285713
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 250.7,
+          "soil_7d_m3_m3": 0.396
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 238.7,
+          "soil_7d_m3_m3": 0.394
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 164.4,
+          "soil_7d_m3_m3": 0.37957142857142856
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 177.5,
+          "soil_7d_m3_m3": 0.382
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 184.1,
+          "soil_7d_m3_m3": 0.3871428571428572
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 184.3,
+          "soil_7d_m3_m3": 0.3707142857142857
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 307.8,
+          "soil_7d_m3_m3": 0.40957142857142853
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 129.0,
+          "soil_7d_m3_m3": 0.35742857142857143
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 210.8,
+          "soil_7d_m3_m3": 0.38585714285714284
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 279.7,
+          "soil_7d_m3_m3": 0.39342857142857146
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 237.4,
+          "soil_7d_m3_m3": 0.3851428571428572
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 309.8,
+          "soil_7d_m3_m3": 0.397
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 172.3,
+          "soil_7d_m3_m3": 0.3504285714285714
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 207.0,
+          "soil_7d_m3_m3": 0.38742857142857146
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 29.571,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P04",
+      "latitude": -13.5,
+      "longitude": -72.25,
+      "history_grid": [
+        -13.5,
+        -72.25
+      ],
+      "forecast_grid": [
+        -13.5,
+        -72.25
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.234,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.234,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.232,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.232,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.231,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.231,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": 0.23,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.226,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.227,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 1.4,
+          "soil_m3_m3": 0.228,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 1.3,
+          "soil_m3_m3": 0.228,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.229,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 1.6,
+          "soil_m3_m3": 0.23,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 8.0,
+          "soil_m3_m3": 0.234,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 5.4,
+          "soil_m3_m3": 0.235,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 2.0,
+          "soil_m3_m3": 0.234,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 2.3,
+          "soil_m3_m3": 0.233,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 12.2,
+          "soil_m3_m3": 0.231,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 2.8,
+          "soil_m3_m3": 0.234,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 5.8,
+          "soil_m3_m3": 0.232,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 3.4,
+          "soil_m3_m3": 0.233,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.232,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.229,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 0.7,
+          "soil_m3_m3": 0.224,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 2.1,
+          "soil_m3_m3": 0.221,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 2.1,
+          "soil_m3_m3": 0.219,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 1.7,
+          "soil_m3_m3": 0.218,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 3.7,
+          "soil_m3_m3": 0.219,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 1.4,
+          "soil_m3_m3": 0.219,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 1.8,
+          "soil_m3_m3": 0.218,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 3.8,
+          "soil_m3_m3": null,
+          "tmin_c": 5.3,
+          "tmax_c": 16.8,
+          "et0_mm": 4.11
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": null,
+          "tmin_c": 4.9,
+          "tmax_c": 20.0,
+          "et0_mm": 5.82
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": null,
+          "tmin_c": 5.5,
+          "tmax_c": 21.1,
+          "et0_mm": 5.91
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": null,
+          "tmin_c": 6.5,
+          "tmax_c": 18.2,
+          "et0_mm": 4.91
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 1.5,
+          "soil_m3_m3": null,
+          "tmin_c": 6.5,
+          "tmax_c": 21.2,
+          "et0_mm": 5.71
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 4.0,
+          "soil_m3_m3": null,
+          "tmin_c": 6.4,
+          "tmax_c": 20.4,
+          "et0_mm": 5.3
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": null,
+          "tmin_c": 6.2,
+          "tmax_c": 19.3,
+          "et0_mm": 5.24
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 153.9,
+          "soil_7d_m3_m3": 0.33442857142857146
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 106.7,
+          "soil_7d_m3_m3": 0.2832857142857143
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 129.7,
+          "soil_7d_m3_m3": 0.3375714285714286
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 147.5,
+          "soil_7d_m3_m3": 0.323
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 69.5,
+          "soil_7d_m3_m3": 0.2642857142857143
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 118.8,
+          "soil_7d_m3_m3": 0.305
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 113.4,
+          "soil_7d_m3_m3": 0.25842857142857145
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 124.9,
+          "soil_7d_m3_m3": 0.25842857142857145
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 70.6,
+          "soil_7d_m3_m3": 0.30742857142857144
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 129.7,
+          "soil_7d_m3_m3": 0.34585714285714286
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 104.3,
+          "soil_7d_m3_m3": 0.3152857142857143
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 162.0,
+          "soil_7d_m3_m3": 0.3608571428571428
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 114.8,
+          "soil_7d_m3_m3": 0.32671428571428573
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 143.3,
+          "soil_7d_m3_m3": 0.3447142857142857
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 108.0,
+          "soil_7d_m3_m3": 0.29157142857142854
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 154.9,
+          "soil_7d_m3_m3": 0.33385714285714285
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 111.5,
+          "soil_7d_m3_m3": 0.31814285714285717
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 125.9,
+          "soil_7d_m3_m3": 0.3127142857142857
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 96.6,
+          "soil_7d_m3_m3": 0.2785714285714286
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 97.0,
+          "soil_7d_m3_m3": 0.2977142857142857
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 106.9,
+          "soil_7d_m3_m3": 0.335
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 137.9,
+          "soil_7d_m3_m3": 0.34299999999999997
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 187.4,
+          "soil_7d_m3_m3": 0.3424285714285714
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 109.5,
+          "soil_7d_m3_m3": 0.3087142857142857
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 97.5,
+          "soil_7d_m3_m3": 0.2958571428571428
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 165.4,
+          "soil_7d_m3_m3": 0.3212857142857143
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 120.9,
+          "soil_7d_m3_m3": 0.28300000000000003
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 190.4,
+          "soil_7d_m3_m3": 0.342
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 114.1,
+          "soil_7d_m3_m3": 0.24257142857142858
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 133.6,
+          "soil_7d_m3_m3": 0.2735714285714286
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 21.196,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P05",
+      "latitude": -13.5,
+      "longitude": -72.0,
+      "history_grid": [
+        -13.5,
+        -72.0
+      ],
+      "forecast_grid": [
+        -13.5,
+        -72.0
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.165,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.163,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.161,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.162,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.161,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.16,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.16,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.158,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.158,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": 0.159,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": 0.16,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 0.9,
+          "soil_m3_m3": 0.159,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.159,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.16,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 1.5,
+          "soil_m3_m3": 0.16,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.161,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 2.7,
+          "soil_m3_m3": 0.16,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 2.9,
+          "soil_m3_m3": 0.157,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 2.5,
+          "soil_m3_m3": 0.157,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 3.4,
+          "soil_m3_m3": 0.156,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 1.7,
+          "soil_m3_m3": 0.156,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.155,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.154,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.153,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": 0.153,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.152,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.15,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.148,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.148,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": 0.148,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 9.2,
+          "soil_m3_m3": null,
+          "tmin_c": 6.6,
+          "tmax_c": 18.0,
+          "et0_mm": 4.36
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": null,
+          "tmin_c": 5.4,
+          "tmax_c": 20.0,
+          "et0_mm": 5.93
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": null,
+          "tmin_c": 5.0,
+          "tmax_c": 21.1,
+          "et0_mm": 5.99
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 0.7,
+          "soil_m3_m3": null,
+          "tmin_c": 6.8,
+          "tmax_c": 17.7,
+          "et0_mm": 4.72
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": null,
+          "tmin_c": 6.7,
+          "tmax_c": 21.4,
+          "et0_mm": 5.92
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": null,
+          "tmin_c": 5.7,
+          "tmax_c": 19.9,
+          "et0_mm": 5.34
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": null,
+          "tmin_c": 6.2,
+          "tmax_c": 19.0,
+          "et0_mm": 5.08
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 100.8,
+          "soil_7d_m3_m3": 0.2731428571428572
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 87.8,
+          "soil_7d_m3_m3": 0.21742857142857142
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 117.9,
+          "soil_7d_m3_m3": 0.2864285714285714
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 118.3,
+          "soil_7d_m3_m3": 0.24285714285714285
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 41.7,
+          "soil_7d_m3_m3": 0.1777142857142857
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 99.2,
+          "soil_7d_m3_m3": 0.247
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 80.3,
+          "soil_7d_m3_m3": 0.19057142857142859
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 103.2,
+          "soil_7d_m3_m3": 0.1972857142857143
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 13.3,
+          "soil_7d_m3_m3": 0.21414285714285713
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 117.2,
+          "soil_7d_m3_m3": 0.27171428571428574
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 92.8,
+          "soil_7d_m3_m3": 0.241
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 135.0,
+          "soil_7d_m3_m3": 0.24685714285714286
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 75.5,
+          "soil_7d_m3_m3": 0.2154285714285714
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 92.4,
+          "soil_7d_m3_m3": 0.22742857142857142
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 85.2,
+          "soil_7d_m3_m3": 0.20985714285714285
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 134.8,
+          "soil_7d_m3_m3": 0.268
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 84.5,
+          "soil_7d_m3_m3": 0.2434285714285714
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 95.7,
+          "soil_7d_m3_m3": 0.21785714285714286
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 85.4,
+          "soil_7d_m3_m3": 0.22742857142857142
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 69.1,
+          "soil_7d_m3_m3": 0.22942857142857143
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 82.2,
+          "soil_7d_m3_m3": 0.2562857142857143
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 88.6,
+          "soil_7d_m3_m3": 0.25942857142857145
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 144.8,
+          "soil_7d_m3_m3": 0.26042857142857145
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 51.6,
+          "soil_7d_m3_m3": 0.19771428571428573
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 72.2,
+          "soil_7d_m3_m3": 0.22
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 129.8,
+          "soil_7d_m3_m3": 0.20442857142857143
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 87.8,
+          "soil_7d_m3_m3": 0.20914285714285713
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 149.7,
+          "soil_7d_m3_m3": 0.24514285714285713
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 77.6,
+          "soil_7d_m3_m3": 0.15114285714285713
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 72.8,
+          "soil_7d_m3_m3": 0.17785714285714285
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 16.259,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P06",
+      "latitude": -13.5,
+      "longitude": -71.75,
+      "history_grid": [
+        -13.5,
+        -71.75
+      ],
+      "forecast_grid": [
+        -13.5,
+        -71.75
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 2.8,
+          "soil_m3_m3": 0.343,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.342,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.34,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.34,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.339,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": 0.337,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.335,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 7.8,
+          "soil_m3_m3": 0.336,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.335,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 1.8,
+          "soil_m3_m3": 0.333,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 4.0,
+          "soil_m3_m3": 0.334,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 3.1,
+          "soil_m3_m3": 0.335,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 3.4,
+          "soil_m3_m3": 0.338,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 2.3,
+          "soil_m3_m3": 0.338,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 3.7,
+          "soil_m3_m3": 0.337,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 6.1,
+          "soil_m3_m3": 0.334,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 5.3,
+          "soil_m3_m3": 0.335,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 10.6,
+          "soil_m3_m3": 0.34,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 7.0,
+          "soil_m3_m3": 0.347,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 7.6,
+          "soil_m3_m3": 0.351,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 7.5,
+          "soil_m3_m3": 0.357,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.356,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.352,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 4.7,
+          "soil_m3_m3": 0.348,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.345,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.342,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.341,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 2.1,
+          "soil_m3_m3": 0.339,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.337,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 0.7,
+          "soil_m3_m3": 0.333,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 11.4,
+          "soil_m3_m3": null,
+          "tmin_c": 6.6,
+          "tmax_c": 16.3,
+          "et0_mm": 3.87
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": null,
+          "tmin_c": 4.8,
+          "tmax_c": 19.2,
+          "et0_mm": 5.5
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 0.7,
+          "soil_m3_m3": null,
+          "tmin_c": 2.5,
+          "tmax_c": 20.0,
+          "et0_mm": 5.47
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": null,
+          "tmin_c": 3.8,
+          "tmax_c": 16.5,
+          "et0_mm": 4.15
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": null,
+          "tmin_c": 4.2,
+          "tmax_c": 19.1,
+          "et0_mm": 5.64
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 2.0,
+          "soil_m3_m3": null,
+          "tmin_c": 5.4,
+          "tmax_c": 18.5,
+          "et0_mm": 5.05
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": null,
+          "tmin_c": 5.2,
+          "tmax_c": 17.0,
+          "et0_mm": 4.63
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 118.8,
+          "soil_7d_m3_m3": 0.37685714285714284
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 150.2,
+          "soil_7d_m3_m3": 0.3797142857142857
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 127.39999999999999,
+          "soil_7d_m3_m3": 0.3971428571428572
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 137.4,
+          "soil_7d_m3_m3": 0.35557142857142854
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 77.3,
+          "soil_7d_m3_m3": 0.32342857142857145
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 135.3,
+          "soil_7d_m3_m3": 0.3668571428571428
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 107.5,
+          "soil_7d_m3_m3": 0.3507142857142857
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 134.9,
+          "soil_7d_m3_m3": 0.35628571428571426
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 51.7,
+          "soil_7d_m3_m3": 0.3272857142857143
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 109.10000000000001,
+          "soil_7d_m3_m3": 0.3524285714285714
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 107.0,
+          "soil_7d_m3_m3": 0.36342857142857143
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 157.3,
+          "soil_7d_m3_m3": 0.37285714285714283
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 94.5,
+          "soil_7d_m3_m3": 0.34528571428571425
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 141.6,
+          "soil_7d_m3_m3": 0.37214285714285716
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 101.8,
+          "soil_7d_m3_m3": 0.3407142857142857
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 166.7,
+          "soil_7d_m3_m3": 0.4002857142857143
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 122.4,
+          "soil_7d_m3_m3": 0.3607142857142857
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 114.4,
+          "soil_7d_m3_m3": 0.3524285714285714
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 82.3,
+          "soil_7d_m3_m3": 0.32157142857142856
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 85.7,
+          "soil_7d_m3_m3": 0.3447142857142857
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 98.9,
+          "soil_7d_m3_m3": 0.36657142857142855
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 105.4,
+          "soil_7d_m3_m3": 0.34814285714285714
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 180.5,
+          "soil_7d_m3_m3": 0.3921428571428572
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 76.9,
+          "soil_7d_m3_m3": 0.3112857142857143
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 110.1,
+          "soil_7d_m3_m3": 0.3618571428571428
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 160.1,
+          "soil_7d_m3_m3": 0.34171428571428575
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 118.4,
+          "soil_7d_m3_m3": 0.32785714285714285
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 188.7,
+          "soil_7d_m3_m3": 0.3697142857142857
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 99.6,
+          "soil_7d_m3_m3": 0.30528571428571427
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 125.60000000000001,
+          "soil_7d_m3_m3": 0.3312857142857143
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 34.985,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P07",
+      "latitude": -13.75,
+      "longitude": -72.25,
+      "history_grid": [
+        -13.75,
+        -72.25
+      ],
+      "forecast_grid": [
+        -13.75,
+        -72.25
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.2,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.199,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.196,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.195,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.194,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.193,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.194,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.191,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": 0.19,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.19,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 1.5,
+          "soil_m3_m3": 0.189,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 2.0,
+          "soil_m3_m3": 0.19,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 2.2,
+          "soil_m3_m3": 0.191,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 7.3,
+          "soil_m3_m3": 0.195,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 2.9,
+          "soil_m3_m3": 0.194,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 3.3,
+          "soil_m3_m3": 0.193,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 3.4,
+          "soil_m3_m3": 0.193,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 12.6,
+          "soil_m3_m3": 0.194,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 1.7,
+          "soil_m3_m3": 0.195,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 5.4,
+          "soil_m3_m3": 0.193,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 2.7,
+          "soil_m3_m3": 0.194,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.193,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": 0.191,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.187,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 2.0,
+          "soil_m3_m3": 0.184,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.182,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 1.4,
+          "soil_m3_m3": 0.18,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 4.5,
+          "soil_m3_m3": 0.179,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.181,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 0.9,
+          "soil_m3_m3": 0.179,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 10.5,
+          "soil_m3_m3": null,
+          "tmin_c": 7.6,
+          "tmax_c": 18.8,
+          "et0_mm": 4.14
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": null,
+          "tmin_c": 6.9,
+          "tmax_c": 21.2,
+          "et0_mm": 6.02
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": null,
+          "tmin_c": 6.7,
+          "tmax_c": 22.1,
+          "et0_mm": 6.11
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": null,
+          "tmin_c": 7.5,
+          "tmax_c": 20.0,
+          "et0_mm": 5.03
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": null,
+          "tmin_c": 7.5,
+          "tmax_c": 22.9,
+          "et0_mm": 5.76
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 2.4,
+          "soil_m3_m3": null,
+          "tmin_c": 7.9,
+          "tmax_c": 21.6,
+          "et0_mm": 4.96
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": null,
+          "tmin_c": 7.9,
+          "tmax_c": 21.3,
+          "et0_mm": 5.32
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 161.5,
+          "soil_7d_m3_m3": 0.2998571428571428
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 106.9,
+          "soil_7d_m3_m3": 0.22785714285714287
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 140.8,
+          "soil_7d_m3_m3": 0.30257142857142855
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 154.4,
+          "soil_7d_m3_m3": 0.29014285714285715
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 70.7,
+          "soil_7d_m3_m3": 0.21985714285714286
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 132.9,
+          "soil_7d_m3_m3": 0.272
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 139.3,
+          "soil_7d_m3_m3": 0.23557142857142857
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 137.4,
+          "soil_7d_m3_m3": 0.23014285714285715
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 73.4,
+          "soil_7d_m3_m3": 0.275
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 128.7,
+          "soil_7d_m3_m3": 0.30057142857142854
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 105.8,
+          "soil_7d_m3_m3": 0.276
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 159.1,
+          "soil_7d_m3_m3": 0.32242857142857145
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 112.5,
+          "soil_7d_m3_m3": 0.279
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 149.4,
+          "soil_7d_m3_m3": 0.31685714285714284
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 117.3,
+          "soil_7d_m3_m3": 0.25785714285714284
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 168.7,
+          "soil_7d_m3_m3": 0.30114285714285716
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 111.3,
+          "soil_7d_m3_m3": 0.2792857142857143
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 135.3,
+          "soil_7d_m3_m3": 0.27285714285714285
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 102.8,
+          "soil_7d_m3_m3": 0.24085714285714285
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 107.5,
+          "soil_7d_m3_m3": 0.259
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 112.9,
+          "soil_7d_m3_m3": 0.2968571428571428
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 145.4,
+          "soil_7d_m3_m3": 0.30028571428571427
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 185.9,
+          "soil_7d_m3_m3": 0.30814285714285716
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 118.8,
+          "soil_7d_m3_m3": 0.26142857142857145
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 97.5,
+          "soil_7d_m3_m3": 0.25842857142857145
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 146.7,
+          "soil_7d_m3_m3": 0.273
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 109.1,
+          "soil_7d_m3_m3": 0.24
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 196.0,
+          "soil_7d_m3_m3": 0.293
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 102.7,
+          "soil_7d_m3_m3": 0.191
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 125.10000000000001,
+          "soil_7d_m3_m3": 0.212
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 38.713,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P08",
+      "latitude": -13.75,
+      "longitude": -72.0,
+      "history_grid": [
+        -13.75,
+        -72.0
+      ],
+      "forecast_grid": [
+        -13.75,
+        -72.0
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.184,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.182,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.179,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.179,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.178,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.177,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.178,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.176,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.174,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.174,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 0.8,
+          "soil_m3_m3": 0.173,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 1.6,
+          "soil_m3_m3": 0.174,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 2.7,
+          "soil_m3_m3": 0.176,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.178,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": 0.175,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 1.7,
+          "soil_m3_m3": 0.176,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 1.4,
+          "soil_m3_m3": 0.175,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 6.3,
+          "soil_m3_m3": 0.174,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 1.7,
+          "soil_m3_m3": 0.175,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 3.3,
+          "soil_m3_m3": 0.174,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 2.7,
+          "soil_m3_m3": 0.174,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": 0.173,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": 0.173,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.173,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.173,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": 0.17,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.169,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 0.9,
+          "soil_m3_m3": 0.169,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 0.1,
+          "soil_m3_m3": 0.168,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 0.3,
+          "soil_m3_m3": 0.167,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 4.2,
+          "soil_m3_m3": null,
+          "tmin_c": 7.9,
+          "tmax_c": 20.3,
+          "et0_mm": 4.77
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": null,
+          "tmin_c": 5.1,
+          "tmax_c": 21.5,
+          "et0_mm": 5.83
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": null,
+          "tmin_c": 5.2,
+          "tmax_c": 23.1,
+          "et0_mm": 6.19
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": null,
+          "tmin_c": 5.8,
+          "tmax_c": 20.2,
+          "et0_mm": 5.08
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": null,
+          "tmin_c": 6.5,
+          "tmax_c": 23.7,
+          "et0_mm": 5.88
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 5.4,
+          "soil_m3_m3": null,
+          "tmin_c": 6.7,
+          "tmax_c": 21.7,
+          "et0_mm": 4.76
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": null,
+          "tmin_c": 7.2,
+          "tmax_c": 21.5,
+          "et0_mm": 5.24
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 130.2,
+          "soil_7d_m3_m3": 0.29857142857142854
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 103.0,
+          "soil_7d_m3_m3": 0.21171428571428572
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 125.2,
+          "soil_7d_m3_m3": 0.2814285714285714
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 135.5,
+          "soil_7d_m3_m3": 0.25671428571428573
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 47.6,
+          "soil_7d_m3_m3": 0.18771428571428572
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 128.9,
+          "soil_7d_m3_m3": 0.25057142857142856
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 129.4,
+          "soil_7d_m3_m3": 0.231
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 140.9,
+          "soil_7d_m3_m3": 0.232
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 32.3,
+          "soil_7d_m3_m3": 0.244
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 136.6,
+          "soil_7d_m3_m3": 0.29357142857142854
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 114.0,
+          "soil_7d_m3_m3": 0.26871428571428574
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 147.0,
+          "soil_7d_m3_m3": 0.263
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 94.8,
+          "soil_7d_m3_m3": 0.2434285714285714
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 116.8,
+          "soil_7d_m3_m3": 0.24814285714285714
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 124.1,
+          "soil_7d_m3_m3": 0.25114285714285717
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 158.0,
+          "soil_7d_m3_m3": 0.28614285714285714
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 91.3,
+          "soil_7d_m3_m3": 0.25885714285714284
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 117.60000000000001,
+          "soil_7d_m3_m3": 0.22885714285714287
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 90.2,
+          "soil_7d_m3_m3": 0.24085714285714285
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 90.6,
+          "soil_7d_m3_m3": 0.23414285714285715
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 103.7,
+          "soil_7d_m3_m3": 0.27885714285714286
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 118.5,
+          "soil_7d_m3_m3": 0.26642857142857146
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 151.4,
+          "soil_7d_m3_m3": 0.26757142857142857
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 80.3,
+          "soil_7d_m3_m3": 0.22571428571428573
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 86.3,
+          "soil_7d_m3_m3": 0.24114285714285713
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 140.1,
+          "soil_7d_m3_m3": 0.2292857142857143
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 87.0,
+          "soil_7d_m3_m3": 0.215
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 172.1,
+          "soil_7d_m3_m3": 0.26885714285714285
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 82.6,
+          "soil_7d_m3_m3": 0.17714285714285716
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 80.0,
+          "soil_7d_m3_m3": 0.176
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 35.503,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    },
+    {
+      "id": "P09",
+      "latitude": -13.75,
+      "longitude": -71.75,
+      "history_grid": [
+        -13.75,
+        -71.75
+      ],
+      "forecast_grid": [
+        -13.75,
+        -71.75
+      ],
+      "history": [
+        {
+          "date": "2026-10-09",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": 0.281,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-10",
+          "precipitation_mm": 0.4,
+          "soil_m3_m3": 0.28,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-11",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.278,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-12",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.279,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-13",
+          "precipitation_mm": 0.0,
+          "soil_m3_m3": 0.28,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-14",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": 0.279,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-15",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": 0.278,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-16",
+          "precipitation_mm": 2.4,
+          "soil_m3_m3": 0.28,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-17",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": 0.277,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-18",
+          "precipitation_mm": 1.3,
+          "soil_m3_m3": 0.276,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-19",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.275,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-20",
+          "precipitation_mm": 1.4,
+          "soil_m3_m3": 0.276,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-21",
+          "precipitation_mm": 1.5,
+          "soil_m3_m3": 0.276,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-22",
+          "precipitation_mm": 1.1,
+          "soil_m3_m3": 0.276,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-23",
+          "precipitation_mm": 1.7,
+          "soil_m3_m3": 0.276,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-24",
+          "precipitation_mm": 3.0,
+          "soil_m3_m3": 0.275,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-25",
+          "precipitation_mm": 2.1,
+          "soil_m3_m3": 0.274,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-26",
+          "precipitation_mm": 11.1,
+          "soil_m3_m3": 0.277,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-27",
+          "precipitation_mm": 4.2,
+          "soil_m3_m3": 0.283,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-28",
+          "precipitation_mm": 6.3,
+          "soil_m3_m3": 0.285,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-29",
+          "precipitation_mm": 4.7,
+          "soil_m3_m3": 0.288,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-30",
+          "precipitation_mm": 0.6,
+          "soil_m3_m3": 0.287,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-10-31",
+          "precipitation_mm": 0.7,
+          "soil_m3_m3": 0.283,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-01",
+          "precipitation_mm": 1.6,
+          "soil_m3_m3": 0.28,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-02",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": 0.277,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-03",
+          "precipitation_mm": 0.9,
+          "soil_m3_m3": 0.273,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-04",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": 0.271,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-05",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": 0.271,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-06",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": 0.27,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        },
+        {
+          "date": "2026-11-07",
+          "precipitation_mm": 0.7,
+          "soil_m3_m3": 0.267,
+          "tmin_c": null,
+          "tmax_c": null,
+          "et0_mm": null
+        }
+      ],
+      "forecast": [
+        {
+          "date": "2026-11-15",
+          "precipitation_mm": 8.3,
+          "soil_m3_m3": null,
+          "tmin_c": 6.6,
+          "tmax_c": 17.5,
+          "et0_mm": 4.16
+        },
+        {
+          "date": "2026-11-16",
+          "precipitation_mm": 0.5,
+          "soil_m3_m3": null,
+          "tmin_c": 4.1,
+          "tmax_c": 19.5,
+          "et0_mm": 5.77
+        },
+        {
+          "date": "2026-11-17",
+          "precipitation_mm": 0.2,
+          "soil_m3_m3": null,
+          "tmin_c": 3.2,
+          "tmax_c": 21.1,
+          "et0_mm": 5.92
+        },
+        {
+          "date": "2026-11-18",
+          "precipitation_mm": 0.7,
+          "soil_m3_m3": null,
+          "tmin_c": 5.0,
+          "tmax_c": 17.2,
+          "et0_mm": 4.83
+        },
+        {
+          "date": "2026-11-19",
+          "precipitation_mm": 1.0,
+          "soil_m3_m3": null,
+          "tmin_c": 5.2,
+          "tmax_c": 21.1,
+          "et0_mm": 5.53
+        },
+        {
+          "date": "2026-11-20",
+          "precipitation_mm": 4.0,
+          "soil_m3_m3": null,
+          "tmin_c": 4.7,
+          "tmax_c": 17.5,
+          "et0_mm": 4.39
+        },
+        {
+          "date": "2026-11-21",
+          "precipitation_mm": 1.2,
+          "soil_m3_m3": null,
+          "tmin_c": 5.4,
+          "tmax_c": 18.5,
+          "et0_mm": 4.83
+        }
+      ],
+      "baseline": [
+        {
+          "end_year": 1991,
+          "precipitation_30d_mm": 90.3,
+          "soil_7d_m3_m3": 0.32557142857142857
+        },
+        {
+          "end_year": 1992,
+          "precipitation_30d_mm": 94.6,
+          "soil_7d_m3_m3": 0.31214285714285717
+        },
+        {
+          "end_year": 1993,
+          "precipitation_30d_mm": 84.6,
+          "soil_7d_m3_m3": 0.34428571428571425
+        },
+        {
+          "end_year": 1994,
+          "precipitation_30d_mm": 98.1,
+          "soil_7d_m3_m3": 0.2958571428571428
+        },
+        {
+          "end_year": 1995,
+          "precipitation_30d_mm": 45.4,
+          "soil_7d_m3_m3": 0.24971428571428572
+        },
+        {
+          "end_year": 1996,
+          "precipitation_30d_mm": 105.89999999999999,
+          "soil_7d_m3_m3": 0.31014285714285716
+        },
+        {
+          "end_year": 1997,
+          "precipitation_30d_mm": 82.1,
+          "soil_7d_m3_m3": 0.29842857142857143
+        },
+        {
+          "end_year": 1998,
+          "precipitation_30d_mm": 101.2,
+          "soil_7d_m3_m3": 0.2904285714285714
+        },
+        {
+          "end_year": 1999,
+          "precipitation_30d_mm": 33.9,
+          "soil_7d_m3_m3": 0.2712857142857143
+        },
+        {
+          "end_year": 2000,
+          "precipitation_30d_mm": 78.5,
+          "soil_7d_m3_m3": 0.30514285714285716
+        },
+        {
+          "end_year": 2001,
+          "precipitation_30d_mm": 87.7,
+          "soil_7d_m3_m3": 0.3191428571428572
+        },
+        {
+          "end_year": 2002,
+          "precipitation_30d_mm": 123.6,
+          "soil_7d_m3_m3": 0.3231428571428572
+        },
+        {
+          "end_year": 2003,
+          "precipitation_30d_mm": 74.8,
+          "soil_7d_m3_m3": 0.3017142857142857
+        },
+        {
+          "end_year": 2004,
+          "precipitation_30d_mm": 116.7,
+          "soil_7d_m3_m3": 0.33971428571428575
+        },
+        {
+          "end_year": 2005,
+          "precipitation_30d_mm": 77.6,
+          "soil_7d_m3_m3": 0.2924285714285714
+        },
+        {
+          "end_year": 2006,
+          "precipitation_30d_mm": 132.7,
+          "soil_7d_m3_m3": 0.35714285714285715
+        },
+        {
+          "end_year": 2007,
+          "precipitation_30d_mm": 76.2,
+          "soil_7d_m3_m3": 0.31042857142857144
+        },
+        {
+          "end_year": 2008,
+          "precipitation_30d_mm": 84.3,
+          "soil_7d_m3_m3": 0.2968571428571428
+        },
+        {
+          "end_year": 2009,
+          "precipitation_30d_mm": 62.7,
+          "soil_7d_m3_m3": 0.2591428571428572
+        },
+        {
+          "end_year": 2010,
+          "precipitation_30d_mm": 55.0,
+          "soil_7d_m3_m3": 0.28714285714285714
+        },
+        {
+          "end_year": 2011,
+          "precipitation_30d_mm": 79.0,
+          "soil_7d_m3_m3": 0.3301428571428572
+        },
+        {
+          "end_year": 2012,
+          "precipitation_30d_mm": 87.7,
+          "soil_7d_m3_m3": 0.29357142857142854
+        },
+        {
+          "end_year": 2013,
+          "precipitation_30d_mm": 140.4,
+          "soil_7d_m3_m3": 0.3415714285714286
+        },
+        {
+          "end_year": 2014,
+          "precipitation_30d_mm": 64.5,
+          "soil_7d_m3_m3": 0.2517142857142857
+        },
+        {
+          "end_year": 2015,
+          "precipitation_30d_mm": 76.8,
+          "soil_7d_m3_m3": 0.2967142857142857
+        },
+        {
+          "end_year": 2016,
+          "precipitation_30d_mm": 119.4,
+          "soil_7d_m3_m3": 0.27271428571428574
+        },
+        {
+          "end_year": 2017,
+          "precipitation_30d_mm": 72.0,
+          "soil_7d_m3_m3": 0.25414285714285717
+        },
+        {
+          "end_year": 2018,
+          "precipitation_30d_mm": 152.3,
+          "soil_7d_m3_m3": 0.321
+        },
+        {
+          "end_year": 2019,
+          "precipitation_30d_mm": 65.1,
+          "soil_7d_m3_m3": 0.2337142857142857
+        },
+        {
+          "end_year": 2020,
+          "precipitation_30d_mm": 91.9,
+          "soil_7d_m3_m3": 0.24614285714285714
+        }
+      ],
+      "terrain": {
+        "slope_p75_degrees": 22.512,
+        "valid_fraction": 1.0,
+        "neighborhood_km": 3.0,
+        "source_assets": [
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W073_00_DEM/Copernicus_DSM_COG_30_S14_00_W073_00_DEM.tif",
+            "sha256": "00d5e17afc567f96bcce0b9f3098556ff85a5a495555cdfdb2da78561cf9a512"
+          },
+          {
+            "url": "https://copernicus-dem-90m.s3.amazonaws.com/Copernicus_DSM_COG_30_S14_00_W072_00_DEM/Copernicus_DSM_COG_30_S14_00_W072_00_DEM.tif",
+            "sha256": "533998d4acf8f2c9db3464a967f4cd9733db983a684aae982c758c46b3859635"
+          }
+        ]
+      }
+    }
+  ],
+  "provenance": [
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1991-10-09&end_date=1991-11-07",
+      "sha256": "2dc27663e1b62f52a92d524cdb94cc734e48ec483b71ca7f9629acd941a11ba3",
+      "retrieved_at": "2026-11-14T19:10:43.092629+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1991"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1992-10-09&end_date=1992-11-07",
+      "sha256": "a30ec675fc2a498db6611ee140598bef8088c470332d43f9310bb5304027260c",
+      "retrieved_at": "2026-11-14T19:10:46.553659+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1992"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1993-10-09&end_date=1993-11-07",
+      "sha256": "df63fdf0ea1d10b3a49025784abac4f3cbaf5b8e8f7b6a3af6bb723b685440a1",
+      "retrieved_at": "2026-11-14T19:10:50.488593+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1993"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1994-10-09&end_date=1994-11-07",
+      "sha256": "7ba64dcb816c5214cbc8b9a082780a96b9f5c4049833d4c3cafecbb3682eaf62",
+      "retrieved_at": "2026-11-14T19:10:54.601327+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1994"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1995-10-09&end_date=1995-11-07",
+      "sha256": "de6fb0e7db2af8dc480193c3ea133ba8fdad89dbf6f3076b3b049992da6ce4bd",
+      "retrieved_at": "2026-11-14T19:10:58.691874+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1995"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1996-10-09&end_date=1996-11-07",
+      "sha256": "c14ecdf6637364245b5517c2c2d30511ba0b111fbe0c7d0141df7fe7aa702b89",
+      "retrieved_at": "2026-11-14T19:11:02.625259+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1996"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1997-10-09&end_date=1997-11-07",
+      "sha256": "b1210a1675630d40b4008f622c07da0b7517443900ceee0e6e766a18aafadd06",
+      "retrieved_at": "2026-11-14T19:11:06.565574+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1997"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1998-10-09&end_date=1998-11-07",
+      "sha256": "9315ac33497d0dbbb60b43c6ed60b0d820d7682528d7b8d2a4a08efc8c33137c",
+      "retrieved_at": "2026-11-14T19:11:10.516726+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1998"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=1999-10-09&end_date=1999-11-07",
+      "sha256": "0fc77846745d8dfd97f7be3015902977119adb31d26cbdc604979df8cf4a0819",
+      "retrieved_at": "2026-11-14T19:11:14.704823+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "1999"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2000-10-09&end_date=2000-11-07",
+      "sha256": "8dde5ebc04bc989f79994f86b77d6fd670efe90730c32748f59e101f29d2f0a4",
+      "retrieved_at": "2026-11-14T19:11:20.012845+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2000"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2001-10-09&end_date=2001-11-07",
+      "sha256": "3f048e77f4d4c0fc6b9d5f2c41049bc3a3f6620764a18e89e1272060b72e198a",
+      "retrieved_at": "2026-11-14T19:11:22.574935+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2001"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2002-10-09&end_date=2002-11-07",
+      "sha256": "65b9357cf157d5ff5bc1a83c0ce9905df942ac5adf925706eaa332377c8d62a1",
+      "retrieved_at": "2026-11-14T19:11:26.532606+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2002"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2003-10-09&end_date=2003-11-07",
+      "sha256": "9c6f5ea1afcbfe42b86b24ea5a8361d4ac949b8b5f4ed12817f8719cd4a77ce5",
+      "retrieved_at": "2026-11-14T19:11:31.096262+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2003"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2004-10-09&end_date=2004-11-07",
+      "sha256": "7b87c3d98bfc6d7581fa34edb3803e50190580142cb80d337ac8e4213c793a25",
+      "retrieved_at": "2026-11-14T19:11:34.610903+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2004"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2005-10-09&end_date=2005-11-07",
+      "sha256": "3093c3a087ba3b894c88a552cf91319e625e927ce94e7cdb9acf0e463b19dfa7",
+      "retrieved_at": "2026-11-14T19:11:38.517452+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2005"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2006-10-09&end_date=2006-11-07",
+      "sha256": "bd05cdc8e9127ef5fbd46ff86dc0d53c54927f9f2fd935b2a0d51db7f7bf8c84",
+      "retrieved_at": "2026-11-14T19:11:43.174693+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2006"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2007-10-09&end_date=2007-11-07",
+      "sha256": "5437021a5ba1a8e743dae4b3b8cc7b514682cd93373b1aced1f12b0d55ebd8e8",
+      "retrieved_at": "2026-11-14T19:11:46.476271+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2007"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2008-10-09&end_date=2008-11-07",
+      "sha256": "ece178dafb20bd2c491ecca46f333cfe4615f5eee02ce0296c1a422c1388a224",
+      "retrieved_at": "2026-11-14T19:11:50.505463+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2008"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2009-10-09&end_date=2009-11-07",
+      "sha256": "ad145d7997627b14300b3bcbb792b451ec624a4f601e910e9615ba792a1b1438",
+      "retrieved_at": "2026-11-14T19:11:54.601361+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2009"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2010-10-09&end_date=2010-11-07",
+      "sha256": "1af654b8c974672d649016b64472e3104d8990cd16ea854013d5f2872e359de9",
+      "retrieved_at": "2026-11-14T19:11:58.536545+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2010"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2011-10-09&end_date=2011-11-07",
+      "sha256": "a19f3992a6b9d61f78d28ba031fd5b6d19e8804b72b1335e5c598617e29a88d4",
+      "retrieved_at": "2026-11-14T19:12:02.643441+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2011"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2012-10-09&end_date=2012-11-07",
+      "sha256": "419d65a940111e40f9b8b50fb3d8ab5900371e911919eab22c1b458315d1a616",
+      "retrieved_at": "2026-11-14T19:12:07.102185+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2012"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2013-10-09&end_date=2013-11-07",
+      "sha256": "23657c1a63ec15f3d7d0da2fe42b5d28650c29e66ea4e4bec26fb521585d8b21",
+      "retrieved_at": "2026-11-14T19:12:10.517378+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2013"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2014-10-09&end_date=2014-11-07",
+      "sha256": "07c2ac667c408b27319dea8d82a6db7e71359064c525543ee7542bbc1a42b2e7",
+      "retrieved_at": "2026-11-14T19:12:14.592648+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2014"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2015-10-09&end_date=2015-11-07",
+      "sha256": "c3d7241069f7a3d368aff878536e0b0cac55a1bfabc75095f61da588137040e6",
+      "retrieved_at": "2026-11-14T19:12:18.517222+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2015"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2016-10-09&end_date=2016-11-07",
+      "sha256": "9245d2f59109b1ca66c9f7940cb9c65975e42a8f3bcec32d556c18aad693aeed",
+      "retrieved_at": "2026-11-14T19:12:22.468581+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2016"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2017-10-09&end_date=2017-11-07",
+      "sha256": "6a88ab2ae3baa76bf1ac6e7733712b56dbe9facccb4bacab5127a855965c8208",
+      "retrieved_at": "2026-11-14T19:12:26.631333+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2017"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2018-10-09&end_date=2018-11-07",
+      "sha256": "fa15f33f3aaa35d56b55c0784d588daf53310bf4958862dda7c2b933ea4f342f",
+      "retrieved_at": "2026-11-14T19:12:30.491104+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2018"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2019-10-09&end_date=2019-11-07",
+      "sha256": "5951f31f5282a1dd2e3371962f423aebac26d8949710ebfae70ba6890354ae94",
+      "retrieved_at": "2026-11-14T19:12:34.487545+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2019"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2020-10-09&end_date=2020-11-07",
+      "sha256": "6d8171db4029e2de5491142f57ac76ad09a474d23dfbc2a66f10ccdd721bf606",
+      "retrieved_at": "2026-11-14T19:12:38.485495+00:00",
+      "cache_hit": "true",
+      "purpose": "baseline",
+      "end_year": "2020"
+    },
+    {
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=era5&daily=precipitation_sum%2Csoil_moisture_0_to_100cm_mean&start_date=2026-10-09&end_date=2026-11-07",
+      "sha256": "3aaf5b9f0286222211ca6ab26e39146e45f108d66f308031a0f5bc1a59f01107",
+      "retrieved_at": "2026-11-14T19:12:42.394514+00:00",
+      "cache_hit": "true",
+      "purpose": "recent_history"
+    },
+    {
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=-13.25%2C-13.25%2C-13.25%2C-13.5%2C-13.5%2C-13.5%2C-13.75%2C-13.75%2C-13.75&longitude=-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75%2C-72.25%2C-72.0%2C-71.75&timezone=America%2FLima&elevation=nan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan%2Cnan&cell_selection=nearest&models=ecmwf_ifs025&daily=temperature_2m_min%2Ctemperature_2m_max%2Cprecipitation_sum%2Cet0_fao_evapotranspiration&start_date=2026-11-15&end_date=2026-11-21",
+      "sha256": "63fd3947de34920ddcbb81cd3094f76172d7308bea8189f678b16fc5549af149",
+      "retrieved_at": "2026-11-14T19:16:10.692801+00:00",
+      "cache_hit": "false",
+      "purpose": "forecast"
+    }
+  ]
+}

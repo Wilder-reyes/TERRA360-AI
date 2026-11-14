@@ -8,12 +8,14 @@ import {GpmPolygon} from './GpmPolygon'
 import {SmapRegional} from './SmapRegional'
 import {GaezRaw} from './GaezRaw'
 import {RainForecast} from './RainForecast'
+import {AgriculturalRisks, RiskMarkers} from './AgriculturalRisks'
+import type {RiskReport, RiskFilter} from './AgriculturalRisks'
 import {AgriculturalSuitability, SuitabilityCells, SuitabilityFocus, SuitabilityViewport} from './AgriculturalSuitability'
 import type {GeoBox, SuitabilityMap} from './AgriculturalSuitability'
 import type {ApiResult, Position, RecordRow} from './domain'
 import './geo-workspace.css'
 
-type Layer = 'rain' | 'forecast' | 'suitability' | 'temperature' | 'humidity' | 'scenes' | 'sentinel_ndvi' | 'gpm_polygon' | 'smap_quant' | 'gaez_raw' | 'gpm_map' | 'smap_map' | 'ndvi_map' | 'srtm_map'
+type Layer = 'risk_alerts' | 'rain' | 'forecast' | 'suitability' | 'temperature' | 'humidity' | 'scenes' | 'sentinel_ndvi' | 'gpm_polygon' | 'smap_quant' | 'gaez_raw' | 'gpm_map' | 'smap_map' | 'ndvi_map' | 'srtm_map'
 type Base = 'streets' | 'satellite'
 type Scene = {date:string;cloud_cover_percent:number;satellite:string;scene_id:string}
 type SceneResponse = {scenes:Scene[];status:string;source_url:string}
@@ -103,6 +105,9 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const [suitabilityViewport,setSuitabilityViewport]=useState<GeoBox|null>(null)
   const [suitabilityFocus,setSuitabilityFocus]=useState<{bbox:GeoBox}|null>(null)
   const [suitabilityResult,setSuitabilityResult]=useState<SuitabilityMap|null>(null)
+  const [riskReport,setRiskReport]=useState<RiskReport|null>(null)
+  const [riskFilter,setRiskFilter]=useState<RiskFilter>('all')
+  const [riskSelected,setRiskSelected]=useState<string>('P01')
   useEffect(()=>{setScenes(null);setSceneError('');setTerrain(null);setTerrainError('')},[point?.lat,point?.lng])
   const records=data?.records||[]
   const last=records.length?records[records.length-1].date:''
@@ -178,7 +183,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
       setSceneError(en?'We could not retrieve images for this place. Try again.':'No pudimos consultar las imágenes de esta zona. Inténtalo otra vez.')
     }finally{setLoadingScenes(false)}
   }
-  return <section className={`terra-geoworkspace ${compact?'terra-geo-compact':''} ${layer==='forecast'?'terra-geo-forecast':''} ${layer==='suitability'?'terra-geo-suitability':''}`} aria-label={en?'Interactive agricultural map':'Mapa agrícola interactivo'}>
+  return <section className={`terra-geoworkspace ${compact?'terra-geo-compact':''} ${layer==='forecast'?'terra-geo-forecast':''} ${layer==='suitability'?'terra-geo-suitability':''} ${layer==='risk_alerts'?'terra-geo-risks':''}`} aria-label={en?'Interactive agricultural map':'Mapa agrícola interactivo'}>
     <div className="terra-geo-heading">
       <div><p className="mini-label">{en?'YOUR LAND, ON THE MAP':'TU TERRENO EN EL MAPA'}</p>
         <h2>{en?'Explore your land and its surroundings':'Explora tu terreno y su entorno'}</h2>
@@ -202,9 +207,10 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           {nasaLayer&&(rasterDate||layer==='srtm_map')&&point&&<WMSTileLayer key={`${nasaLayer}-${layer==='srtm_map'?'static':rasterDate}`} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi" layers={nasaLayer} styles="" format="image/png" transparent={true} version="1.1.1" time={layer==='srtm_map'?undefined:rasterDate} opacity={0.76} attribution='NASA GIBS / ESDIS' eventHandlers={{tileerror:()=>setRasterFailed(true)}}/>}
           <Recenter point={point}/>
           <SuitabilityViewport onChange={setSuitabilityViewport} layout={`${layer}-${compact}`}/>
-          {layer==='suitability'&&<SuitabilityFocus target={suitabilityFocus}/>}
+          {(layer==='suitability'||layer==='risk_alerts')&&<SuitabilityFocus target={suitabilityFocus}/>}
+          {layer==='risk_alerts'&&riskReport&&<RiskMarkers report={riskReport} filter={riskFilter} selected={riskSelected} onSelect={setRiskSelected} en={en}/>}
           {layer==='suitability'&&suitabilityResult&&<SuitabilityCells result={suitabilityResult} en={en}/>}
-          {layer!=='suitability'&&<MapSelection draw={draw} polygonDrawing={polygonDrawing} onPoint={choosePoint} onCorner={chooseCorner} onPolygonVertex={p=>{setDraftVertices(v=>v.length>=100?v:[...v,p]);setPolygonError('')}}/>}
+          {layer!=='suitability'&&layer!=='risk_alerts'&&<MapSelection draw={draw} polygonDrawing={polygonDrawing} onPoint={choosePoint} onCorner={chooseCorner} onPolygonVertex={p=>{setDraftVertices(v=>v.length>=100?v:[...v,p]);setPolygonError('')}}/>}
           {point&&<Marker position={[point.lat,point.lng]} icon={markerIcon}><Popup>{en?'Your selected reference point':'Punto de referencia elegido'}<br/>{point.lat.toFixed(5)}, {point.lng.toFixed(5)}</Popup></Marker>}
 
           {point&&layer==='gpm_map'&&<Rectangle bounds={imergApproxCell(point.lat,point.lng)} pathOptions={{color:'#297bb2',weight:2,dashArray:'5 5',fillOpacity:.03}}><Popup>{en?'Nominal 0.1° IMERG geographic box, illustrative only; not an exact NASA pixel or land boundary.':'Cuadro IMERG de 0,1° aproximado: no es el píxel exacto ni el límite de tu terreno.'}</Popup></Rectangle>}
@@ -216,6 +222,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           {point&&current&&layer!=='scenes'&&value!==null&&value!==undefined&&<CircleMarker center={[point.lat,point.lng]} radius={24} pathOptions={{color:layer==='rain'?'#287bb5':layer==='temperature'?'#c26d24':'#6b5ca9',weight:3,fillOpacity:.28}}><Popup>{title}: {shownValue} {unit}<br/>{current.date}<br/>{en?'Regional observation only':'Dato regional, no medición del terreno'}</Popup></CircleMarker>}
 
         </MapContainer>
+        {layer==='risk_alerts'&&riskReport&&<div className="terra-risk-map-label"><strong>{en?'Regional risk indicators':'Indicadores regionales de riesgo'}</strong><span>{en?'9 monitoring points · unclassified areas between points':'9 puntos de monitoreo · áreas intermedias sin clasificar'}</span><span>{riskReport.forecast_start} — {riskReport.forecast_end}</span></div>}
         {layer==='suitability'&&suitabilityResult&&<div className="terra-suitability-map-label"><strong>{en?suitabilityResult.crop.name_en:suitabilityResult.crop.name} · {suitabilityResult.management}</strong><span>FAO / IIASA GAEZ v5 · 2001–2020 · ~9 km</span><span>{en?'Regional suitability · click a cell':'Aptitud regional · haz clic en una celda'}</span></div>}
         <div className="terra-geo-draw-actions">
           <button type="button" aria-pressed={draw} onClick={()=>{setDraw(v=>!v);setPolygonDrawing(false);setDraftVertices([]);setCorner(null)}}>{draw?(corner?(en?'Pick opposite corner':'Marca la esquina opuesta'):(en?'Pick first corner':'Marca la primera esquina')):(en?'Draw approximate area':'Delimitar área aproximada')}</button>
@@ -231,7 +238,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
       <aside className="terra-geo-inspector">
         <div className="terra-geo-layer-title"><strong>{en?'What do you want to explore?':'¿Qué quieres explorar?'}</strong><small>{en?'Select one view':'Elige una vista'}</small></div>
         <div className="terra-geo-layer-pills">
-          {([['suitability',en?'Crop suitability':'Aptitud agrícola'],['rain',en?'Rain':'Lluvia'],['forecast',en?'Rainfall forecast':'Predicción de lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['sentinel_ndvi',en?'Parcel Sentinel-2 NDVI':'NDVI Sentinel-2 de parcela'],['gpm_polygon',en?'GPM rainfall by area':'Lluvia GPM por área'],['smap_quant',en?'SMAP regional reading':'Humedad regional SMAP'],['gaez_raw',en?'FAO GAEZ v5 cell code':'Código FAO GAEZ v5'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
+          {([['risk_alerts',en?'Risk alerts':'Alertas agrícolas'],['suitability',en?'Crop suitability':'Aptitud agrícola'],['rain',en?'Rain':'Lluvia'],['forecast',en?'Rainfall forecast':'Predicción de lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['sentinel_ndvi',en?'Parcel Sentinel-2 NDVI':'NDVI Sentinel-2 de parcela'],['gpm_polygon',en?'GPM rainfall by area':'Lluvia GPM por área'],['smap_quant',en?'SMAP regional reading':'Humedad regional SMAP'],['gaez_raw',en?'FAO GAEZ v5 cell code':'Código FAO GAEZ v5'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
         </div>
         {nasaLayer?<div className="terra-geo-reading terra-geo-raster-reading">
           <small>NASA GIBS · {layer==='gpm_map'?'GPM IMERG':layer==='smap_map'?'SMAP L4':layer==='ndvi_map'?'MODIS NDVI (8 días)':'SRTM v3'}</small>
@@ -255,7 +262,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           <button className="terra-geo-fetch" type="button" onClick={()=>void findScenes()} disabled={!point||loadingScenes}>{loadingScenes?(en?'Searching…':'Consultando…'):(en?'Find images':'Buscar imágenes')}</button>
           {sceneError&&<p role="alert">{sceneError}</p>}
           {scenes&&<div className="terra-geo-scenes">{scenes.scenes.length?scenes.scenes.map(s=><div key={s.scene_id}><strong>{s.date}</strong><small>{s.cloud_cover_percent.toFixed(1)}% {en?'cloud cover of whole image':'de nubes en la imagen completa'}</small></div>):<p>{en?'No matching scenes in this limited search.':'No hay imágenes coincidentes en esta búsqueda limitada.'}</p>}</div>}
-        </div>:layer==='suitability'?<AgriculturalSuitability api={api} en={en} viewport={suitabilityViewport} onResult={setSuitabilityResult} onFocus={setSuitabilityFocus}/>:layer==='forecast'?<RainForecast point={point} onPick={choosePoint} api={api} en={en}/>:layer==='sentinel_ndvi'?<ParcelNDVI vertices={parcelVertices} api={api} en={en}/>:layer==='gpm_polygon'?<GpmPolygon vertices={parcelVertices} api={api} en={en}/>:layer==='smap_quant'?<SmapRegional vertices={parcelVertices} api={api} en={en}/>:layer==='gaez_raw'?<GaezRaw vertices={parcelVertices} api={api} en={en}/>:<div className="terra-geo-reading">
+        </div>:layer==='risk_alerts'?<AgriculturalRisks api={api} en={en} report={riskReport} onReport={setRiskReport} onFocus={setSuitabilityFocus} filter={riskFilter} onFilter={setRiskFilter} selected={riskSelected} onSelect={setRiskSelected}/>:layer==='suitability'?<AgriculturalSuitability api={api} en={en} viewport={suitabilityViewport} onResult={setSuitabilityResult} onFocus={setSuitabilityFocus}/>:layer==='forecast'?<RainForecast point={point} onPick={choosePoint} api={api} en={en}/>:layer==='sentinel_ndvi'?<ParcelNDVI vertices={parcelVertices} api={api} en={en}/>:layer==='gpm_polygon'?<GpmPolygon vertices={parcelVertices} api={api} en={en}/>:layer==='smap_quant'?<SmapRegional vertices={parcelVertices} api={api} en={en}/>:layer==='gaez_raw'?<GaezRaw vertices={parcelVertices} api={api} en={en}/>:<div className="terra-geo-reading">
           <small>NASA POWER · {en?'regional observation':'dato regional'}</small>
           <h3>{title}</h3>
           <strong className="terra-geo-value">{loading?'…':shownValue} <span>{shownValue==='—'?'':unit}</span></strong>

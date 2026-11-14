@@ -13,6 +13,17 @@
 
 [Método, resultados reales del piloto y reproducción](agricultural-suitability.md).
 
+## Componente 6: indicadores de riesgos agrícolas regionales
+
+- **Tipo:** reglas explícitas de vigilancia sobre modelos publicados, sin aprendizaje ni ajuste propio; no se usa Chronos.
+- **Entradas:** nueve puntos de Cusco en ERA5/ECMWF IFS 0,25°, referencia 1991–2020 y último histórico de treinta días con retraso de siete días; pronóstico de siete días completos desde mañana; pendiente derivada de DSM Copernicus GLO-90 en el entorno de 3 km.
+- **Salidas:** señales de sequía, frío/calor, exceso de lluvia, posible erosión y posible estrés hídrico. Estados revisión prioritaria, monitorear, sin señal o datos insuficientes, con fechas y evidencia.
+- **Límites:** percentiles no equivalen a probabilidades de pérdida; sin calibración local ni límites específicos de cultivo/etapa. Erosión es una señal de lluvia y relieve, sin estimar suelo perdido. Suelo modelado y ET₀−P no miden estrés real ni dosis de riego. No son avisos SENAMHI.
+- **Integridad:** fuentes y hashes registrados, dos originales DEM fijados, esquema de entradas validado y caducidad máxima de doce horas o medianoche de Perú. La API sirve entradas preparadas sin descargas públicas.
+- **Validación:** software, faltantes, empates de estación seca, geografía, integridad, umbrales y caducidad comprobados. Faltan validación de campo, métricas de sensibilidad/falsos positivos y renovación periódica operativa.
+
+[Método, umbrales y operación del piloto](agricultural-risk-alerts.md).
+
 ## Componente 3: Chronos-2 preentrenado, integrado como experimento
 
 - **Modelo:** `amazon/chronos-2`, revisión `29ec3766d36d6f73f0696f85560a422f50e8498c`; paquete `chronos-forecasting==2.3.2`.
