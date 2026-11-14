@@ -1,7 +1,56 @@
 # TERRA360 AI — dirección v0.17: piloto Huaral y experiencia del agricultor peruano
 
 **Acuerdo de producto comunicado el 14 de noviembre de 2026.**
-**Estado: especificación de desarrollo, NO se considera implementada todavía.**
+**Estado actualizado:** primera experiencia Huando orientada al agricultor peruano y vista previa local de fotografías en desarrollo; reconocimiento automático con IA y validación agronómica todavía NO implementados.
+
+## Área piloto seleccionada (decisión v0.17)
+
+**Sector estadístico HUANDO, distrito Huaral, provincia Huaral, Lima, Perú.**
+Código MIDAGRI SIEA: `15060105`. El padrón nacional 2024 informa
+`2 183,86 ha` de superficie total del sector, de las cuales
+`1 434,31 ha` aparecen como agrícolas, y un **centroide estadístico**
+en latitud `-11.47918514`, longitud `-77.18041962`.
+
+Fuente primaria: [MIDAGRI, Padrón Nacional de Sectores Estadísticos
+2024, registro 5016](https://siea.midagri.gob.pe/portal/media/attachments/publicaciones/superficie/sectores/2024/Padron_Nacional_SE_2024_0403.pdf).
+
+El centroide es una referencia cartográfica oficial, **NO una chacra
+particular, no identifica propiedad ni constituye el polígono del sector**.
+No se define ni infiere ninguna parcela hasta que el agricultor la dibuje
+o exista un límite geoespacial autorizado. Evitar confundir Huando de
+Huaral (Lima) con el distrito Huando de Huancavelica.
+
+### Cambios de experiencia ya implementados en el primer incremento
+
+- Mapa abre en el centroide oficial de **Huando, Huaral**, sin seleccionar
+  por defecto ningún terreno, para evitar análisis involuntario del punto.
+- Paso 1 usa frases como «toca donde está tu chacra»;
+  la entrada de coordenadas es opcional y queda desplegable.
+- Vista principal ofrece **lluvia, temperatura y vegetación**; herramientas
+  detalladas se agrupan en «Más mapas y datos».
+- Leyenda visible explica círculos de color, borde verde y ausencia
+  de datos. No usa colores como semáforo de «cultivo sano».
+- Paso 2 introduce cámara y previsualización **solo local**, sin subir
+  imágenes ni decir que una foto fue clasificada. Selección de nombre
+  sigue disponible porque la IA no está entrenada.
+- Se limita a 12 el número inicial de fichas visibles para reducir
+  saturación, conservando la búsqueda del catálogo interno.
+- La programación automática de nuevos recortes SMAP de **Calca**
+  queda en pausa; se conserva el histórico anterior y la ingesta
+  original global GPM continúa sin cambio. Reactivar SMAP solo con
+  versión de AOI Huaral verificada y pruebas de procedencia.
+
+### Criterios obligatorios de validación presencial
+
+1. Agricultores peruanos de Huando entienden «chacra», «lluvia» y
+   «vegetación» sin tener que leer la explicación técnica.
+2. Controles táctiles utilizables en Android, incluso con conexión lenta.
+3. Reconocimiento visual no se habilita hasta contar con dataset
+   representativo, modelo probado y mecanismo para corregir predicciones.
+4. Ningún código interno del backend ni las clases de FAO aparecen
+   como diagnósticos de la chacra.
+
+---
 
 ## Visión y público
 
