@@ -70,6 +70,8 @@ def main() -> None:
         ("Production Sentinel-2 real parcel NDVI", lambda: verify_ndvi(BACKEND)),
         ("Production Sentinel-2 multi-date observations", lambda: verify_ndvi_series(BACKEND)),
         ("Production NASA GPM IMERG polygon data integrity", lambda: verify_gpm_polygon(BACKEND)),
+        ("Production SMAP regional data integrity", lambda: verify_smap(BACKEND)),
+        ("Production FAO GAEZ selected layer provenance", lambda: verify_gaez(BACKEND)),
         ("Render ARIE decision", lambda: verify_decision(BACKEND)),
         ("Render real NASA POWER", lambda: verify_nasa(BACKEND)),
         ("anonymous Netlify home page", verify_html),
@@ -212,6 +214,54 @@ def verify_gpm_polygon(host: str = BACKEND):
         "grid_cells":result["grid_cell_count"],
         "rain_mm_day":result["precipitation_mm_day"],
     })
+
+
+
+def verify_smap(host: str = BACKEND):
+    """SMAP values require authentic archived HDF5 and good quality flag."""
+    route = "/api/environment/smap/regional-daily"
+    spec = json_from("/openapi.json", host=host)
+    assert route in spec.get("paths", {}), "SMAP backend endpoint not deployed"
+    polygon = {"type":"Polygon","coordinates":[[
+        [-71.95720,-13.32270],[-71.95490,-13.32270],
+        [-71.95490,-13.32050],[-71.95720,-13.32050],
+        [-71.95720,-13.32270]
+    ]]}
+    target = (date.today()-timedelta(days=8)).isoformat()
+    data = json_from(route,{"polygon":polygon,"target_date":target},host=host)
+    assert data.get("product") == "SPL3SMP_E"
+    assert data.get("version") == "006"
+    assert data.get("can_infer_field_soil_moisture") is False
+    assert data.get("used_in_crop_decision") is False
+    assert data.get("native_resolution_m") == 9000
+    assert data.get("status") in (
+        "available","data_unavailable","insufficient_quality",
+        "out_of_spatial_coverage"
+    )
+    if data["status"] == "available":
+        value = data.get("soil_moisture_m3_m3")
+        assert isinstance(value,(int,float)) and 0 <= value <= 1
+        assert data["cell"]["retrieval_quality_flag_dca"] == 0
+    else:
+        assert data.get("soil_moisture_m3_m3") is None
+    print("SMAP private archive status:",data["status"],"soil_moisture_m3_m3:",
+          data["soil_moisture_m3_m3"])
+
+
+def verify_gaez(host: str = BACKEND):
+    """FAO catalog selected but never invent a non-ingested crop suitability."""
+    route = "/api/environment/gaez-v5/selected-layer"
+    spec = json_from("/openapi.json",host=host)
+    assert route in spec.get("paths",{}), "GAEZ v5 provenance endpoint not deployed"
+    data = json_from(route,host=host)
+    assert data.get("variable_code") == "RES05-SIX"
+    assert data.get("crop_code") == "CSV"
+    assert data.get("management_code") == "LRLM"
+    assert data.get("status") == "source_selected_raster_not_verified"
+    assert data.get("suitability_index") is None
+    assert data.get("used_in_crop_decision") is False
+    print("FAO GAEZ v5 selected:",data["variable_code"],
+          data["crop_code"],data["status"])
 
 
 def verify_decision(host: str = SITE):
