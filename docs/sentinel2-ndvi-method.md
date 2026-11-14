@@ -54,3 +54,21 @@ levantamientos de campo, idealmente con agrónomos.
 - [SCL oficial](https://s2.pages.eopf.copernicus.eu/msi/s2msi/main/PDFS_ADFS/L2/PDFS_S2_MSI_L2.html)
 - [ESA/L2A offset BOA](https://sentiwiki.copernicus.eu/web/s2-processing)
 - [Microsoft Planetary Computer - firma](https://planetarycomputer.microsoft.com/docs/concepts/sas/)
+
+## Primera verificación real (14 de noviembre de 2026)
+
+GitHub Actions: [Sentinel-2 live raster verification #43588640412](https://github.com/Wilder-reyes/TERRA360-AI/actions/runs/43588640412), **PASS**. El workflow
+leyó los COG reales ESA/Copernicus Sentinel-2C del **4 de noviembre de 2026**
+(escena `S2C_MSIL2A_20261104T145721_R039_T18LZL_20261104T174703`,
+processing baseline `05.13`) alrededor de un polígono ilustrativo en Calca.
+
+- **596** píxeles dentro del contorno y **596** válidos tras máscara SCL;
+  cobertura aproximada **98,3 %**; clases SCL: 48 vegetación y 548 suelo no vegetado.
+- NDVI medio **0,1776**, mediana **0,1277**, percentil 10 **0,0128**,
+  percentil 90 **0,4404**; son estadísticas de esta escena, NO diagnóstico.
+- Dos escenas intentadas; la seleccionada tuvo **30,52 % de nubosidad global**
+  (no se confunde con la nubosidad del terreno).
+
+**Este resultado verifica ejecución contra datos raster reales y metadatos, no
+exactitud frente a estaciones, mediciones de campo ni cultivos identificados.**
+El polígono de prueba no corresponde a una finca verificada.
