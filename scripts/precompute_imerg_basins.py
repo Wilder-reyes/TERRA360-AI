@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -44,12 +45,31 @@ def main(start_year: int) -> None:
         if probe.status_code == 403 and "EULA" in probe.text:
             sys.exit("NASA GES DISC: this Earthdata account has not accepted the GES DISC EULA. Approve it at "
                      "https://urs.earthdata.nasa.gov/approve_app?client_id=e2WVk8Pw6weeLUKZYOxvTQ and run again.")
-        files = earthaccess.open(results)
-        series = {}
-        for n, (ym, value) in enumerate(iter_granule_values(files, bbox), 1):
+        # Resumable: each month is checkpointed locally (backend/.cache, git-ignored),
+        # and each granule is retried on network errors.
+        ckpt_path = ROOT / "backend" / ".cache" / "imerg" / f"{zid}.json"
+        ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+        series = json.loads(ckpt_path.read_text(encoding="utf-8")) if ckpt_path.exists() else {}
+        for n, granule in enumerate(results, 1):
+            link = granule.data_links()[0]
+            start = link.split("3IMERG.")[1][:8]
+            ym = f"{start[:4]}-{start[4:6]}"
+            if ym in series:
+                continue
+            for attempt in range(4):
+                try:
+                    (_, value), = list(iter_granule_values(earthaccess.open([granule]), bbox))
+                    break
+                except Exception as exc:  # network blips (DNS, timeouts, 5xx)
+                    if attempt == 3:
+                        raise
+                    wait = 10 * (attempt + 1)
+                    print(f"  {ym}: {type(exc).__name__}, retry in {wait}s")
+                    time.sleep(wait)
             series[ym] = value
+            ckpt_path.write_text(json.dumps(series), encoding="utf-8")
             if n % 24 == 0:
-                print(f"  {ym}: {value} mm")
+                print(f"  {ym}: {value} mm ({n}/{len(results)})", flush=True)
         summary = summarise(series)
         out["zones"][zid] = {"basin_es": z["upper_basin"]["name"], "basin_en": z["upper_basin"]["name_en"],
                              "bbox": bbox, "monthly_mm": dict(sorted(series.items())), **summary}
