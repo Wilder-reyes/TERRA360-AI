@@ -9,6 +9,7 @@ from app.api.terrain_routes import router as terrain_router
 from app.api.ndvi_routes import router as ndvi_router
 from app.api.imerg_polygon_routes import router as imerg_polygon_router
 from app.api.smap_routes import router as smap_router
+from app.api.gaez_routes import router as gaez_router
 
 app = FastAPI(
     title="TERRA360 API",
@@ -31,3 +32,4 @@ app.include_router(terrain_router)
 app.include_router(ndvi_router)
 app.include_router(imerg_polygon_router)
 app.include_router(smap_router)
+app.include_router(gaez_router)
