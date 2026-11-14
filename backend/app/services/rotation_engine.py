@@ -593,6 +593,7 @@ def _strategy(key: str, plantings: list[dict], climate: dict, base: dict | None,
 
 def compare(current: list[dict], climate: dict, *, priorities: dict | None = None,
             water_turn: str = "normal", history: dict | None = None,
+            current_origin: str = "farmer_declared",
             fallback: dict | None = None) -> dict:
     priorities = {k: int(v) for k, v in (priorities or {}).items() if k in ("water", "soil", "income", "pests")}
     for k, v in priorities.items():
@@ -600,13 +601,15 @@ def compare(current: list[dict], climate: dict, *, priorities: dict | None = Non
             raise RotationError("Las prioridades van de 0 a 2.")
     if water_turn not in ("normal", "escaso", "no_se"):
         raise RotationError("water_turn debe ser normal, escaso o no_se.")
+    if current_origin not in ("farmer_declared", "satellite_confirmed", "team_demo"):
+        raise RotationError("Origen de rotación actual desconocido.")
     s0 = fit_to_cycle(normalize_plantings(current))
     base_sim = simulate(s0, climate)
     base = {**base_sim["indicators"], "_timeline": base_sim["timeline"]}
     income_crop = max((p["crop_id"] for p in s0),
                       key=lambda cid: (cid == "maiz_amarillo_duro", sum(p["crop_id"] == cid for p in s0)))
     ref = {"low": max(base["water_low_river_mm"], 50.0), "total": max(base["water_total_mm"], 100.0)}
-    strategies = [_strategy("current", s0, climate, None, history, water_turn, "declared_or_detected")]
+    strategies = [_strategy("current", s0, climate, None, history, water_turn, current_origin)]
     # S1 may not leave the field bare longer than today (at least 2 months allowed).
     s1 = search("water", climate, ref, income_crop, priorities, water_turn,
                 max_bare=max(base["bare_months"], 2))
