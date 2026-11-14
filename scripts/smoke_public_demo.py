@@ -69,6 +69,7 @@ def main() -> None:
         ("Render SRTM terrain route contract", lambda: verify_terrain_contract(BACKEND)),
         ("Production Sentinel-2 real parcel NDVI", lambda: verify_ndvi(BACKEND)),
         ("Production Sentinel-2 multi-date observations", lambda: verify_ndvi_series(BACKEND)),
+        ("Production NASA GPM IMERG polygon data integrity", lambda: verify_gpm_polygon(BACKEND)),
         ("Render ARIE decision", lambda: verify_decision(BACKEND)),
         ("Render real NASA POWER", lambda: verify_nasa(BACKEND)),
         ("anonymous Netlify home page", verify_html),
@@ -173,6 +174,44 @@ def verify_ndvi_series(host: str = BACKEND):
     print("Sentinel-2 multi-date production:", [
         {"date":v["date"],"ndvi":v["metrics"]["ndvi"]["mean"]} for v in valid
     ])
+
+
+
+def verify_gpm_polygon(host: str = BACKEND):
+    """Inspect real public GPM contract; abstention is OK if no NASA granule is staged."""
+    route = "/api/environment/gpm-imerg/polygon-daily"
+    spec = json_from("/openapi.json", host=host)
+    assert route in spec.get("paths", {}), "GPM polygon endpoint not deployed"
+    polygon = {"type": "Polygon", "coordinates": [[
+        [-71.95720, -13.32270], [-71.95490, -13.32270],
+        [-71.95490, -13.32050], [-71.95720, -13.32050],
+        [-71.95720, -13.32270],
+    ]]}
+    requested_date = date.today() - timedelta(days=8)
+    result = json_from(route, {
+        "polygon": polygon, "target_date": requested_date.isoformat(),
+    }, host=host)
+    assert result["product"] == "GPM_3IMERGDL", result
+    assert result["version"] == "07", result
+    assert result["unit"] == "mm/day", result
+    assert result["can_infer_field_rainfall"] is False, result
+    assert result["used_in_crop_decision"] is False, result
+    assert result["date"] == requested_date.isoformat(), result
+    assert result["status"] in (
+        "available", "data_unavailable", "insufficient_valid_grid_coverage"
+    ), result
+    if result["status"] == "available":
+        assert 80 <= result["valid_area_percent_approx"] <= 100
+        assert 1 <= result["grid_cell_count"] <= 16
+        assert result["precipitation_mm_day"] is not None
+        assert result["precipitation_mm_day"] >= 0
+    else:
+        assert result["precipitation_mm_day"] is None, result
+    print("GPM polygon production:", {
+        "date":result["date"],"status":result["status"],
+        "grid_cells":result["grid_cell_count"],
+        "rain_mm_day":result["precipitation_mm_day"],
+    })
 
 
 def verify_decision(host: str = SITE):
