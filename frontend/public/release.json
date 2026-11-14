@@ -1,18 +1,18 @@
 {
   "application": "BIOTEX · NSPACE BIOTEX",
-  "release": "v0.22.1-biotex-income-priority",
-  "pilot": "Huaral y Barranca, Lima, Perú",
+  "release": "v0.23-farmer-first-ux",
+  "pilot": "Barranca · Pativilca / Supe",
   "features": [
-    "Terreno real o de prueba declarado",
-    "Historial NDVI NASA HLS con confirmación humana o entrada manual",
-    "Comparación S0/S1/S2 con prioridades del agricultor",
-    "Selección de cultivo de ingreso por el agricultor",
-    "Indicadores relativos de agua, cobertura del suelo y riesgos",
-    "Informe imprimible y fuentes verificables"
+    "Buscador de lugares y delimitación de terreno sobre imagen satelital",
+    "Demo enfocada en Barranca con dos terrenos de ejemplo",
+    "Ingreso sencillo de cultivos con imágenes satelitales opcionales",
+    "Priorización simple del agua, el suelo y cultivos de ingreso",
+    "Destacado automático y explicable de una alternativa calculada",
+    "Informe A4 con calendario, tablas, gráficos, riesgos y fuentes"
   ],
   "computer_vision_enabled": false,
   "environment": "production",
   "source_branch": "main",
   "primary_url": "https://terra360-ai.netlify.app/",
-  "notes": "Las parcelas de prueba no son parcelas verificadas de agricultores. IMERG se abstiene sin precálculo. Sin plantaciones confirmadas no se generan estrategias."
+  "notes": "La búsqueda y delimitación funciona fuera del piloto. Las recomendaciones agrícolas se limitan a la costa de Lima hasta validar calendarios de otras regiones. Los terrenos de ejemplo no son parcelas de agricultores identificados."
 }
