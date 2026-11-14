@@ -1,0 +1,161 @@
+{
+ "_note": "FALLBACK fields (choose only if the team's 4 GeoJSON do not arrive by the deadline). Found automatically by HLS NDVI variability (short-cycle crop, ~2.25 ha) and validated with the app's monthly series: >=3 seasons in 5 years. Label required by the team: 'Terreno representativo identificado en imagen; no corresponde a un agricultor identificado.' To activate: copy into exampleFields.json team_fields and run scripts/precompute_rotation_history.py.",
+ "fields": [
+  {
+   "id": "barranca-1",
+   "zone": "barranca",
+   "label_es": "Barranca · terreno pelado varias veces al año",
+   "label_en": "Barranca · field often left bare",
+   "validation": {
+    "campaigns_5y": 5,
+    "months_with_data": 44,
+    "without_crop_months": 31,
+    "area_ha": 2.24
+   },
+   "polygon": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77.739236,
+       -10.699368
+      ],
+      [
+       -77.737867,
+       -10.699354
+      ],
+      [
+       -77.737852,
+       -10.700708
+      ],
+      [
+       -77.739222,
+       -10.700723
+      ],
+      [
+       -77.739236,
+       -10.699368
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "barranca-2",
+   "zone": "barranca",
+   "label_es": "Barranca · terreno con cobertura más continua",
+   "label_en": "Barranca · field with more continuous cover",
+   "validation": {
+    "campaigns_5y": 11,
+    "months_with_data": 56,
+    "without_crop_months": 25,
+    "area_ha": 2.25
+   },
+   "polygon": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77.667242,
+       -10.670163
+      ],
+      [
+       -77.665872,
+       -10.670148
+      ],
+      [
+       -77.665858,
+       -10.671503
+      ],
+      [
+       -77.667227,
+       -10.671517
+      ],
+      [
+       -77.667242,
+       -10.670163
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "huaral-1",
+   "zone": "huaral",
+   "label_es": "Huaral · terreno pelado varias veces al año",
+   "label_en": "Huaral · field often left bare",
+   "validation": {
+    "campaigns_5y": 6,
+    "months_with_data": 66,
+    "without_crop_months": 51,
+    "area_ha": 2.25
+   },
+   "polygon": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77.125365,
+       -11.557588
+      ],
+      [
+       -77.123991,
+       -11.557598
+      ],
+      [
+       -77.124001,
+       -11.558954
+      ],
+      [
+       -77.125376,
+       -11.558944
+      ],
+      [
+       -77.125365,
+       -11.557588
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "huaral-2",
+   "zone": "huaral",
+   "label_es": "Huaral · terreno con cobertura más continua",
+   "label_en": "Huaral · field with more continuous cover",
+   "validation": {
+    "campaigns_5y": 12,
+    "months_with_data": 66,
+    "without_crop_months": 32,
+    "area_ha": 2.25
+   },
+   "polygon": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77.130606,
+       -11.486783
+      ],
+      [
+       -77.129232,
+       -11.486793
+      ],
+      [
+       -77.129242,
+       -11.488149
+      ],
+      [
+       -77.130616,
+       -11.488139
+      ],
+      [
+       -77.130606,
+       -11.486783
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

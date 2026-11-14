@@ -109,3 +109,4 @@
 .r-map-tools .r-map-error{background:#fdecea;color:#8a2a1f;border:1px solid #f3c1bb}
 .r-map .leaflet-interactive{cursor:crosshair}
 .r-bar.basin{background:#4f8fc9}
+.r-warn{background:#fff3e0;border:1px solid #f0c48a;color:#7a4a10;border-radius:10px;padding:8px 10px;font-weight:700;font-size:.86rem;margin:6px 0}
