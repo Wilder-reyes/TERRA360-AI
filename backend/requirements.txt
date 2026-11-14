@@ -1,4 +1,6 @@
-fastapi>=0.115,<1
+# Pin the tested FastAPI/Starlette pair to prevent CI drift.
+fastapi==0.128.2
+starlette==0.50.0
 uvicorn[standard]>=0.30,<1
 httpx>=0.27,<1
 pydantic-settings>=2.4,<3

@@ -1,11 +1,6 @@
 name: Publish TERRA360 web (optional, after domain and API configuration)
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/pages.yml'
 permissions:
   contents: read
   pages: write
