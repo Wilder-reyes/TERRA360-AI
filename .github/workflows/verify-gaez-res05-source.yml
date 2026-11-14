@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'scripts/verify_gaez_res05_official.py'
+      - 'scripts/inspect_fao_gaez_raster.py'
       - 'tests/test_gaez_official_inventory.py'
       - '.github/workflows/verify-gaez-res05-source.yml'
 permissions:
@@ -18,8 +19,18 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install inventory reader and bounded HTTP client
-        run: python -m pip install 'pandas>=2.2,<4' 'openpyxl>=3.1,<4' 'requests>=2.31,<3'
+        run: python -m pip install 'pandas>=2.2,<4' 'openpyxl>=3.1,<4' 'requests>=2.31,<3' 'numpy>=1.26,<3' 'rasterio>=1.4,<2' 'pyproj>=3.6,<4'
       - name: Parse FAO RES05 LIST_FILES metadata and check one exact cloud object
         run: |
-          python scripts/verify_gaez_res05_official.py
-          echo 'Probe success means only the catalog was checked; no suitability score is published.'
+          python scripts/verify_gaez_res05_official.py --strict
+          echo 'A catalog+HEAD match alone is not a suitability score.'
+      - name: Inspect original FAO GeoTIFF in ephemeral runner (no deployment)
+        run: |
+          python scripts/inspect_fao_gaez_raster.py
+          echo 'No raw suitability values are used in crop decisions.'
+      - name: Archive scientific raster metadata JSON, NOT the GeoTIFF
+        uses: actions/upload-artifact@v4
+        with:
+          name: gaez-res05-scientific-metadata
+          path: fao-v5-res05-sample-inspection.json
+          retention-days: 14
