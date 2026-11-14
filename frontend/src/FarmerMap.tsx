@@ -14,7 +14,7 @@ const vegetationLayer='MODIS_Terra_NDVI_8Day'
 
 function MoveMap({target}:{target:Position|null}) {
  const map=useMap()
- useEffect(()=>{if(target)map.setView([target.lat,target.lng],Math.max(map.getZoom(),12),{animate:false})},[map,target?.lat,target?.lng])
+ useEffect(()=>{if(target)map.setView([target.lat,target.lng],Math.max(map.getZoom(),12))},[map,target?.lat,target?.lng])
  return null
 }
 function MapClick({mode,onPlace,onVertex}:{mode:MapMode;onPlace:(p:Position)=>void;onVertex:(p:Position)=>void}) {
