@@ -9,6 +9,7 @@ import {useEffect,useMemo,useRef,useState} from 'react'
 import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {CartesianGrid,Line,LineChart,ReferenceArea,ReferenceLine,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts'
 import {API,httpErrorMessage,readableApiError} from './network'
+import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
 import {approximatePolygonHectares,validatePolygon} from './geometry'
 import {PADRON_URL,TEAM_FIELDS,TEST_FIELDS,ZONES,parseGeoJSONPolygon,type ExampleField,type GeoPolygon,type ZoneId} from './rotationZones'
 import './rotation.css'
@@ -340,9 +341,11 @@ export default function RotationApp(){
  const current=manualCurrent??templateCurrent??currentFromHistory
  function addManualPlanting(){
   const baseline=manualCurrent??(templateCurrent?[]:currentFromHistory)
-  if(baseline.length>=10){setManualError(t.manualLimit);return}
-  if(baseline.some(p=>p.start_index===manualMonth)){setManualError(t.manualDuplicate);return}
-  setManualCurrent([...baseline,{crop_id:manualCrop,start_index:manualMonth}].sort((a,b)=>a.start_index-b.start_index))
+  const next=addPlantingToRotation(baseline,manualCrop,manualMonth)
+  if(next.status!=='added'){
+   setManualError(next.status==='duplicate'?t.manualDuplicate:t.manualLimit);return
+  }
+  setManualCurrent(next.current)
   setTemplateCurrent(null);setResult(null);setManualError('')
  }
 
@@ -438,7 +441,7 @@ export default function RotationApp(){
     </div>
     {templateCurrent&&<p className="r-note" role="status">{t.demoOnly}</p>}
     {current.length>0&&<div className="r-current"><h3>{t.manualTitle}</h3><p className="r-small">{templateCurrent?t.demoOnly:t.confirmed(current.length)}</p>
-     <ul className="r-plantings">{current.map((p,k)=><li key={k}><span className="r-dot" style={{background:CROPS[p.crop_id]?.color}}/>{CROPS[p.crop_id]?.icon} {cropName(p.crop_id,lang)} · {t.sowIn} {fmtWin(windowStart+p.start_index)}{manualCurrent&&<button type="button" className="r-manual-remove" onClick={()=>{setManualCurrent(a=>a?.filter((_,i)=>i!==k)||[]);setResult(null)}}>{t.manualRemove}</button>}</li>)}</ul></div>}
+     <ul className="r-plantings">{current.map((p,k)=><li key={k}><span className="r-dot" style={{background:CROPS[p.crop_id]?.color}}/>{CROPS[p.crop_id]?.icon} {cropName(p.crop_id,lang)} · {t.sowIn} {fmtWin(windowStart+p.start_index)}{manualCurrent&&<button type="button" className="r-manual-remove" onClick={()=>{setManualCurrent(a=>removePlantingFromRotation(a||[],k));setResult(null)}}>{t.manualRemove}</button>}</li>)}</ul></div>}
     <div className="r-nav"><button type="button" className="r-btn r-btn-outline" onClick={()=>go(1)}>{t.back}</button><button type="button" className="r-btn" disabled={current.length===0} onClick={()=>go(3)}>{t.next}</button></div>
    </section>}
 
