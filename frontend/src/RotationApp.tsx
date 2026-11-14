@@ -26,7 +26,7 @@ type TimelineMonth={index:number;calendar_month:number;year:number;crop_id:strin
 type PlantingOut={crop_id:string;name_es:string;family:string;legume:boolean;start_index:number;start_calendar_month:number;end_calendar_month:number;months:number;approximate:boolean;adjusted_to_observed_gap:boolean;sowing_month_in_catalog:boolean}
 type Strategy={id:'S0'|'S1'|'S2';key:'current'|'water'|'soil';title_es:string;title_en:string;origin:string;plantings:PlantingOut[];timeline:TimelineMonth[];
  indicators:{water_total_mm:number;water_low_river_mm:number;bare_months:number;bare_months_low_river:number;legume_plantings:number;distinct_families:number;same_family_consecutive:number;heat_sensitive_hits:{crop_id:string;name_es:string;months:number[]}[];approximate_crops:string[]};
- relative_to_current:{water_low_river_change_percent:number|null;water_total_change_percent:number|null;bare_months_change:number;legume_plantings_change:number}|null;
+ relative_to_current:{water_low_river_change_percent:number|null;water_total_change_percent:number|null;bare_months_change:number;legume_plantings_change:number;improves_low_river_water?:boolean}|null;
  icons:{water:string;soil_cover:string;nitrogen:string;pests:string;heat:string};sections:Record<Section,{es:string[];en:string[]}>}
 type Context={index:number;calendar_month:number;year:number;low_river:boolean;hot:boolean;et0_mm_month:number;tmax_c:number;basin_rain_mm?:number|null}
 type BasinRain={status:string;message_es?:string;message_en?:string;source?:string;basin_es?:string;basin_en?:string;years?:string[];years_count?:number;last_season?:{season:string;rain_mm:number;percent_of_normal:number|null}|null;note_es?:string;note_en?:string}
@@ -74,7 +74,7 @@ const T={
   s4Title:'Tu forma de sembrar y dos ideas para cuidar tu suelo y tu agua',
   disclaimer:'Son ideas para conversar, no órdenes. Revísalas con un técnico de la Agencia Agraria o de tu Junta de Usuarios antes de decidir.',
   ctxLow:'Río bajo (estiaje)',ctxBasin:'Agua que viene: lluvia en la sierra (GPM IMERG)',basinSeason:(s:string,p:number)=>`Temporada ${s}: ${p} % de lo normal en la cabecera de cuenca.`,ctxHot:'Meses de más calor',ctxEt0:'Demanda de agua del aire (ET0)',
-  why:'¿Por qué?',hide:'Ocultar',sections:{why:'¿Por qué te lo sugerimos?',evidence:'¿En qué nos basamos?',benefits:'¿Qué podrías ganar?',gaps:'¿Qué no sabemos?',risks:'¿Qué debes revisar con un técnico?'} as Record<Section,string>,
+  why:'¿Por qué?',hide:'Ocultar',noImprove:'Esta idea NO gasta menos agua entre mayo y noviembre que lo que haces hoy. No es una mejora de agua para tu terreno.',sections:{why:'¿Por qué te lo sugerimos?',evidence:'¿En qué nos basamos?',benefits:'¿Qué podrías ganar?',gaps:'¿Qué no sabemos?',risks:'¿Qué debes revisar con un técnico?'} as Record<Section,string>,
   waterLow:'Agua en estiaje',bare:'Meses sin cubierta',legumes:'Leguminosas',families:'Familias',vsToday:'vs. hoy',of24:'de 24',
   icon:{water:'💧 Agua en estiaje',soil:'🌱 Suelo cubierto',n:'🫘 Aporta nitrógeno',pests:'🐛 Corta plagas',market:'💰 Cultivo de ingreso',heat:'🔥 Calor en etapa sensible'},
   better:'mejor',worse:'peor',same:'igual',reference:'referencia',yes:'sí',no:'no',ok:'sí',repeat:'repite familia',alert:'revisar',
@@ -105,7 +105,7 @@ const T={
   s4Title:'Your way of planting and two ideas to care for your soil and water',
   disclaimer:'These are ideas to discuss, not instructions. Review them with a technician from the Agrarian Agency or your Water Users\' Board before deciding.',
   ctxLow:'Low river (dry season)',ctxBasin:'Water to come: rain in the Andes (GPM IMERG)',basinSeason:(s:string,p:number)=>`Season ${s}: ${p}% of normal in the headwaters.`,ctxHot:'Warmest months',ctxEt0:'Air water demand (ET0)',
-  why:'Why?',hide:'Hide',sections:{why:'Why do we suggest it?',evidence:'What is it based on?',benefits:'What could you gain?',gaps:'What do we not know?',risks:'What to check with a technician?'} as Record<Section,string>,
+  why:'Why?',hide:'Hide',noImprove:'This idea does NOT use less water from May to November than today. It is not a water improvement for your field.',sections:{why:'Why do we suggest it?',evidence:'What is it based on?',benefits:'What could you gain?',gaps:'What do we not know?',risks:'What to check with a technician?'} as Record<Section,string>,
   waterLow:'Dry-season water',bare:'Bare months',legumes:'Legumes',families:'Families',vsToday:'vs. today',of24:'of 24',
   icon:{water:'💧 Dry-season water',soil:'🌱 Covered soil',n:'🫘 Adds nitrogen',pests:'🐛 Breaks pests',market:'💰 Income crop',heat:'🔥 Heat in sensitive stage'},
   better:'better',worse:'worse',same:'same',reference:'reference',yes:'yes',no:'no',ok:'yes',repeat:'repeats family',alert:'check',
@@ -224,6 +224,7 @@ function StrategyCard({s,ctx,lang,maxWater,incomeCrop,open,onToggle}:{s:Strategy
  const keepsIncome=!!incomeCrop&&s.plantings.some(p=>p.crop_id===incomeCrop)
  return <article className={'r-strategy r-'+s.key}>
   <header><span className="r-tag">{s.id}</span><h3>{lang==='es'?s.title_es:s.title_en}</h3><small>{t.origin[s.origin]||s.origin}</small></header>
+  {s.key==='water'&&r?.improves_low_river_water===false&&<p className="r-warn" role="note">⚠️ {t.noImprove}</p>}
   <Timeline s={s} ctx={ctx} lang={lang} maxWater={maxWater}/>
   <ul className="r-plantings">{s.plantings.map((p,k)=><li key={k}><span className="r-dot" style={{background:CROPS[p.crop_id]?.color}}/>{CROPS[p.crop_id]?.icon} {cropName(p.crop_id,lang)} · {t.sowIn} {MONTHS[lang][p.start_calendar_month-1]} ({t.year} {1+Math.floor(p.start_index/12)}), {p.months} {t.months}{p.approximate&&<em> · {t.approx}</em>}{p.adjusted_to_observed_gap&&<em> · {t.adjusted}</em>}</li>)}</ul>
   <div className="r-numbers">

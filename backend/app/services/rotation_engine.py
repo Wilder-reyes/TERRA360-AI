@@ -329,6 +329,25 @@ def _single_cost_table(climate: dict) -> dict:
     return table
 
 
+# Team decision (analysis chat, 2026-11-14): sowing windows per strategy for
+# yellow maize. S1 «Agua»: only Nov-Feb, so its thirstiest stage meets the high
+# river (Jan ≈23 %, Feb ≈51 % of its water in May-Nov; Mar already ≈79 %).
+# S2 «Suelo»: no maize sown May-Jul. S0 is free: it describes what the farmer does.
+PROFILE_SOWING_RULES = {
+    "water": {"maiz_amarillo_duro": {"only": {11, 12, 1, 2}}},
+    "soil": {"maiz_amarillo_duro": {"exclude": {5, 6, 7}}},
+}
+
+
+def allowed_sowing(profile: str, c: dict) -> set[int]:
+    months = set(c["sowing_months_lima"])
+    rule = PROFILE_SOWING_RULES.get(profile, {}).get(c["id"])
+    if rule:
+        months = months & rule["only"] if "only" in rule else months
+        months = months - rule.get("exclude", set())
+    return months
+
+
 def search(profile: str, climate: dict, ref: dict, income_crop: str, priorities: dict,
            water_turn: str, avoid: set | None = None, max_bare: int = WINDOW_MONTHS) -> list[dict] | None:
     """Exact DP over (month, last crop, income count, legume count, first family, bare months).
@@ -341,7 +360,7 @@ def search(profile: str, climate: dict, ref: dict, income_crop: str, priorities:
     need_income = 0 if priorities.get("income", 1) == 0 else (2 if priorities.get("income", 1) >= 2 else 1)
     avoid = avoid or set()
     track_bare = max_bare < WINDOW_MONTHS
-    info = {cid: (occupancy_months(c), set(c["sowing_months_lima"]), c["family"], bool(c["nitrogen_fixer"]),
+    info = {cid: (occupancy_months(c), allowed_sowing(profile, c), c["family"], bool(c["nitrogen_fixer"]),
                   w["residue"] * (2 - RESIDUE_SCORE[residue_level(c)]) / 2) for cid, c in crops.items()}
     best: tuple[float, list] | None = None
     for anchor in (0, 5):
@@ -497,7 +516,10 @@ def sections(key: str, ind: dict, base: dict | None, plantings: list[dict], clim
         dlow = _pct(ind["water_low_river_mm"], base["water_low_river_mm"])
         dtot = _pct(ind["water_total_mm"], base["water_total_mm"])
         dbare = base["bare_months"] - ind["bare_months"]
-        if key == "water":
+        if key == "water" and not (dlow is not None and dlow < 0):
+            why_es = ["Ojo: con tu rotación actual, tus prioridades y el calendario de siembra, esta idea NO gasta menos agua entre mayo y noviembre que lo que haces hoy. No la presentamos como una mejora de agua."]
+            why_en = ["Note: with your current rotation, priorities and the sowing calendar, this idea does NOT use less water from May to November than today. We do not present it as a water improvement."]
+        elif key == "water":
             why_es = [f"Atiende tu prioridad de gastar menos agua cuando el río baja ({low_es}).",
                       f"Hoy el mayor consumo de agua cae en {_months([m['calendar_month'] for m in sorted(base['_timeline'], key=lambda m: -m['water_mm'])[:3]], 'es')}; esta idea mueve las campañas de más sed hacia los meses de avenida o usa cultivos de menor demanda."]
             why_en = [f"Addresses your priority of using less water when the river is low ({low_en}).",
@@ -581,6 +603,8 @@ def _strategy(key: str, plantings: list[dict], climate: dict, base: dict | None,
             "bare_months_change": ind["bare_months"] - base["bare_months"],
             "legume_plantings_change": ind["legume_plantings"] - base["legume_plantings"],
         }
+        # Rule: S1 only counts as a water improvement if it really lowers May-Nov water.
+        relative["improves_low_river_water"] = ind["water_low_river_mm"] < base["water_low_river_mm"]
     return {
         "id": sid, "key": key, "title_es": es, "title_en": en, "origin": origin,
         "plantings": describe_plantings(plantings),
@@ -652,6 +676,7 @@ def compare(current: list[dict], climate: dict, *, priorities: dict | None = Non
         "strategies": strategies,
         "method": {
             "water": "Σ Kc(day) × ET0(month) over 730 days (FAO-56 single Kc; Kc from the team catalogue; ET0 FAO-56 Penman-Monteith from NASA POWER climatology). Bare-soil evaporation is not counted.",
+            "sowing_rules": "S1 Water: yellow maize sown only Nov-Feb. S2 Soil: no yellow maize sown May-Jul. S0 is not restricted.",
             "search": "Exact dynamic programming over months: sowing only in DRA Lima sowing months, crop cycles from the catalogue, no crop repeated back-to-back, keeps the farmer's income crop; weights from the farmer's priorities. Perennial alfalfa is not proposed automatically.",
             "heat": "A crop is flagged when most of its heat-sensitive window (from the catalogue label) falls in the zone's 3 warmest POWER months.",
             "relative_only": True,

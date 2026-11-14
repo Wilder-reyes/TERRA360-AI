@@ -329,6 +329,45 @@ class ImergBasinTests(unittest.TestCase):
         self.assertEqual(r["status"], "unavailable")
         self.assertIn("Earthdata", r["message_en"])
 
+class TeamSowingRuleTests(unittest.TestCase):
+    """Analysis-chat decisions: maize windows per strategy and honest S1 labelling."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.clim = coastal_climate()
+
+    def maize_months(self, strategy):
+        return {p["start_calendar_month"] for p in strategy["plantings"] if p["crop_id"] == "maiz_amarillo_duro"}
+
+    def test_s1_maize_only_nov_feb_and_s2_never_may_jul(self):
+        currents = [E.TEMPLATES["current"],
+                    [{"crop_id": "maiz_amarillo_duro", "start_index": 7}, {"crop_id": "camote", "start_index": 13}],
+                    [{"crop_id": "maiz_amarillo_duro", "start_index": 10}]]
+        for cur in currents:
+            r = E.compare(cur, self.clim, priorities={"income": 2})
+            s1 = next(s for s in r["strategies"] if s["key"] == "water")
+            s2 = next(s for s in r["strategies"] if s["key"] == "soil")
+            self.assertTrue(self.maize_months(s1) <= {11, 12, 1, 2}, self.maize_months(s1))
+            self.assertFalse(self.maize_months(s2) & {5, 6, 7}, self.maize_months(s2))
+
+    def test_s0_is_not_restricted(self):
+        r = E.compare([{"crop_id": "maiz_amarillo_duro", "start_index": 10}], self.clim)  # sown in June
+        self.assertEqual(self.maize_months(r["strategies"][0]), {6})
+
+    def test_s1_that_does_not_save_low_river_water_says_so(self):
+        # Current rotation uses no water in May-Nov (cowpea sown in January): S1 cannot improve it.
+        r = E.compare([{"crop_id": "frijol_castilla", "start_index": 5}], self.clim)
+        s1 = next(s for s in r["strategies"] if s["key"] == "water")
+        self.assertFalse(s1["relative_to_current"]["improves_low_river_water"])
+        self.assertIn("NO gasta menos agua", s1["sections"]["why"]["es"][0])
+        self.assertIn("does NOT use less water", s1["sections"]["why"]["en"][0])
+        self.assertNotEqual(s1["icons"]["water"], "better")
+
+    def test_s1_that_saves_water_is_flagged_as_improvement(self):
+        r = E.compare(E.TEMPLATES["current"], self.clim)
+        s1 = next(s for s in r["strategies"] if s["key"] == "water")
+        self.assertTrue(s1["relative_to_current"]["improves_low_river_water"])
+
 
 if __name__ == "__main__":
     unittest.main()

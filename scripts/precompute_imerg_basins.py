@@ -40,6 +40,10 @@ def main(start_year: int) -> None:
                                           temporal=(f"{start_year}-01-01", end.strftime("%Y-%m-%d")),
                                           bounding_box=tuple(bbox))
         print(f"{zid}: {len(results)} monthly granules")
+        probe = earthaccess.get_requests_https_session().get(results[0].data_links()[0], headers={"Range": "bytes=0-15"}, timeout=60)
+        if probe.status_code == 403 and "EULA" in probe.text:
+            sys.exit("NASA GES DISC: this Earthdata account has not accepted the GES DISC EULA. Approve it at "
+                     "https://urs.earthdata.nasa.gov/approve_app?client_id=e2WVk8Pw6weeLUKZYOxvTQ and run again.")
         files = earthaccess.open(results)
         series = {}
         for n, (ym, value) in enumerate(iter_granule_values(files, bbox), 1):

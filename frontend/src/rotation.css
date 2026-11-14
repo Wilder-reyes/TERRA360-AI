@@ -109,6 +109,7 @@
 .r-map-tools .r-map-error{background:#fdecea;color:#8a2a1f;border:1px solid #f3c1bb}
 .r-map .leaflet-interactive{cursor:crosshair}
 .r-bar.basin{background:#4f8fc9}
+.r-warn{background:#fff3e0;border:1px solid #f0c48a;color:#7a4a10;border-radius:10px;padding:8px 10px;font-weight:700;font-size:.86rem;margin:6px 0}
 
 /* v0.22: farmer-entered rotation instead of inferred crop confirmations. */
 .r-manual{background:#f8fbf7;border:1px solid var(--r-edge);padding:12px;border-radius:14px;margin:12px 0}
