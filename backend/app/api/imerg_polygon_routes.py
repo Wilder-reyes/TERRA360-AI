@@ -6,7 +6,7 @@ from datetime import date, timedelta
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, field_validator
 from starlette.concurrency import run_in_threadpool
-from app.services.imerg_polygon import daily_polygon_from_staged_file, IMERGPolygonError
+from app.services.imerg_polygon import daily_polygon_from_archive, IMERGPolygonError
 
 router = APIRouter(prefix="/api/environment/gpm-imerg", tags=["NASA GPM regional rainfall"])
 
