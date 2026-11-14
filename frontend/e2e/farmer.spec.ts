@@ -24,7 +24,7 @@ test('farmer-first map works without exposing API codes or downloads',async({pag
  await expect(page.getByRole('region',{name:'Mapa agrícola interactivo'})).toBeVisible()
  await expect(page.getByRole('button',{name:'Dibujar polígono'})).toBeVisible()
  await expect(page.getByRole('button',{name:'Mapa de relieve'})).toBeVisible()
- await expect(page.locator('.terra-geo-layer-pills button').filter({hasText:'Lluvia'})).toBeVisible()
+ await expect(page.locator('.terra-geo-layer-pills button').filter({hasText:/^Lluvia$/})).toBeVisible()
  await expect(page.locator('a[href$=".json"]')).toHaveCount(0)
  await expect(page.getByText(/^S[012]$/)).toHaveCount(0)
 })
