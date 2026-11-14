@@ -1,0 +1,21 @@
+name: Verify NASA GIBS map layer identifiers
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/verify_gibs_layers.py'
+      - '.github/workflows/verify-gibs.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  science-layers:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Fetch NASA WMS GetCapabilities and official metadata
+        run: python scripts/verify_gibs_layers.py
