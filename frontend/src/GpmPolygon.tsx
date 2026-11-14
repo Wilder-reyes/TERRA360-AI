@@ -1,6 +1,7 @@
 /** NASA IMERG 0.1° cell-overlap context, NEVER exact rain falling on a plot. */
 import {useEffect,useMemo,useRef,useState} from 'react'
 import type {Position} from './domain'
+import {readableApiError,httpErrorMessage} from './network'
 import './gpm-polygon.css'
 
 type Cell={
@@ -48,11 +49,11 @@ export function GpmPolygon({vertices,api,en}:{vertices:Position[]|null;api:strin
    })
    if(!response.ok){
     if(response.status===422)throw Error(en?'Area/date outside supported bounds.':'La fecha o el contorno están fuera de los límites permitidos.')
-    throw Error(en?'NASA grid processing is temporarily unavailable.':'No es posible procesar la cuadrícula NASA ahora.')
+    throw Error(await httpErrorMessage(response,en))
    }
    const data=await response.json() as Result
    if(!abort.signal.aborted)setResult(data)
-  }catch(e){if(!abort.signal.aborted)setError(e instanceof Error?e.message:String(e))}
+  }catch(e){if(!abort.signal.aborted)setError(readableApiError(e,en))}
   finally{if(!abort.signal.aborted)setLoading(false)}
  }
  return <section className="terra-geo-reading terra-gpm-polygon" aria-label={en?'GPM daily rainfall grid around outlined area':'Cuadrícula de lluvia GPM sobre el área delimitada'}>
