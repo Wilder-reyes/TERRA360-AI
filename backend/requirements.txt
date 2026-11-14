@@ -20,5 +20,4 @@ shapely>=2.0,<3
 pyproj>=3.6,<4
 planetary-computer>=1.0,<2
 
-# Private NASA object archive: S3 / Cloudflare R2 (secrets only in server env)
-boto3>=1.35,<2
+# Private NASA S3/R2 uses earthaccess's already installed s3fs dependency.
