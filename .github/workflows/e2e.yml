@@ -9,6 +9,8 @@ on:
       - 'frontend/src/GpmPolygon.tsx'
       - 'frontend/src/SmapRegional.tsx'
       - 'frontend/src/GaezRaw.tsx'
+      - 'frontend/src/App.tsx'
+      - 'frontend/src/network.ts'
       - 'frontend/src/gaez-raw.css'
       - 'frontend/src/smap-regional.css'
       - 'frontend/src/gpm-polygon.css'
@@ -20,6 +22,9 @@ on:
     branches: [main]
     paths:
       - 'frontend/e2e/**'
+      - 'frontend/src/network.ts'
+      - 'frontend/src/App.tsx'
+      - 'frontend/src/GaezRaw.tsx'
       - 'frontend/playwright.config.ts'
       - '.github/workflows/e2e.yml'
   workflow_dispatch:
