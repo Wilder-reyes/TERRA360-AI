@@ -1,9 +1,9 @@
 # TERRA360 AI — NASA Space Apps Challenge 2026
 
-**Demo pública:** https://terra360-ai.netlify.app/  
+**Sitio Netlify:** https://terra360-ai.netlify.app/ — acceso anónimo actualmente bloqueado con HTTP 401; activar Production visibility = Public en Netlify antes de anunciar la web a jueces.  
 **Backend:** https://terra360-api.onrender.com/api/health  
 **Repositorio:** `Wilder-reyes/TERRA360-AI` (privado)  
-**Estado:** prototipo demostrativo; **no** herramienta de prescripción de siembra.
+**Estado:** prototipo demostrativo; **no** herramienta de prescripción de siembra. El smoke de producción verificó salud del backend, búsqueda, ARIE y NASA POWER; Netlify aún requiere autorización (HTTP 401).
 
 ## Qué puede hacer un agricultor
 

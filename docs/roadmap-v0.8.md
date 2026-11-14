@@ -1,6 +1,6 @@
 # Hoja de ruta de TERRA360 AI — desarrollo y validación
 
-**Estado de referencia: 13 de noviembre de 2026.** Esta hoja de ruta recoge las cuatro prioridades acordadas. Los estados documentan **código incorporado**, no certifican que proveedores externos, imágenes particulares o recomendaciones agronómicas se hayan validado experimentalmente. La demo puede verse en https://terra360-ai.netlify.app/ y la API opera en https://terra360-api.onrender.com.
+**Estado de referencia: 13 de noviembre de 2026.** Esta hoja de ruta recoge las cuatro prioridades acordadas. Los estados documentan **código incorporado**, no certifican que proveedores externos, imágenes particulares o recomendaciones agronómicas se hayan validado experimentalmente. La web está alojada en https://terra360-ai.netlify.app/, pero una prueba externa sin iniciar sesión recibió **HTTP 401**; debe activarse la visibilidad pública. La API funciona en https://terra360-api.onrender.com.
 
 ## Objetivo y criterio final
 
@@ -78,11 +78,13 @@ Estado global: **MVP funcional ampliado / validación científica y de usuarios 
 | Pruebas de contratos API, catálogo, plan, errores y geometría | Implementado y probado en CI | `tests/test_*.py`, `frontend/tests/*.test.mjs` |
 | Compilación TypeScript/React y Python automáticas | Implementado y probado en CI | `.github/workflows/ci.yml`; revisar resultado del último commit |
 | Actualización de acciones GitHub con versiones basadas en Node.js 24 | Implementado y probado en CI | checkout v5, setup-node v5, setup-python v6 |
-| Smoke de producción Netlify → Render → ARIE y NASA POWER | Automatizado, **pendiente de ejecución y aprobación** | `scripts/smoke_public_demo.py` y workflow manual `smoke-production.yml` |
+| Smoke de producción Netlify → Render → ARIE y NASA POWER | **Ejecutado, parcialmente aprobado** | Render salud, búsqueda, ARIE y NASA POWER = PASS; Netlify web y proxy = FAIL por **HTTP 401**; workflow `smoke-production.yml` |
 | QA visual en escritorio y móvil, accesibilidad, lectores de pantalla | Pendiente de prueba directa con navegador real | Documentar capturas, navegación por teclado, contraste, métricas |
 | Rendimiento y fiabilidad bajo demanda concurrente | Pendiente | Simular carga limitada, medir latencia cold-start y fallas remotas |
 | Pruebas con agricultores de varias regiones y agrónomos | Pendiente de participantes y consentimiento | `docs/farmer-validation-protocol.md`; no se han realizado entrevistas |
 | Revisión científica externa y reproducibilidad espacial | Pendiente | Validar parcelas reales, fuentes, unidades, incertidumbre y sesgos |
+
+**Bloqueo operativo actual:** Netlify → Project configuration → General → Visitor access → Edit visibility → Production visibility = **Public**. Tras el cambio, ejecutar otra vez el workflow de smoke o comprobar acceso desde un navegador sin sesión. Esto requiere una acción del propietario de Netlify; no se soluciona cambiando GitHub.
 
 **Aceptación P4:** agricultores sin capacitación técnica completan y explican el flujo; al menos 4/5 distinguen datos regionales de datos de parcela y nadie necesita JSON o códigos internos. Es una **meta de prueba**, no un resultado ya obtenido.
 

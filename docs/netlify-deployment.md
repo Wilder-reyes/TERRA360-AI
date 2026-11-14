@@ -32,6 +32,10 @@ React en modo producción usa rutas relativas como `/api/arie/catalog`, que Netl
 
 Se puede publicar la interfaz sin claves; `EARTHDATA_TOKEN` se configura solo en Render como variable privada. El Blueprint desactiva las descargas GPM de gran tamaño (`GPM_DOWNLOADS_ENABLED=false`) para proteger el hosting gratuito, mientras NASA POWER y Planetary Computer siguen siendo públicos.
 
+## Comprobación de acceso público (bloqueo detectado)
+
+GitHub Actions recibió **HTTP 401** al abrir el sitio Netlify, aunque Render contestó correctamente. Si la web se abre mientras tienes sesión en Netlify, eso no prueba que los jueces puedan entrar. Ve a Netlify → **Project configuration → General → Visitor access → Edit visibility → Production visibility → Public** y guarda. Comprueba la URL en ventana privada sin iniciar sesión. No es un error que pueda resolverse cambiando GitHub.
+
 ## Comprobación después del deploy
 
 1. Abre la dirección de producción de Netlify.
