@@ -197,3 +197,23 @@ def daily_polygon_from_staged_file(raw_polygon: dict, target_date: date,
         if isinstance(exc, ValueError) and ("forma del terreno" in str(exc)):
             raise
         raise IMERGPolygonError("El archivo NASA disponible no pudo verificarse.") from exc
+
+
+def daily_polygon_from_archive(raw_polygon: dict, target_date: date) -> dict[str, Any]:
+    """Prefer durable private object storage; fallback to legacy local files only.
+
+    Never authenticate with Earthdata or download a protected NASA file in a
+    public HTTP request. A missing manifest is not a zero rainfall observation.
+    """
+    from app.services.verified_archive import ArchiveError, staged_granule
+    try:
+        with staged_granule("gpm", target_date) as path:
+            if path is not None:
+                with xr.open_dataset(path, engine="h5netcdf") as dataset:
+                    out = sample_daily_imerg(dataset, raw_polygon, target_date,
+                                             filename=path.name)
+                out["provenance"] = "sha256_verified_private_object_archive"
+                return out
+    except ArchiveError as exc:
+        raise IMERGPolygonError("El archivo NASA privado no pasó verificaciones de acceso o integridad.") from exc
+    return daily_polygon_from_staged_file(raw_polygon, target_date)
