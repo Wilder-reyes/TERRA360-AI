@@ -287,6 +287,52 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(r.status_code, 422)
 
 
+class FarmerRecommendationTests(unittest.TestCase):
+    """Objective-specific highlights are computed, not inferred from card order."""
+
+    def setUp(self):
+        self.plans = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 350, "bare_months": 18}},
+            {"id": "S1", "indicators": {"water_low_river_mm": 100, "bare_months": 18}},
+            {"id": "S2", "indicators": {"water_low_river_mm": 1100, "bare_months": 0}},
+        ]
+
+    def test_water_priority_prefers_genuine_lower_demand(self):
+        r = E.highlight_for_farmer(self.plans, {"water": 2, "soil": 0})
+        self.assertEqual(r["recommended_strategy_id"], "S1")
+        self.assertIn("menos de agua", r["recommendation_reason_es"])
+
+    def test_soil_priority_prefers_coverage_and_mentions_water_cost(self):
+        r = E.highlight_for_farmer(self.plans, {"water": 0, "soil": 2})
+        self.assertEqual(r["recommended_strategy_id"], "S2")
+        self.assertIn("más agua", r["recommendation_reason_es"])
+
+    def test_both_priorities_do_not_hide_major_water_penalty(self):
+        r = E.highlight_for_farmer(self.plans, {"water": 2, "soil": 2})
+        self.assertEqual(r["recommended_strategy_id"], "S1")
+
+    def test_no_evidence_of_improvement_means_no_highlight(self):
+        worse = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 100, "bare_months": 5}},
+            {"id": "S1", "indicators": {"water_low_river_mm": 200, "bare_months": 7}},
+        ]
+        r = E.highlight_for_farmer(worse, {"water": 2, "soil": 2})
+        self.assertIsNone(r["recommended_strategy_id"])
+
+    def test_custom_location_has_no_invented_basin_rain(self):
+        clim = coastal_climate()
+
+        async def fake(lat, lon, client=None, coastal=True):
+            return clim
+
+        with patch("app.api.rotation_routes.monthly_climate", fake):
+            res = TestClient(app).post("/api/rotation/compare", json={
+                "latitude": -11.4, "longitude": -77.1, "current": E.TEMPLATES["current"],
+            })
+        self.assertEqual(res.status_code, 200, res.text)
+        self.assertEqual(res.json()["upper_basin_rain"]["status"], "unavailable")
+
+
 class MaizeLowRiverShareTests(unittest.TestCase):
     """Team verification note 09 (sec. 2b): share of a MAD campaign's water in May-Nov, Huaral."""
     # Snapshot of NASA POWER climatology ET0 (mm/day), Huaral coastal cell, 2001-2025.
