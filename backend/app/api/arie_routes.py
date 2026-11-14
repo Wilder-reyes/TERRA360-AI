@@ -6,7 +6,7 @@ router = APIRouter(prefix='/api/arie', tags=['ARIE - evidence-based scenarios'])
 
 @router.get('/catalog')
 def catalog():
-    return {'pilot': None, 'location_type':'user_selected_query_point_not_parcel', 'crop_catalog_scope':'five_Andean_reference_crops_not_global_suitability', 'crops':CROPS, 'references':REFERENCES, 'scenarios':SCENARIOS, 'limitations':'Crop profiles and FAO Kc are literature references, not measured field conditions.'}
+    return {'pilot': None, 'location_type':'user_selected_query_point_not_parcel', 'crop_catalog_scope':'extended_taxonomic_directory_with_only_five_initial_evidence_profiles_no_global_suitability', 'crops':CROPS, 'references':REFERENCES, 'scenarios':SCENARIOS, 'limitations':'Crop profiles and FAO Kc are literature references, not measured field conditions.'}
 
 @router.post('/evaluate')
 def evaluate_scenario(request: ScenarioRequest):

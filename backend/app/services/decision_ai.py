@@ -23,6 +23,7 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
     generic Kc value, taxonomic family or remotely sensed regional grid.
     """
     initial = list(request.crops)
+    exploratory = [c for c in initial if crops[c].get('evidence_level') == 'taxonomy_only_no_local_suitability']
     previous = request.baseline_crops[-1] if request.baseline_crops else None
     farmer_priority = request.priority
     target = {crop: i for i, crop in enumerate(initial)}
@@ -51,7 +52,12 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
 
     hard_constraints: list[dict[str, Any]] = []
     warnings: list[dict[str, Any]] = []
+    if exploratory:
+        warnings.append({'code':'exploratory_profiles', 'status':'needs_local_review',
+                         'message':'Algunos cultivos solo tienen datos generales de nombre y familia. No podemos verificar si se pueden sembrar en tu zona ni recomendar su rendimiento.'})
     missing: list[str] = []
+    if exploratory:
+        missing.append('Consultar requisitos climáticos y agrícolas verificados para los cultivos exploratorios.')
 
     seasonal = getattr(request, 'climate_seasonality', None)
     if seasonal and request.sowing_month is not None:
@@ -146,6 +152,7 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
     }[status]
     missing_en = {
         'Historial de cultivos para conocer la práctica real.': 'Your actual cropping history.',
+        'Consultar requisitos climáticos y agrícolas verificados para los cultivos exploratorios.': 'Verify local agroclimatic requirements for these exploratory crops.',
         'Confirmar si existe riego y en qué meses hay agua.': 'Whether irrigation is available and in which months.',
         'Análisis de suelo si deseas evaluar fertilidad y salinidad.': 'A soil analysis to assess fertility or salinity.',
         'Mes previsto de siembra para comprobar el calendario de cada cultivo.': 'Expected sowing month to check crop calendars.',
@@ -155,6 +162,7 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
     }
     warning_en = {
         'rainfed': 'Rainfed conditions reported: confirm local planting windows and dry months.',
+        'exploratory_profiles': 'Some crops have only preliminary name and botanical family data. Their suitability and productivity are not evaluated.',
         'market': 'Some proposed crops have no declared market: verify sale options or change the sequence.',
         'equipment': 'Equipment is recorded but crop-specific requirements are unverified.',
         'budget': 'Budget is recorded but no verified local cost data are available.',

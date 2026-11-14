@@ -2,8 +2,9 @@
 from typing import Literal
 from datetime import date
 from pydantic import BaseModel, Field, model_validator, ConfigDict
+from app.data.crop_directory import KNOWN_CROP_IDS
 
-CropId = Literal['maize', 'tarwi', 'faba', 'potato', 'barley']
+CropId = str  # Restricted by the shared maintained directory, not by an arbitrary hard-coded Literal.
 WaterAccess = Literal['unknown', 'rainfed', 'irrigated']
 Priority = Literal['balanced', 'water', 'soil', 'diversity', 'income']
 Texture = Literal['sandy', 'loamy', 'clayey', 'unknown']
@@ -78,6 +79,9 @@ class ScenarioRequest(BaseModel):
 
     @model_validator(mode='after')
     def unique_proposed_crops(self):
+        for crop in [*self.crops, *self.baseline_crops, *(self.market_available_crops or [])]:
+            if crop not in KNOWN_CROP_IDS:
+                raise ValueError('Unknown crop identifier; select a crop from the directory')
         if len(set(self.crops)) != len(self.crops):
             raise ValueError('Each crop may appear only once in the proposed sequence')
         if (self.latitude is None) != (self.longitude is None):
