@@ -132,6 +132,17 @@ def regional_smap_from_archive(raw_polygon: dict, target_date: date) -> dict[str
                 result = _answer(target_date, area, "data_unavailable", None)
                 result["limitations"].append("No existe un HDF5 SMAP autenticado y verificado en el archivo privado.")
                 return result
-            return read_smap_am(path, raw_polygon, target_date)
+            result = read_smap_am(path, raw_polygon, target_date)
+            result["provenance"] = "sha256_verified_calca_native_grid_subset_from_nasa_original"
+            result["archive_format"] = "NASA-native-grid-regional-subset"
+            result["limitations"].append(
+                "El archivo archivado es un subconjunto regional de celdas NASA nativas; "
+                "no es el HDF5 global original ni una medición de la parcela."
+            )
+            with h5py.File(path, "r") as derived:
+                original_sha = derived.attrs.get("source_original_sha256")
+                if isinstance(original_sha, str) and len(original_sha) == 64:
+                    result["source_original_sha256"] = original_sha
+            return result
     except ArchiveError as exc:
         raise SMAPError("Archivo privado SMAP inaccesible o sin integridad verificable.") from exc
