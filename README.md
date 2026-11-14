@@ -1,6 +1,6 @@
 # BIOTEX · NSPACE BIOTEX — Field Shift crop-rotation decision support (repository: TERRA360-AI)
 
-**App:** https://terra360-ai.netlify.app/ (ES/EN selector in the header; `?lang=en` opens it in English)
+**App (Vercel):** https://terra360-ai-xi.vercel.app/\n**Alternative deployment:** https://terra360-ai.netlify.app/ (ES/EN selector in the header; `?lang=en` opens it in English)
 **API:** https://terra360-api.onrender.com/api/health · Spanish README: [README.es.md](README.es.md)
 
 BIOTEX helps family farmers in the irrigated coastal valleys of Lima, Peru (demo zones **Huaral** and **Barranca**) see how their crop rotation affects their **soil** and how exposed it is to **scarce dry-season irrigation water and heat**. It compares the farmer's current rotation with two alternatives:
@@ -22,6 +22,23 @@ All indicators are **relative to the current rotation**. They are not yield, pro
 - **GeoJSON limits:** malformed/non-finite coordinates return HTTP 422; manual GeoJSON follows the same parcel area limits as drawn fields.
 - **NASA GPM IMERG basin climatology:** when `backend/app/data/imerg_basin_seed.json` is absent, the app displays an unavailable state rather than inventing precipitation. Basin precipitation is not river discharge or the farmer's irrigation entitlement.
 - **Validation status:** documented methods and automated tests are not field validation. Crop water is a relative Kc × ET0 estimate, not measured irrigation needs or yield.
+
+## BIOTEX v0.23 — mobile-first farmer journey
+
+The public interface now follows plain-language screens that can be used on a phone:
+
+1. **Mi chacra:** starts in **Barranca (Pativilca / Supe)**. Two precomputed demo fields are clearly labeled as examples. Farmers can search for a town via OpenStreetMap Nominatim (one explicit search per action), zoom into a satellite image, and draw their own field boundary. The search works beyond Barranca.
+2. **Mis cultivos:** enter crops and sowing months manually; satellite image clues are optional and **never identify crops with certainty**. No GeoJSON, NDVI, or remote-sensing jargon is required.
+3. **Mis prioridades:** choose water, soil or both, a crop to keep growing, and whether irrigation water is scarce. No four technical sliders.
+4. **Mi plan:** the server compares existing and alternative rotations automatically and highlights an alternative **only when transparent relative estimates support it**. Trade-offs, risks, crop calendar and other options are clear. A source/uncertainty section remains expandable.
+
+**Scope:** the Barranca demo is the main story. Locations elsewhere can be found and fields drawn, but crop rotation calculations are currently limited to the **coastal Lima** reference calendar. Expansion requires local crop calendars, soil measurements and agronomic validation. No fake satellite or farmer data are filled.
+
+**Technical view:** `/?vista=comparador-tecnico` retains the previous S0/S1/S2 interface. The public UI never needs to show those labels.
+
+**Printable report:** the browser's Print / Save PDF action creates a dedicated **A4 portrait** document with field context, crop calendar, result indicators, comparison tables, labelled bar charts, limitations and source methods. Print styling avoids clipped cards, horizontal overflow and tables split mid-row.
+
+**Developer UX skill:** `.agents/skills/ui-ux-pro-max/` includes the official open-source UI UX Pro Max reference material for reuse in coding agents. It is not a ChatGPT plugin installation. The design follows WCAG-oriented contrast, labelled controls, minimum touch sizes, responsive layout and reduced-motion preferences.
 
 ## How it works
 
