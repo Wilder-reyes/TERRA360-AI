@@ -86,7 +86,7 @@ function FarmerDashboard({data,loading,metric,onMetric,days,onDays,guidance,sele
  const records=data?.records||[]
  const climate=useMemo(()=>computeClimate(records),[data])
  const completeness=climate.validRain+'/'+records.length
- const activeCropGuidance=guidance?.selected_crop?.id===selectedCrop?.id?guidance.selected_crop:guidance?.candidates.find(c=>c.id===selectedCrop?.id)
+ const activeCropGuidance=guidance&&guidance.selected_crop?.id===selectedCrop?.id?guidance.selected_crop:guidance?.candidates.find(c=>c.id===selectedCrop?.id)
  return <section id="farmer-report" className="f-report" aria-labelledby="f-report-title">
   <div className="f-report-top"><div><span className="f-eyebrow">MI INFORME AGRÍCOLA</span><h2 id="f-report-title">Así está la información de tu zona</h2><p>Datos que conocemos, información que falta y cultivos que puedes revisar.</p></div><button type="button" className="f-btn f-btn-primary f-print" onClick={onPrint}>Imprimir o guardar en PDF</button></div>
   <div className="f-report-meta"><span><strong>Lugar:</strong> {fieldName.trim()||'Huando / punto elegido en el mapa'}</span><span><strong>Fecha del informe:</strong> {nowStamp()}</span><span><strong>Consulta:</strong> {referenceOnly?'Referencia estadística de Huando; no es una chacra':'Punto marcado por el agricultor; no delimita una propiedad'}</span></div>
