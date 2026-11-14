@@ -1,3 +1,7 @@
 -r requirements.txt
-# The optional experimental model currently uses numpy (already a dependency of pandas).
-# No cloud ML service or paid API is needed.
+# Optional local/offline inference; never installed in the lightweight API image.
+# Install a CPU-only torch wheel first on machines without a GPU (see docs).
+chronos-forecasting==2.3.2
+torch==2.15.0
+transformers==5.23.0
+accelerate==1.15.0

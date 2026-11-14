@@ -1,0 +1,26 @@
+.terra-rain-forecast{min-width:0;grid-column:1/-1}
+.terra-geo-forecast .terra-geo-key{display:none}
+@media(min-width:851px){.terra-geo-forecast:not(.terra-geo-compact) .terra-geo-shell{height:720px}.terra-geo-forecast:not(.terra-geo-compact) .terra-geo-inspector{max-height:720px}}
+.terra-rain-forecast .terra-forecast-pilot{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px;margin:13px 0;background:#edf4f8;border:1px solid #d2e2eb;border-radius:9px;font-size:.76rem;color:#345e76}
+.terra-forecast-pilot button{border:0;background:transparent;color:#155d47;text-decoration:underline;text-underline-offset:3px;padding:4px;font-size:inherit;font-weight:750;cursor:pointer}
+.terra-forecast-result{padding-top:10px}
+.terra-rain-forecast .terra-forecast-month{font-weight:750;text-transform:capitalize;color:#194d37;margin-bottom:0}
+.terra-forecast-estimate{display:block;font-size:2.8rem;letter-spacing:-.04em;color:#194d37;line-height:1.2}
+.terra-forecast-estimate span{font-size:1rem;letter-spacing:0}
+.terra-forecast-range{position:relative;height:34px;margin:18px 8px 10px;border-bottom:1px solid #ccdbe3}
+.terra-forecast-interval{position:absolute;top:11px;height:10px;background:#b7d8e8;border-radius:3px;min-width:1px}
+.terra-forecast-median{position:absolute;top:5px;height:22px;width:3px;background:#2779b0;transform:translateX(-50%)}
+.terra-forecast-reference{position:absolute;top:3px;height:26px;border-left:2px dashed #6b7f70;transform:translateX(-50%)}
+.terra-forecast-values{display:grid;gap:8px;font-size:.79rem;margin:14px 0}
+.terra-forecast-values>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px}
+.terra-forecast-values dt{color:#526a59}.terra-forecast-values dd{margin:0;font-weight:750;color:#194d37}
+.terra-rain-forecast .terra-forecast-evaluation,.terra-rain-forecast .terra-forecast-warning{padding:10px 12px;border-left:3px solid #b27b37;background:#fbf5e9;color:#795526;border-radius:0 7px 7px 0}
+.terra-rain-forecast .terra-forecast-evaluation.improved{border-color:#2779b0;background:#edf4f8;color:#345e76}
+.terra-forecast-fold{display:grid;gap:4px;padding:9px 0;border-bottom:1px solid #dbe5db;font-size:.75rem;color:#526a59}
+.terra-rain-forecast details{font-size:.8rem;margin-top:14px}.terra-rain-forecast summary{cursor:pointer;font-weight:750;color:#315541}
+.terra-rain-forecast button:focus-visible,.terra-rain-forecast summary:focus-visible{outline:3px solid #2779b0;outline-offset:3px}
+.terra-forecast-adaptation{padding-top:12px;border-top:1px solid #dbe5db}
+.terra-forecast-comparison{width:100%;border-collapse:collapse;font-size:.7rem;table-layout:fixed;margin:12px 0;color:#315541}
+.terra-forecast-comparison caption{text-align:left;font-size:.7rem;color:#526a59;margin-bottom:6px}
+.terra-forecast-comparison th,.terra-forecast-comparison td{padding:7px 2px;text-align:right;border-bottom:1px solid #dbe5db;overflow-wrap:anywhere}
+.terra-forecast-comparison th:first-child{text-align:left;font-weight:650}

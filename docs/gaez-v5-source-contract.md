@@ -1,8 +1,11 @@
 # FAO GAEZ v5 — contrato de datos antes de integrar aptitud espacial
 
-**Revisión de fuentes oficiales:** 14 noviembre 2026. **Estado: origen y
-estructura documentados; ninguna capa de aptitud agrícola integrada ni
-validada localmente.**
+**Revisión de fuentes oficiales:** 14 noviembre 2026. **Actualización:** se
+integró el mapa histórico regional RES05-SIX para tres cultivos y cuatro
+escenarios, con leyenda/licencia específicas y hashes verificados.
+Véase el [contrato implementado y sus límites](agricultural-suitability.md).
+La validación agronómica local continúa pendiente. Las secciones siguientes
+conservan los requisitos y el estado de la investigación inicial.
 
 ## Fuentes y versión
 

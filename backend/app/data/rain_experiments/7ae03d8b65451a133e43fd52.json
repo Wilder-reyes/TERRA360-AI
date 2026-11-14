@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "experiment_id": "87d8af11bd9b3a0327ebf0e9b48e959c14dec2b7d0087c2af9128acd6a7723f1",
+  "created_at": "2026-11-14T17:54:53.613579+00:00",
+  "as_of": "2026-11-14",
+  "location": {
+    "latitude": -13.32175,
+    "longitude": -71.95605
+  },
+  "model_id": "amazon/chronos-2",
+  "model_revision": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+  "history_months": 360,
+  "training_months": 286,
+  "independent_series": 1,
+  "lead_months": 2,
+  "dates": {
+    "train_from": "1996-11-01",
+    "train_to": "2020-08-01",
+    "validation_from": "2020-10-01",
+    "validation_to": "2022-09-01",
+    "test_from": "2022-11-01",
+    "test_to": "2026-10-01"
+  },
+  "configuration": {
+    "method": "lora",
+    "rank": 8,
+    "alpha": 16,
+    "steps": 60,
+    "learning_rate": 1e-05,
+    "batch_size": 8,
+    "context_length": 96,
+    "seed": 2026,
+    "minimum_validation_improvement": 0.05
+  },
+  "adapter_sha256": "1acffce67e644e3c40596745f6e81c6444fa69600e354a217bd0531423d7ab92",
+  "trainable_parameters": 1206912,
+  "total_parameters": 120684576,
+  "packages": {
+    "chronos-forecasting": "2.3.2",
+    "peft": "0.21.0",
+    "torch": "2.15.0+cpu",
+    "transformers": "5.23.0"
+  },
+  "validation": {
+    "selected": "original",
+    "chosen_using": "development_validation_only",
+    "original": {
+      "examples": 24,
+      "mae_mm": 50.01860975265503,
+      "seasonal_mae_mm": 51.9425,
+      "p10_p90_coverage": 0.5833333333333334
+    },
+    "lora": {
+      "examples": 24,
+      "mae_mm": 50.008968105316164,
+      "seasonal_mae_mm": 51.9425,
+      "p10_p90_coverage": 0.5833333333333334
+    }
+  },
+  "test_folds": [
+    {
+      "from_month": "2022-11-01",
+      "to_month": "2024-10-01",
+      "original": {
+        "examples": 24,
+        "mae_mm": 20.12437054316203,
+        "seasonal_mae_mm": 21.048125000000002,
+        "p10_p90_coverage": 0.6666666666666666
+      },
+      "lora": {
+        "examples": 24,
+        "mae_mm": 20.128445116678876,
+        "seasonal_mae_mm": 21.048125000000002,
+        "p10_p90_coverage": 0.6666666666666666
+      },
+      "seasonal_mae_mm": 21.048125000000002
+    },
+    {
+      "from_month": "2024-11-01",
+      "to_month": "2026-10-01",
+      "original": {
+        "examples": 24,
+        "mae_mm": 38.162519696553545,
+        "seasonal_mae_mm": 37.905625,
+        "p10_p90_coverage": 0.7083333333333334
+      },
+      "lora": {
+        "examples": 24,
+        "mae_mm": 38.18674874623616,
+        "seasonal_mae_mm": 37.905625,
+        "p10_p90_coverage": 0.7083333333333334
+      },
+      "seasonal_mae_mm": 37.905625
+    }
+  ],
+  "test_previously_examined": true,
+  "eligible_for_publication": false,
+  "published": false,
+  "limitations": [
+    "Retrospective NASA data; the test periods were previously examined with the original model.",
+    "Three candidates selected using 24 validation targets from one regional series; not independent field observations.",
+    "No prospective validation, local interval calibration, spatial transfer or crop/irrigation validation."
+  ],
+  "candidate_experiment_id": "c6143ccefa1d8f77f084b250ff4a08a6288b9183121b7a0861ed10a75420bd3e",
+  "records_sha256": "43e87aec764bc1a5ff3f1d10451ae70a6e3e24353c6e0cd00b6f55451229b08a",
+  "candidates": [
+    {
+      "experiment_id": "c6143ccefa1d8f77f084b250ff4a08a6288b9183121b7a0861ed10a75420bd3e",
+      "learning_rate": 1e-05,
+      "steps": 60,
+      "validation_mae_mm": 50.008968105316164
+    },
+    {
+      "experiment_id": "786f02bab4379599b79c6e83477671e4a43e9ba4a834cd30613979eff62958d4",
+      "learning_rate": 0.0001,
+      "steps": 120,
+      "validation_mae_mm": 50.06552092234294
+    },
+    {
+      "experiment_id": "74fb63b7235b73d2a2d11e5966ef4d3241fdb87f23a204ce9cc7ede074405eb6",
+      "learning_rate": 0.001,
+      "steps": 120,
+      "validation_mae_mm": 51.12688469568889
+    }
+  ]
+}

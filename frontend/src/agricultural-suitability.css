@@ -1,0 +1,32 @@
+.terra-suitability{min-width:0;grid-column:1/-1}
+.terra-geo-suitability .terra-geo-key{display:none}
+.terra-geo-suitability .terra-geo-map-caption{display:none}
+.terra-geo-suitability .terra-geo-draw-actions{display:none}
+.terra-geo-suitability .terra-geo-layer-pills{max-height:118px;overflow:auto;align-content:start}
+.terra-geo-suitability .terra-geo-layer-pills .active{order:-1}
+.terra-suitability-controls{display:grid;gap:10px;margin-top:16px}
+.terra-suitability-controls label{display:grid;gap:5px;font-size:.78rem;font-weight:750;color:#365e46}
+.terra-suitability-controls select{min-width:0;width:100%;border:1px solid #c3d4ca;background:#fff;border-radius:8px;padding:9px 7px;color:#234f3b;font-size:.8rem}
+.terra-suitability-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.terra-suitability-focus{border:0;background:transparent;padding:7px 0;color:#155d47;font-size:.78rem;font-weight:750;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.terra-suitability .terra-geo-fetch{margin:0;cursor:pointer}
+.terra-suitability .terra-suitability-note{border-left:3px solid #b98b39;background:#fbf5e9;padding:10px 12px;margin:14px 0;color:#70532b;font-size:.77rem}
+.terra-suitability-legend{margin-top:18px;padding:12px;border:1px solid #d2e0d5;border-radius:10px;background:#fff}
+.terra-suitability-legend>strong{font-size:.84rem;color:#234f3b}
+.terra-suitability table{width:100%;border-collapse:collapse;font-size:.75rem;margin-top:8px;font-variant-numeric:tabular-nums;color:#355646}
+.terra-suitability caption{text-align:left;color:#607468;font-size:.73rem;padding-bottom:8px}
+.terra-suitability th,.terra-suitability td{padding:7px 2px;border-bottom:1px solid #e4ebe5;text-align:right}
+.terra-suitability th:first-child{text-align:left;font-weight:650}
+.terra-suitability tbody tr:last-child>*{border-bottom:0}
+.terra-suitability th i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:7px;border:1px solid #0002}
+.terra-suitability .terra-suitability-result p{font-size:.76rem}
+.terra-suitability details{margin:14px 0 0;font-size:.79rem;color:#355646}
+.terra-suitability summary{font-weight:750;cursor:pointer;padding:4px 0}
+.terra-suitability-factors{display:grid;gap:10px;margin:12px 0}
+.terra-suitability-factors dt{font-weight:750}.terra-suitability-factors dd{margin:3px 0 0;color:#607468;font-size:.77rem;line-height:1.5}
+.terra-suitability .terra-suitability-digest{overflow-wrap:anywhere;font-size:.65rem;font-family:monospace}
+.terra-suitability a{color:#155d47;text-underline-offset:3px}
+.terra-suitability button:focus-visible,.terra-suitability select:focus-visible,.terra-suitability summary:focus-visible{outline:3px solid #2779b0;outline-offset:3px}
+.terra-suitability-map-label{position:absolute;z-index:600;left:12px;bottom:66px;max-width:calc(100% - 24px);padding:9px 12px;background:#fffef5f2;border:1px solid #cad6cc;border-radius:8px;box-shadow:0 2px 12px #0002;color:#284837;font-size:.75rem;pointer-events:none;line-height:1.5}
+.terra-suitability-map-label strong,.terra-suitability-map-label span{display:block}
+@media(min-width:851px){.terra-geo-suitability:not(.terra-geo-compact) .terra-geo-shell{height:820px;grid-template-columns:minmax(0,1.6fr) minmax(320px,1fr)}.terra-geo-suitability:not(.terra-geo-compact) .terra-geo-inspector{max-height:820px}}

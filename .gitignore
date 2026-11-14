@@ -26,3 +26,8 @@ Thumbs.db
 /backend/models/
 /backend/data/
 !frontend/.env.production.example
+
+# Local browser test output
+/frontend/test-results/
+/frontend/playwright-report/
+*.tsbuildinfo

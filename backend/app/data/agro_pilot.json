@@ -1,0 +1,23 @@
+{
+  "id": "cusco-calca-v1",
+  "country": "Perú",
+  "region": "Cusco",
+  "name": "Calca · Valle Sagrado",
+  "location": {"latitude": -13.32175, "longitude": -71.95605},
+  "coordinate_type": "town_reference_point_not_surveyed_parcel",
+  "field_records_available": false,
+  "water_regime": "unknown",
+  "history_years": 15,
+  "crops": [
+    {"id": "maize", "name": "Maíz Blanco Gigante del Cusco", "scientific_name": "Zea mays", "ecocrop_id": "ecocrop_2175"},
+    {"id": "potato", "name": "Papa", "scientific_name": "Solanum tuberosum", "ecocrop_id": "ecocrop_1971"},
+    {"id": "faba", "name": "Haba para grano seco", "scientific_name": "Vicia faba", "ecocrop_id": "ecocrop_2146"},
+    {"id": "barley", "name": "Cebada para grano", "scientific_name": "Hordeum vulgare", "ecocrop_id": "ecocrop_1232"}
+  ],
+  "capabilities": {
+    "regional_rain_forecast": "experimental_pretrained_zero_shot",
+    "crop_suitability": "historical_regional_gaez_v5_not_field_validated",
+    "erosion": "insufficient_data",
+    "water_stress": "insufficient_data"
+  }
+}

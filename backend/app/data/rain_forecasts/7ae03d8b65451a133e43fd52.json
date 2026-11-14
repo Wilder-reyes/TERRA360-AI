@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "status": "available",
+  "issued_at": "2026-11-14T17:26:21.686647Z",
+  "as_of": "2026-11-14",
+  "location": {
+    "latitude": -13.32175,
+    "longitude": -71.95605
+  },
+  "model": {
+    "id": "amazon/chronos-2",
+    "revision": "29ec3766d36d6f73f0696f85560a422f50e8498c",
+    "package_version": "2.3.2",
+    "mode": "pretrained_zero_shot",
+    "fine_tuned": false
+  },
+  "source": {
+    "name": "NASA POWER",
+    "url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+    "time_standard": "UTC",
+    "representation": "Regional gridded estimate; not an in-situ parcel measurement",
+    "records_sha256": "46364bfff05138571574fb721e2eaf0204f8a7fef7c6e9d26f1185c29fa992c6",
+    "first_month": "2011-11-01",
+    "last_month": "2026-10-01",
+    "complete_months": 180,
+    "retrieved_at": "2026-11-14T17:13:57.017682Z"
+  },
+  "target_month": "2026-12-01",
+  "prediction": {
+    "p10_mm": 66.67011260986328,
+    "median_mm": 111.13899230957031,
+    "p90_mm": 233.79376220703125
+  },
+  "seasonal_reference_mm": 126.92,
+  "clipped_negative_quantiles": 2,
+  "evaluation": {
+    "status": "did_not_beat_seasonal_reference",
+    "folds": [
+      {
+        "from_month": "2022-11-01",
+        "to_month": "2024-10-01",
+        "examples": 24,
+        "mae_model_mm": 19.139507528940836,
+        "mae_seasonal_mm": 21.789791666666666,
+        "relative_improvement": 0.12162962263563772,
+        "empirical_p10_p90_coverage": 0.75
+      },
+      {
+        "from_month": "2024-11-01",
+        "to_month": "2026-10-01",
+        "examples": 24,
+        "mae_model_mm": 39.2117951965332,
+        "mae_seasonal_mm": 39.108958333333334,
+        "relative_improvement": -0.0026294963502574028,
+        "empirical_p10_p90_coverage": 0.75
+      }
+    ],
+    "minimum_improvement_per_fold": 0.05,
+    "lead_months": 2,
+    "independent_field_validation": false,
+    "data_vintages": "retrospective_final_data_not_archived_vintages",
+    "interval_calibrated": false
+  },
+  "history": [
+    {
+      "month": "2025-11-01",
+      "total_mm": 42.94
+    },
+    {
+      "month": "2025-12-01",
+      "total_mm": 103.52
+    },
+    {
+      "month": "2026-01-01",
+      "total_mm": 180.6
+    },
+    {
+      "month": "2026-02-01",
+      "total_mm": 71.14
+    },
+    {
+      "month": "2026-03-01",
+      "total_mm": 129.32999999999998
+    },
+    {
+      "month": "2026-04-01",
+      "total_mm": 68.47
+    },
+    {
+      "month": "2026-05-01",
+      "total_mm": 21.09
+    },
+    {
+      "month": "2026-06-01",
+      "total_mm": 6.07
+    },
+    {
+      "month": "2026-07-01",
+      "total_mm": 0.44
+    },
+    {
+      "month": "2026-08-01",
+      "total_mm": 31.279999999999998
+    },
+    {
+      "month": "2026-09-01",
+      "total_mm": 23.14
+    },
+    {
+      "month": "2026-10-01",
+      "total_mm": 171.81
+    }
+  ],
+  "limitations": [
+    "Predicción experimental regional de lluvia; no mide lluvia ni agua disponible en una parcela.",
+    "Los cuantiles 10–90 del modelo no son un intervalo calibrado localmente.",
+    "La evaluación es retrospectiva con datos finales NASA; no reconstruye sus fechas históricas de publicación ni descarta solapamiento con el preentrenamiento.",
+    "No hay validación independiente de campo o transferencia geográfica; no determina aptitud, cosecha ni riego.",
+    "Los cuantiles negativos de precipitación se recortan a cero; el recorte queda registrado."
+  ],
+  "is_field_forecast": false,
+  "used_in_crop_decision": false,
+  "is_irrigation_prescription": false
+}

@@ -1,4 +1,3 @@
-
 /// <reference types="vite/client" />
 
 declare module '*.css' {
@@ -19,7 +18,14 @@ declare module 'react-leaflet' {
   export const Rectangle: ComponentType<any>
   export const CircleMarker: ComponentType<any>
   export const WMSTileLayer: ComponentType<any>
+  export const GeoJSON: ComponentType<any>
   export const Popup: ComponentType<any>
-  export function useMap(): {setView:(center:[number,number],zoom:number)=>void;getZoom:()=>number}
-  export function useMapEvents(events:{click:(e:{latlng:{lat:number;lng:number}})=>void}):void
+  export function useMap(): {
+    setView:(center:[number,number],zoom:number)=>void
+    getZoom:()=>number
+    invalidateSize:(options?:{pan?:boolean})=>void
+    getBounds:()=>{getWest:()=>number;getSouth:()=>number;getEast:()=>number;getNorth:()=>number}
+    fitBounds:(bounds:[[number,number],[number,number]],options?:{padding?:[number,number];animate?:boolean})=>void
+  }
+  export function useMapEvents(events:{click?:(e:{latlng:{lat:number;lng:number}})=>void;moveend?:()=>void}):void
 }

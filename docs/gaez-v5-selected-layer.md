@@ -1,9 +1,14 @@
 # FAO GAEZ v5 — verificación real y consulta de código original (v0.15)
 
+Este documento describe la consulta antigua de **yuca** y conserva su alcance
+de código bruto. La nueva [vista de aptitud agrícola regional](agricultural-suitability.md)
+usa otras doce capas de maíz, papa y cebada con leyenda y licencia verificadas.
+Su clasificación no transforma esta consulta antigua en diagnóstico de parcela.
+
 **Fecha de comprobación:** 14 de noviembre de 2026. Esta integración separa
 tres cosas: (1) raster original auténtico, (2) código numérico bruto de celda
-y (3) clasificación científica de aptitud. **Solo (1) y (2) están
-implementados; NO existe aún interpretación de clases ni diagnóstico de parcela.**
+y (3) clasificación científica de aptitud. **En esta consulta de yuca solo
+(1) y (2) están implementados; no se ofrece diagnóstico de parcela.**
 
 ## Fuente oficial verificada
 
