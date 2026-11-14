@@ -11,6 +11,7 @@ type Scene = {date:string;cloud_cover_percent:number;satellite:string;scene_id:s
 type SceneResponse = {scenes:Scene[];status:string;source_url:string}
 type Area = [Position,Position]
 type Place={id:number;name:string;country?:string;admin1?:string;latitude:number;longitude:number}
+type Terrain={elevation_m:number;neighborhood_min_m:number;neighborhood_max_m:number;approximate_gradient_degrees:number;spacing_m:number;resolution_m_approx:number;can_decide_field_slope:false}
 type Seasonality={source:string;period:{from:number;to:number};coverage_ok:boolean;months:{month:number;years_with_data:number;median_rain_mm:number|null}[]}
 type History={source:string;period:{start_year:number;end_year:number};records:{year:number;status:'complete'|'partial'|'unavailable';precipitation_total_mm:number|null}[]}
 
@@ -77,6 +78,9 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const [placeLoading,setPlaceLoading]=useState(false)
   const [placeError,setPlaceError]=useState('')
   const [rasterFailed,setRasterFailed]=useState(false)
+  const [terrain,setTerrain]=useState<Terrain|null>(null)
+  const [terrainLoading,setTerrainLoading]=useState(false)
+  const [terrainError,setTerrainError]=useState('')
   const [area,setArea]=useState<Area|null>(null)
   const [polygon,setPolygon]=useState<Position[]|null>(null)
   const [polygonDrawing,setPolygonDrawing]=useState(false)
@@ -88,7 +92,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const [scenes,setScenes]=useState<SceneResponse|null>(null)
   const [loadingScenes,setLoadingScenes]=useState(false)
   const [sceneError,setSceneError]=useState('')
-  useEffect(()=>{setScenes(null);setSceneError('')},[point?.lat,point?.lng])
+  useEffect(()=>{setScenes(null);setSceneError('');setTerrain(null);setTerrainError('')},[point?.lat,point?.lng])
   const records=data?.records||[]
   const last=records.length?records[records.length-1].date:''
   const maxMonthlyRain=Math.max(0,...(seasonal?.months.map(m=>m.median_rain_mm||0)||[]))
@@ -122,6 +126,20 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
     const candidate=polygon.map((v,i)=>i===index?p:v)
     if(!validatePolygon(candidate).valid){setPolygonError(en?'This corner would make the outline invalid.':'Esa esquina haría que el contorno no sea válido.');return false}
     setPolygon(candidate);setPolygonError('');return true
+  }
+  async function loadTerrain(){
+    if(!point||terrainLoading)return
+    setTerrainLoading(true);setTerrainError('');setTerrain(null)
+    try{
+      const params=new URLSearchParams({latitude:String(point.lat),longitude:String(point.lng)})
+      const r=await fetch(api+'/api/environment/terrain?'+params.toString())
+      if(!r.ok)throw Error('terrain lookup unavailable')
+      const v=await r.json() as Terrain
+      if(!Number.isFinite(v.elevation_m)||v.can_decide_field_slope!==false)throw Error('invalid terrain')
+      setTerrain(v)
+    }catch{
+      setTerrainError(en?'No reliable elevation reading is available right now. Try later.':'No pudimos consultar una altura confiable en este momento. Prueba más tarde.')
+    }finally{setTerrainLoading(false)}
   }
   async function searchPlace(){
     if(placeLoading||placeQuery.trim().length<3)return
@@ -204,6 +222,10 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           {layer!=='srtm_map'&&<label className="terra-geo-date">{en?'Observation date':'Fecha de observación'}<select value={current?.date||last} onChange={e=>setDate(e.target.value)} disabled={!records.length}>{records.slice().reverse().map(r=><option key={r.date} value={r.date}>{r.date}</option>)}</select></label>}
           <p>{layer==='gpm_map'?(en?'Daily visualisation of satellite-based precipitation rate. The colours do not measure rain accumulated on your specific field.':'Visualización diaria de la intensidad de lluvia estimada por satélite. Los colores no miden la lluvia acumulada en tu parcela.'):layer==='smap_map'?(en?'SMAP model-based surface soil moisture, with approximately 9 km cells. Not a soil sensor reading at your field.':'Humedad superficial estimada por el modelo SMAP, aproximadamente a 9 km de resolución. No es la lectura de un sensor de tu terreno.') :layer==='ndvi_map'?(en?'A NASA MODIS vegetation index visualization (roughly 250 m), not a Sentinel-2 field diagnosis.':'Visualización de vegetación NASA MODIS (aprox. 250 m), no diagnóstico de salud ni imagen Sentinel-2.'):(en?'NASA SRTM v3 elevation colours are based on historical radar mapping. The colours describe broad relief, not a measured slope or elevation at your plot.':'Los colores de elevación NASA SRTM v3 proceden de un mapa topográfico histórico. No equivalen a una pendiente ni altura medida en tu parcela.')}</p>
           <p>{en?'This is a NASA-provided colour map; the image may have gaps, cloud-related limitations or missing dates. It is not a measurement from the selected rectangle.':'Es un mapa de colores proporcionado por NASA. Puede tener zonas sin datos o fechas no disponibles. No es una medición del rectángulo seleccionado.'}</p>
+          {layer==='srtm_map'&&point&&<div className="terra-geo-terrain"><button type="button" onClick={()=>void loadTerrain()} disabled={terrainLoading}>{terrainLoading?(en?'Checking elevation…':'Consultando altura…'):(en?'Check approximate elevation':'Consultar altura aproximada')}</button>
+            {terrainError&&<p role="alert">{terrainError}</p>}
+            {terrain&&<div className="terra-geo-terrain-result"><strong>{terrain.elevation_m.toLocaleString(en?'en-US':'es-PE',{maximumFractionDigits:0})} m</strong><small>{en?'Estimated altitude from a 90 m DEM':'Altitud estimada del modelo de 90 m'}</small><div className="terra-geo-terrain-values"><span>{en?'Neighbouring elevations':'Alturas cercanas'}: {terrain.neighborhood_min_m}–{terrain.neighborhood_max_m} m</span><span>{en?'Approximate gradient':'Desnivel aproximado'}: {terrain.approximate_gradient_degrees.toFixed(1)}°</span></div><p>{en?'Based on five elevation samples around 180 m from the selected point; not a measured farm slope.':'Calculado con cinco muestras del entorno separadas unos 180 m. No es una medición de la pendiente real de tu parcela.'}</p></div>}
+          </div>}
           {rasterFailed&&<p role="alert">{en?'Some NASA map tiles failed to load. Choose another date or try later.':'Algunas imágenes NASA no pudieron cargarse. Elige otra fecha o vuelve a intentarlo.'}</p>}
           {point&&<img className="terra-geo-nasa-legend" alt={en?'Legend supplied by NASA GIBS; colours and units vary by layer':'Leyenda proporcionada por NASA GIBS; colores y unidades según la capa'} src={`https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?service=WMS&version=1.1.1&request=GetLegendGraphic&format=image/png&layer=${nasaLayer}&style=default`} onError={e=>{e.currentTarget.style.display='none'}}/>}
           <a href={`https://worldview.earthdata.nasa.gov/?l=${nasaLayer}${layer==='srtm_map'?'':`&t=${rasterDate}`}`} target="_blank" rel="noreferrer">{en?'See NASA original map and legend':'Ver el mapa y leyenda originales de NASA'}</a>
