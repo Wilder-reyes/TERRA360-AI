@@ -17,10 +17,16 @@ import numpy as np
 import rasterio
 import requests
 from pyproj import Transformer
-from scripts.verify_gaez_res05_official import (
-    VerificationError, download_inventory, read_catalog, select_one,
-    check_official_object
-)
+if __package__:
+    from scripts.verify_gaez_res05_official import (
+        VerificationError, download_inventory, read_catalog, select_one,
+        check_official_object
+    )
+else:
+    from verify_gaez_res05_official import (
+        VerificationError, download_inventory, read_catalog, select_one,
+        check_official_object
+    )
 
 MAX_TIFF_BYTES = 12 * 1024 * 1024
 CALCA_REFERENCE = (-71.95605,-13.32175)
