@@ -9,6 +9,7 @@ import {SmapRegional} from './SmapRegional'
 import {GaezRaw} from './GaezRaw'
 import type {ApiResult, Position, RecordRow} from './domain'
 import './geo-workspace.css'
+import {HUANDO_PILOT} from './pilot'
 
 type Layer = 'rain' | 'temperature' | 'humidity' | 'scenes' | 'sentinel_ndvi' | 'gpm_polygon' | 'smap_quant' | 'gaez_raw' | 'gpm_map' | 'smap_map' | 'ndvi_map' | 'srtm_map'
 type Base = 'streets' | 'satellite'
@@ -172,11 +173,12 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
       setSceneError(en?'We could not retrieve images for this place. Try again.':'No pudimos consultar las imágenes de esta zona. Inténtalo otra vez.')
     }finally{setLoadingScenes(false)}
   }
-  return <section className={`terra-geoworkspace ${compact?'terra-geo-compact':''}`} aria-label={en?'Interactive agricultural map':'Mapa agrícola interactivo'}>
+  return <section className={`terra-geoworkspace ${compact?'terra-geo-compact':''}`} aria-label={en?'Interactive agricultural map':'Mapa agrícola interactivo'} data-pilot-center={`${HUANDO_PILOT.lat},${HUANDO_PILOT.lng}`}>
     <div className="terra-geo-heading">
       <div><p className="mini-label">{en?'YOUR LAND, ON THE MAP':'TU TERRENO EN EL MAPA'}</p>
         <h2>{en?'Explore your land and its surroundings':'Explora tu terreno y su entorno'}</h2>
-        <p>{en?'Choose a location or mark an approximate rectangle. View real regional observations, not field measurements.':'Selecciona una ubicación o marca un rectángulo aproximado. Consulta datos regionales reales, no mediciones de tu parcela.'}</p>
+        <p>{en?'Touch the map where your farm is and choose what to view. Regional satellite data is not a field measurement.':'Toca el mapa donde está tu chacra y elige qué quieres ver. Los datos del satélite son de la zona, no mediciones de tu terreno.'}</p>
+        <div className="terra-geo-pilot-note"><strong>{en?'Starting area: Huando, Huaral':'Empezamos en Huando, Huaral'}</strong><span>{en?'Map reference only — it does not mark a farm.':'El mapa abre en esta zona, pero aún no marca tu chacra.'}</span></div>
       </div>
       <div className="terra-geo-base"><button type="button" aria-pressed={base==='streets'} className={base==='streets'?'active':''} onClick={()=>setBase('streets')}>{en?'Map':'Mapa'}</button><button type="button" aria-pressed={base==='satellite'} className={base==='satellite'?'active':''} onClick={()=>setBase('satellite')}>{en?'Aerial photo':'Foto aérea'}</button></div>
     </div>
@@ -191,7 +193,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
     </div>
     <div className="terra-geo-shell">
       <div className="terra-geo-mapbox">
-        <MapContainer center={[12,0]} zoom={2} scrollWheelZoom={false} className="terra-geo-map">
+        <MapContainer center={[HUANDO_PILOT.lat,HUANDO_PILOT.lng]} zoom={HUANDO_PILOT.initialZoom} scrollWheelZoom={false} className="terra-geo-map">
           {base==='streets'?<TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>:<TileLayer attribution='Tiles &copy; Esri, Maxar, Earthstar Geographics' url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>}
           {nasaLayer&&(rasterDate||layer==='srtm_map')&&point&&<WMSTileLayer key={`${nasaLayer}-${layer==='srtm_map'?'static':rasterDate}`} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi" layers={nasaLayer} styles="" format="image/png" transparent={true} version="1.1.1" time={layer==='srtm_map'?undefined:rasterDate} opacity={0.76} attribution='NASA GIBS / ESDIS' eventHandlers={{tileerror:()=>setRasterFailed(true)}}/>}
           <Recenter point={point}/>
@@ -216,13 +218,20 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           {area&&<button type="button" onClick={()=>{setArea(null);setCorner(null);setDraw(false)}}>{en?'Clear area':'Borrar área'}</button>}
         </div>
         {polygonError&&<p role="alert" className="terra-geo-poly-error">{polygonError}</p>}
-        <div className="terra-geo-map-caption">{polygon?(en?`Drawn polygon: about ${approximatePolygonHectares(polygon).toLocaleString('en-US',{maximumFractionDigits:2})} hectares; not surveyed.`:`Polígono dibujado: aproximadamente ${approximatePolygonHectares(polygon).toLocaleString('es-PE',{maximumFractionDigits:2})} hectáreas; no catastral.`):area?(en?`Drawn area: approximately ${approxHectares(area).toLocaleString('en-US',{maximumFractionDigits:1})} hectares; not surveyed.`:`Área dibujada: aproximadamente ${approxHectares(area).toLocaleString('es-PE',{maximumFractionDigits:1})} hectáreas; sin medición catastral.`):(en?'Click the map to choose a point.':'Haz clic para elegir un punto.')}</div>
+        <div className="terra-geo-map-caption">{polygon?(en?`Drawn polygon: about ${approximatePolygonHectares(polygon).toLocaleString('en-US',{maximumFractionDigits:2})} hectares; not surveyed.`:`Polígono dibujado: aproximadamente ${approximatePolygonHectares(polygon).toLocaleString('es-PE',{maximumFractionDigits:2})} hectáreas; no catastral.`):area?(en?`Drawn area: approximately ${approxHectares(area).toLocaleString('en-US',{maximumFractionDigits:1})} hectares; not surveyed.`:`Área dibujada: aproximadamente ${approxHectares(area).toLocaleString('es-PE',{maximumFractionDigits:1})} hectáreas; sin medición catastral.`):(en?'Touch your farm location on the map.':'Toca el mapa donde está tu chacra.')}</div>
       </div>
       <aside className="terra-geo-inspector">
         <div className="terra-geo-layer-title"><strong>{en?'What do you want to explore?':'¿Qué quieres explorar?'}</strong><small>{en?'Select one view':'Elige una vista'}</small></div>
         <div className="terra-geo-layer-pills">
-          {([['rain',en?'Rain':'Lluvia'],['temperature',en?'Temperature':'Temperatura'],['humidity',en?'Air humidity':'Humedad'],['scenes',en?'Satellite dates':'Imágenes'],['sentinel_ndvi',en?'Parcel Sentinel-2 NDVI':'NDVI Sentinel-2 de parcela'],['gpm_polygon',en?'GPM rainfall by area':'Lluvia GPM por área'],['smap_quant',en?'SMAP regional reading':'Humedad regional SMAP'],['gaez_raw',en?'FAO GAEZ v5 cell code':'Código FAO GAEZ v5'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
+          {([['rain',en?'Rain':'Lluvia'],['temperature',en?'Temperature':'Temperatura'],['sentinel_ndvi',en?'Vegetation in my field':'Vegetación de mi terreno']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
         </div>
+        <details className="terra-geo-more-layers">
+          <summary>{en?'More maps and technical data':'Más mapas y datos'}{(['rain','temperature','sentinel_ndvi'] as Layer[]).includes(layer)?'':' •'}</summary>
+          <div className="terra-geo-layer-pills">
+            {([['humidity',en?'Air humidity':'Humedad del aire'],['scenes',en?'Satellite dates':'Imágenes'],['gpm_polygon',en?'GPM rainfall by area':'Lluvia GPM por área'],['smap_quant',en?'SMAP regional reading':'Humedad regional SMAP'],['gaez_raw',en?'FAO GAEZ v5 cell code':'Código FAO GAEZ v5'],['gpm_map',en?'Satellite rain map':'Mapa lluvia NASA'],['smap_map',en?'Soil moisture map':'Mapa humedad suelo'],['ndvi_map',en?'Vegetation index':'Vegetación MODIS'],['srtm_map',en?'Elevation map':'Mapa de relieve']] as [Layer,string][]).map(([id,label])=><button key={id} type="button" aria-pressed={layer===id} className={layer===id?'active':''} onClick={()=>setLayer(id)}>{label}</button>)}
+          </div>
+          <p className="terra-geo-technical-caution">{en?'Extra data may have gaps. Earlier regional files for Calca, Cusco are not measurements of Huando.':'Los datos adicionales pueden estar incompletos. Los archivos regionales anteriores de Calca, Cusco no miden Huando.'}</p>
+        </details>
         {nasaLayer?<div className="terra-geo-reading terra-geo-raster-reading">
           <small>NASA GIBS · {layer==='gpm_map'?'GPM IMERG':layer==='smap_map'?'SMAP L4':layer==='ndvi_map'?'MODIS NDVI (8 días)':'SRTM v3'}</small>
           <h3>{title}</h3>
@@ -277,7 +286,16 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           {!point&&<p>{en?'Choose a point on the map first.':'Primero elige un punto en el mapa.'}</p>}
           {data&&<small>{data.period.start} — {data.period.end}</small>}
         </div>}
-        <div className="terra-geo-key"><strong>{en?'How to read this map':'Cómo interpretar el mapa'}</strong><p><span className="terra-geo-legend-dot"/> {en?'Colored circle: regional value for one NASA POWER query point. It is not a gridded field map.':'Círculo de color: valor regional para un punto de consulta NASA POWER. En IMERG, el cuadro azul representa una cuadrícula aproximada de 0,1°, no el píxel exacto.'}</p><p><span className="terra-geo-legend-line"/> {en?'Green outline: the approximate area you drew.':'Contorno verde: área aproximada que dibujaste.'}</p><p>{en?'Base map: OSM streets or Esri aerial imagery. The aerial photo is NOT a computed Sentinel-2 or NASA vegetation layer.':'Fondo: calles de OSM o foto aérea de Esri. La fotografía NO es un análisis de vegetación NASA ni de Sentinel-2.'}</p><p>{en?'NASA GIBS satellite maps are visual layers. The numeric point readings come from NASA POWER, a different product. Sentinel-2 NDVI is calculated only after outlining a parcel and requesting a per-scene analysis; it does not diagnose crops or inform ARIE. MODIS NDVI is a separate NASA visualization. Slope rasters are not computed here.':'Los mapas satelitales NASA GIBS son capas visuales. Los valores numéricos del punto provienen de NASA POWER, que es otro producto. El NDVI Sentinel-2 se calcula únicamente al delimitar un terreno y solicitar el análisis de una escena; no diagnostica cultivos ni orienta ARIE. El NDVI MODIS es una visualización distinta de NASA. No calculamos mapas de pendiente.'}</p></div>
+        <div className="terra-geo-key" role="group" aria-label={en?'Map legend':'Leyenda del mapa'}>
+          <strong>{en?'Map legend':'¿Qué significan los colores?'}</strong>
+          <p><span className="terra-geo-legend-dot"/> {en?'Colored circle: a regional reading where you touched. Blue means rainfall, orange temperature. Not a farm measurement.':'Círculo azul: lluvia regional; anaranjado: temperatura regional. No son mediciones de tu chacra.'}</p>
+          <p><span className="terra-geo-legend-line"/> {en?'Green outline: the approximate field outline you drew.':'Borde verde: terreno que marcaste de forma aproximada.'}</p>
+          <p><span className="terra-geo-legend-missing"/> {en?'No value displayed: data may be unavailable. Do not infer zero.':'Sin número o color: no hay un dato suficiente. No significa cero.'}</p>
+          <details className="terra-geo-explainer"><summary>{en?'Where do these readings come from?':'¿De dónde salen estos datos?'}</summary>
+            <p>{en?'The point readings use NASA POWER. Satellite maps use NASA GIBS; aerial imagery is a different base map. Their original grids are broader than individual farms. Sentinel-2 vegetation values require drawing a field and checking image quality.':'La lluvia y temperatura del punto provienen de NASA POWER. Los mapas de colores de NASA y la foto aérea son fuentes distintas. Una celda del satélite puede abarcar muchas chacras. Para analizar la vegetación con Sentinel-2 debes marcar el terreno y revisar la calidad de la imagen.'}</p>
+            <p>{en?'Huando sector centroid from MIDAGRI (2024), not a property boundary.':'El punto de referencia de Huando viene de MIDAGRI (2024), pero no señala límites de propiedad.'} <a href={HUANDO_PILOT.sourceUrl} target="_blank" rel="noreferrer">{en?'Official source':'Ver fuente oficial'}</a></p>
+          </details>
+        </div>
       </aside>
     </div>
   </section>
