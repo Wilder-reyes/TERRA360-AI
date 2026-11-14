@@ -12,3 +12,10 @@
 @media(max-width:550px){.terra-geoworkspace{padding:10px}.terra-geo-heading{align-items:flex-start;flex-direction:column}.terra-geo-base{width:100%}.terra-geo-base button{flex:1}.terra-geo-mapbox,.terra-geo-map{min-height:400px}.terra-geo-inspector{display:block}.terra-geo-compact .terra-geo-mapbox,.terra-geo-compact .terra-geo-map{min-height:300px}}
 
 .terra-geo-map-caption{font-weight:700;line-height:1.35}
+
+.terra-poly-vertex{display:grid;place-items:center}.terra-poly-vertex span{width:15px;height:15px;border:3px solid white;background:#196f50;border-radius:50%;display:block;box-shadow:0 0 0 2px #155b40,0 2px 9px #0004;cursor:grab}
+.terra-geo-draw-actions button:disabled{opacity:.48;cursor:not-allowed}
+.terra-geo-poly-error{position:absolute;left:12px;right:12px;bottom:65px;z-index:610;background:#fff6e8;color:#85451c;padding:9px 12px;border:1px solid #e9b37f;border-radius:9px;font-size:.78rem;line-height:1.4;box-shadow:0 2px 10px #0002}
+.terra-geo-raster-reading a{display:inline-flex;margin-top:8px;font-size:.8rem;text-decoration:underline;color:#155a42;font-weight:700}
+.terra-geo-raster-source{font-weight:700;font-size:.75rem!important}
+@media(max-width:600px){.terra-geo-draw-actions{top:6px;left:6px;right:6px;gap:4px}.terra-geo-draw-actions button{font-size:.72rem;padding:7px 8px}.terra-geo-poly-error{bottom:68px}}
