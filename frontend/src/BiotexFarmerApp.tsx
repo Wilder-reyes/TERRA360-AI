@@ -367,7 +367,7 @@ export default function BiotexFarmerApp(){
        <button type="submit" className="b-btn b-btn-solid" disabled={searching}><Icon name="search" size={19}/>{searching?t.waitSearch:t.find}</button>
       </form>
       {searchError&&<p className="b-error" role="alert">{searchError}</p>}
-      {places.length>0&&<div className="b-place-results" role="list">{places.map((p,i)=><button key={i} type="button" role="listitem" onClick={()=>pickPlace(p)}><Icon name="pin" size={18}/><span>{p.name}</span></button>)}</div>}
+      {places.length>0&&<div className="b-place-results">{places.map((p,i)=><button key={i} type="button" onClick={()=>pickPlace(p)}><Icon name="pin" size={18}/><span>{p.name}</span></button>)}</div>}
       <p className="b-map-label"><Icon name="pin" size={16}/>{place}</p>
       <p className="b-muted">{t.mapHint}</p>
       <div className="b-map-frame"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
