@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from app.schemas.scenarios import ScenarioRequest
 from app.services.arie import CROPS, REFERENCES, SCENARIOS, evaluate
 from app.services.crop_search import search_directory
+from app.services.farmer_crop_guidance import build_crop_guidance, annual_summaries_from_daily
 
 router = APIRouter(prefix='/api/arie', tags=['ARIE - evidence-based scenarios'])
 
@@ -35,3 +36,41 @@ def parameter_catalog():
     from pathlib import Path
     path=Path(__file__).resolve().parents[1]/'data'/'parameter_catalog.json'
     return json.loads(path.read_text(encoding='utf-8'))
+
+
+@router.get('/crop-guidance')
+async def crop_guidance(
+    latitude: float = Query(..., ge=-90, le=90),
+    longitude: float = Query(..., ge=-180, le=180),
+    selected_crop: str | None = Query(None, max_length=80),
+):
+    """NASA five completed years + FAO species ranges, for *exploration only*.
+
+    No local suitability assertion. Expensive historical queries are
+    initiated only on explicit farmer request from the crop page.
+    """
+    if selected_crop and selected_crop not in CROPS:
+        raise HTTPException(422, detail="El cultivo seleccionado no existe en el catálogo.")
+    from datetime import date
+    from app.api.routes import point_metadata
+    from app.connectors.nasa_power import (
+        fetch_daily_point, normalize_daily, NasaPowerError,
+    )
+    last_year = date.today().year - 1
+    first_year = last_year - 4
+    start, end = date(first_year, 1, 1), date(last_year, 12, 31)
+    try:
+        # One NASA request, not five repeated queries for the same grid cell.
+        raw = await fetch_daily_point(latitude, longitude, start, end)
+        daily = normalize_daily(raw, start, end)["records"]
+    except (NasaPowerError, ValueError) as exc:
+        raise HTTPException(503, detail="NASA POWER no está disponible en este momento.") from exc
+    records = annual_summaries_from_daily(daily, first_year, last_year)
+    result = build_crop_guidance(records, selected_crop)
+    return {
+        **result,
+        "point": point_metadata(latitude, longitude),
+        "period": {"start_year": first_year, "end_year": last_year},
+        "history": records,
+        "source": "NASA POWER",
+    }
