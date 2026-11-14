@@ -1,6 +1,10 @@
 name: TERRA360 public demo smoke check
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/smoke-production.yml'
 permissions:
   contents: read
 jobs:
