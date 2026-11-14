@@ -15,7 +15,7 @@ from rasterio.transform import from_origin
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.services.gaez_selected import SELECTED, selected_raster_sample
+from app.services.gaez_selected import SELECTED, OFFICIAL_FILENAME, OFFICIAL_SHA256, selected_raster_sample
 
 POLYGON={"type":"Polygon","coordinates":[[
     [-71.9572,-13.3227],[-71.9549,-13.3227],
@@ -36,7 +36,7 @@ class GAEZSelectionTests(TestCase):
             "GAEZ5_LICENSE_URL":"",
         }):
             output=selected_raster_sample(POLYGON)
-        self.assertEqual(output["status"],"source_selected_raster_not_verified")
+        self.assertEqual(output["status"],"official_raster_inspected_not_activated")
         self.assertIsNone(output["suitability_index"])
         self.assertFalse(output["used_in_crop_decision"])
         self.assertFalse(output["region_suitability_evaluated"])
@@ -57,7 +57,7 @@ class GAEZSelectionTests(TestCase):
 
     def test_raster_requires_complete_operator_manifest_and_exact_sha(self):
         with TemporaryDirectory() as root:
-            filename=Path(root)/"GAEZ-V5.RES05-SIX.HP0120.AgERA5.HIST.CSV.LRLM.tif"
+            filename=Path(root)/OFFICIAL_FILENAME
             values=np.full((100,100),35,dtype=np.int16)
             with rasterio.open(filename,"w",driver="GTiff",width=100,height=100,
                                count=1,dtype="int16",crs="EPSG:4326",
@@ -71,8 +71,9 @@ class GAEZSelectionTests(TestCase):
                 "GAEZ5_APPROVED_SCALE":"1",
                 "GAEZ5_APPROVED_NODATA":"-9999",
                 "GAEZ5_LICENSE_URL":"https://creativecommons.org/licenses/by/4.0/",
+                "GAEZ5_SCIENTIFIC_SCALE_APPROVED":"true",
             }
-            with patch.dict(os.environ,env):
+            with patch("app.services.gaez_selected.OFFICIAL_SHA256",digest), patch.dict(os.environ,env):
                 output=selected_raster_sample(POLYGON)
             self.assertEqual(output["status"],"coarse_raster_cell_available")
             self.assertEqual(output["suitability_index"],35)
@@ -84,6 +85,10 @@ class GAEZSelectionTests(TestCase):
                     "/api/environment/gaez-v5/selected-layer/sample",
                     json={"polygon":POLYGON})
             self.assertEqual(resp.status_code,503)
+            self.assertEqual(SELECTED["inspected_sha256"],OFFICIAL_SHA256)
+            self.assertEqual(SELECTED["inspected_nodata"],0)
+            self.assertTrue(SELECTED["exact_tiff_object_verified"])
+            self.assertFalse(SELECTED["license_for_exact_asset_verified"])
 
 if __name__=="__main__":
     import unittest
