@@ -1,0 +1,58 @@
+name: Publish TERRA360 web (optional, after domain and API configuration)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/pages.yml'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Check public API address
+        env:
+          PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+        run: |
+          test -n "$DOMAIN" || { echo "Set PUBLIC_DOMAIN to the custom hostname before publishing (subpath deployment not configured)"; exit 1; }
+          test -n "$PUBLIC_API_URL" || { echo 'Set repository variable PUBLIC_API_URL to the HTTPS address of the deployed FastAPI backend'; exit 1; }
+          case "$PUBLIC_API_URL" in https://*) ;; *) echo 'PUBLIC_API_URL must begin with https://'; exit 1 ;; esac
+      - name: Install and build React website
+        working-directory: frontend
+        env:
+          VITE_API_URL: ${{ vars.PUBLIC_API_URL }}
+        run: |
+          npm ci
+          npm run build
+      - name: Attach owned custom domain (optional)
+        working-directory: frontend
+        env:
+          DOMAIN: ${{ vars.PUBLIC_DOMAIN }}
+        run: |
+          if [ -n "$DOMAIN" ]; then
+            case "$DOMAIN" in *://*|*/*|*' '* ) echo 'PUBLIC_DOMAIN must be only a hostname'; exit 1 ;; esac
+            printf '%s\n' "$DOMAIN" > dist/CNAME
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

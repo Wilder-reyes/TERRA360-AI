@@ -1,0 +1,315 @@
+{
+  "catalog_version": "1.0",
+  "purpose": "Auditable parameters and data provenance, not a farmer-level score or measured field diagnosis",
+  "source_priority": "NASA and FAO primary documentation; peer-reviewed methods with explicit local limitations",
+  "sources": {
+    "power": {
+      "title": "NASA POWER Daily API",
+      "url": "https://power.larc.nasa.gov/docs/services/api/temporal/daily/",
+      "scope": "Gridded regional daily series; not station/plot measurements"
+    },
+    "gpm": {
+      "title": "GPM IMERG V07",
+      "url": "https://gpm.nasa.gov/data/imerg",
+      "scope": "Satellite-derived precipitation; product version and latency must be specified"
+    },
+    "smap": {
+      "title": "NASA SMAP L4",
+      "url": "https://data.nasa.gov/dataset/smap-l4-global-3-hourly-9-km-ease-grid-surface-and-root-zone-soil-moisture-analysis-update-a568e",
+      "scope": "9 km model-assisted soil moisture; not a plot sensor"
+    },
+    "hls": {
+      "title": "NASA Harmonized Landsat Sentinel-2",
+      "url": "https://hls.gsfc.nasa.gov/algorithms/",
+      "scope": "30 m reflectance with cloud/quality mask; NDVI cannot diagnose cause of crop stress"
+    },
+    "srtm": {
+      "title": "NASA SRTM",
+      "url": "https://www.earthdata.nasa.gov/data/instruments/srtm",
+      "scope": "Elevation/terrain only; not a calibrated erosion rate"
+    },
+    "fao56": {
+      "title": "FAO-56 crop evapotranspiration",
+      "url": "https://www.fao.org/4/X0490E/X0490E00.htm",
+      "scope": "ET0 requires radiation, wind, humidity and temperature; ETc needs stage Kc"
+    },
+    "constraints": {
+      "title": "Challand et al., Agricultural Systems, 2025",
+      "url": "https://doi.org/10.1016/j.agsy.2024.104154",
+      "scope": "Farmer participatory constraint programming; not crop response coefficients"
+    },
+    "andes": {
+      "title": "Visscher et al., Science of the Total Environment, 2024",
+      "url": "https://doi.org/10.1016/j.scitotenv.2023.168725",
+      "scope": "Andean experiments; not a globally validated sowing calendar"
+    },
+    "fallow": {
+      "title": "Meza et al., Agriculture Ecosystems & Environment, 2025",
+      "url": "https://doi.org/10.1016/j.agee.2025.109884",
+      "scope": "Specific forage-fallow trials; not an assumed benefit from any legume"
+    }
+  },
+  "parameters": [
+    {
+      "id": "precipitation",
+      "farmer_label": "Lluvia",
+      "unit": "mm/día",
+      "origin": "earth_observation",
+      "source_ids": [
+        "power",
+        "gpm"
+      ],
+      "spatial_level": "regional",
+      "integration": "live",
+      "decision_role": "Contexto de periodos secos y lluvia intensa",
+      "limitation": "La lluvia no representa por sí sola agua almacenada en suelo"
+    },
+    {
+      "id": "air_temperature",
+      "farmer_label": "Temperatura del aire",
+      "unit": "°C",
+      "origin": "earth_observation",
+      "source_ids": [
+        "power"
+      ],
+      "spatial_level": "regional",
+      "integration": "live",
+      "decision_role": "Posible exposición regional a frío y calor",
+      "limitation": "Los umbrales dependen de cultivo, variedad y etapa"
+    },
+    {
+      "id": "relative_humidity",
+      "farmer_label": "Humedad del aire",
+      "unit": "%",
+      "origin": "earth_observation",
+      "source_ids": [
+        "power"
+      ],
+      "spatial_level": "regional",
+      "integration": "live",
+      "decision_role": "Contexto climático",
+      "limitation": "No mide humedad del suelo"
+    },
+    {
+      "id": "seasonal_rainfall",
+      "farmer_label": "Lluvia habitual por mes",
+      "unit": "mm/mes",
+      "origin": "derived_from_observation",
+      "source_ids": [
+        "power"
+      ],
+      "spatial_level": "regional",
+      "integration": "live_on_demand",
+      "decision_role": "Contexto de calendario del agricultor",
+      "limitation": "No es un pronóstico ni una recomendación de fecha"
+    },
+    {
+      "id": "soil_moisture",
+      "farmer_label": "Humedad regional del suelo",
+      "unit": "m³/m³",
+      "origin": "earth_observation",
+      "source_ids": [
+        "smap"
+      ],
+      "spatial_level": "regional_9km",
+      "integration": "research_not_integrated",
+      "decision_role": "Contexto regional de sequedad",
+      "limitation": "No es agua útil en una parcela individual"
+    },
+    {
+      "id": "ndvi",
+      "farmer_label": "Verdor de la vegetación",
+      "unit": "adimensional",
+      "origin": "earth_observation",
+      "source_ids": [
+        "hls"
+      ],
+      "spatial_level": "pixel_30m",
+      "integration": "research_not_integrated",
+      "decision_role": "Ver cambios de cobertura a lo largo del tiempo",
+      "limitation": "No identifica por sí solo plagas, sequía o fertilidad"
+    },
+    {
+      "id": "terrain_slope",
+      "farmer_label": "Inclinación del terreno",
+      "unit": "°",
+      "origin": "earth_observation",
+      "source_ids": [
+        "srtm"
+      ],
+      "spatial_level": "pixel_30m",
+      "integration": "research_not_integrated",
+      "decision_role": "Revisión de erosión y trabajo en laderas",
+      "limitation": "No es tasa de pérdida de suelo"
+    },
+    {
+      "id": "et0",
+      "farmer_label": "Demanda atmosférica de agua",
+      "unit": "mm/día",
+      "origin": "computed",
+      "source_ids": [
+        "fao56",
+        "power"
+      ],
+      "spatial_level": "regional",
+      "integration": "research_not_integrated",
+      "decision_role": "Explicar demanda ambiental",
+      "limitation": "Sin variables y método comprobado no usar para prescribir riego"
+    },
+    {
+      "id": "etc",
+      "farmer_label": "Agua usada por un cultivo de referencia",
+      "unit": "mm/día",
+      "origin": "computed",
+      "source_ids": [
+        "fao56"
+      ],
+      "spatial_level": "field_model",
+      "integration": "not_evaluable",
+      "decision_role": "Demanda potencial por etapa",
+      "limitation": "Necesita Kc por etapa y fechas fiables; no es riego requerido"
+    },
+    {
+      "id": "soil_texture",
+      "farmer_label": "Tipo de suelo",
+      "unit": "categoría",
+      "origin": "farmer_reported",
+      "source_ids": [],
+      "spatial_level": "plot",
+      "integration": "optional_input",
+      "decision_role": "Contexto de retención e infiltración",
+      "limitation": "Dato no verificado salvo análisis"
+    },
+    {
+      "id": "soil_ph",
+      "farmer_label": "Acidez del suelo",
+      "unit": "pH",
+      "origin": "farmer_reported",
+      "source_ids": [],
+      "spatial_level": "plot",
+      "integration": "optional_input",
+      "decision_role": "Restricciones químicas a revisar",
+      "limitation": "Sin prueba y rangos del cultivo no se declara aptitud"
+    },
+    {
+      "id": "soil_organic_matter",
+      "farmer_label": "Materia orgánica del suelo",
+      "unit": "%",
+      "origin": "farmer_reported",
+      "source_ids": [],
+      "spatial_level": "plot",
+      "integration": "optional_input",
+      "decision_role": "Contexto de salud del suelo",
+      "limitation": "No implica cuantificar carbono ni mejoras"
+    },
+    {
+      "id": "salinity",
+      "farmer_label": "Salinidad",
+      "unit": "dS/m",
+      "origin": "field_test",
+      "source_ids": [],
+      "spatial_level": "plot",
+      "integration": "research_not_integrated",
+      "decision_role": "Identificar restricciones específicas",
+      "limitation": "Necesita laboratorio y sensibilidad varietal"
+    },
+    {
+      "id": "available_water",
+      "farmer_label": "Agua disponible para riego",
+      "unit": "volumen y calendario",
+      "origin": "farmer_reported",
+      "source_ids": [],
+      "spatial_level": "plot",
+      "integration": "partial_input",
+      "decision_role": "Descartar propuestas inviables",
+      "limitation": "Sin caudales no se conoce disponibilidad cuantitativa"
+    },
+    {
+      "id": "sowing_month",
+      "farmer_label": "Mes de siembra",
+      "unit": "1..12",
+      "origin": "farmer_reported",
+      "source_ids": [],
+      "spatial_level": "plot",
+      "integration": "optional_input",
+      "decision_role": "Comparar clima histórico estacional",
+      "limitation": "No indica fecha adecuada sin variedad y ciclo"
+    },
+    {
+      "id": "rotation_history",
+      "farmer_label": "Historial agrícola",
+      "unit": "secuencia",
+      "origin": "farmer_reported",
+      "source_ids": [],
+      "spatial_level": "plot",
+      "integration": "live_input",
+      "decision_role": "Formar práctica S0",
+      "limitation": "Se declara por el agricultor"
+    },
+    {
+      "id": "crop_variety",
+      "farmer_label": "Variedad de cultivo",
+      "unit": "texto",
+      "origin": "farmer_reported",
+      "source_ids": [
+        "andes"
+      ],
+      "spatial_level": "plot",
+      "integration": "future_input",
+      "decision_role": "Validar requisitos locales",
+      "limitation": "Kc genéricos no sustituyen ensayos locales"
+    },
+    {
+      "id": "machinery",
+      "farmer_label": "Equipos disponibles",
+      "unit": "categoría",
+      "origin": "farmer_reported",
+      "source_ids": [
+        "constraints"
+      ],
+      "spatial_level": "plot",
+      "integration": "optional_input",
+      "decision_role": "Limitar opciones operativas",
+      "limitation": "Requisitos por cultivo pendientes de comprobación"
+    },
+    {
+      "id": "market_access",
+      "farmer_label": "Acceso a mercado",
+      "unit": "cultivos confirmados",
+      "origin": "farmer_reported",
+      "source_ids": [
+        "constraints"
+      ],
+      "spatial_level": "plot",
+      "integration": "optional_input",
+      "decision_role": "Restricción comercial reportada",
+      "limitation": "No verifica precios ni rentabilidad"
+    },
+    {
+      "id": "budget",
+      "farmer_label": "Presupuesto",
+      "unit": "moneda local",
+      "origin": "farmer_reported",
+      "source_ids": [
+        "constraints"
+      ],
+      "spatial_level": "plot",
+      "integration": "optional_input",
+      "decision_role": "Restricción económica a evaluar",
+      "limitation": "Sin costos por cultivo no clasifica ganancias"
+    },
+    {
+      "id": "local_review",
+      "farmer_label": "Revisión del agricultor",
+      "unit": "sí/no",
+      "origin": "farmer_reported",
+      "source_ids": [
+        "constraints"
+      ],
+      "spatial_level": "plot",
+      "integration": "optional_input",
+      "decision_role": "Expresar incertidumbre y criterio humano",
+      "limitation": "No equivale a aprobación profesional independiente"
+    }
+  ]
+}

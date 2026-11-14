@@ -1,0 +1,12 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+httpx>=0.27,<1
+pydantic-settings>=2.4,<3
+pandas>=2.2,<4
+python-dateutil>=2.9,<3
+
+# NASA GPM IMERG / Earthdata
+earthaccess>=0.19,<1
+xarray>=2024.3,<2027
+h5netcdf>=1.3,<2
+h5py>=3.10,<4

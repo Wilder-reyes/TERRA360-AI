@@ -1,0 +1,3 @@
+-r requirements.txt
+# The optional experimental model currently uses numpy (already a dependency of pandas).
+# No cloud ML service or paid API is needed.

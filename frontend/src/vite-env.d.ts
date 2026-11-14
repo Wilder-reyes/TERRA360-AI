@@ -1,0 +1,20 @@
+
+/// <reference types="vite/client" />
+
+declare module '*.css' {
+  const content: string
+  export default content
+}
+declare module 'leaflet' {
+  const L: { divIcon: (options: Record<string, unknown>) => any }
+  export default L
+}
+declare module 'react-leaflet' {
+  import type { ComponentType, ReactNode } from 'react'
+  export const MapContainer: ComponentType<any>
+  export const TileLayer: ComponentType<any>
+  export const Marker: ComponentType<any>
+  export const Popup: ComponentType<any>
+  export function useMap(): {setView:(center:[number,number],zoom:number)=>void;getZoom:()=>number}
+  export function useMapEvents(events:{click:(e:{latlng:{lat:number;lng:number}})=>void}):void
+}

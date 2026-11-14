@@ -1,0 +1,16 @@
+# Optional Render Blueprint. Review current prices/limits before creating a service.
+# This Docker backend is separate from Porkbun's static web hosting.
+services:
+  - type: web
+    name: terra360-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: CORS_ORIGINS
+        sync: false
+      - key: EARTHDATA_TOKEN
+        sync: false
+      - key: GPM_DOWNLOADS_ENABLED
+        value: 'false'

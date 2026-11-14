@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+<title>TERRA360</title>
+<rect width="64" height="64" rx="16" fill="#173d2c"/>
+<circle cx="32" cy="32" r="21" fill="none" stroke="#97cbb0" stroke-width="2.6" opacity=".72"/>
+<path d="M11 32h42M32 11c-9 12-9 30 0 42M32 11c9 12 9 30 0 42" fill="none" stroke="#97cbb0" stroke-width="2" opacity=".55"/>
+<path d="M29 43V28c0-9 7-13 16-13-1 12-5 18-16 18M29 35c-6-8-12-9-17-8 2 9 8 12 17 12" fill="#c4e8aa" stroke="#c4e8aa" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M29 49V29" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+</svg>
