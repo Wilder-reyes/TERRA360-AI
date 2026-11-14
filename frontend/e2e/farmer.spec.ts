@@ -44,7 +44,7 @@ test('find a city, open crop search, and read plain-language evidence',async({pa
  await expect(page.getByRole('heading',{name:'Elige tu cultivo por su nombre'})).toBeVisible()
  await expect(page.getByRole('heading',{name:'¿Quieres reconocer tu cultivo con una foto?'})).toBeVisible()
  await expect(page.getByText(/no se envía ni se usa para entrenar inteligencia artificial/)).toBeVisible()
- await page.getByLabel('Busca un cultivo por nombre o especie').fill('maíz')
+ await page.getByLabel('Escribe el nombre de tu cultivo').fill('maíz')
  await expect(page.getByRole('heading',{name:/Maíz Blanco Gigante/})).toBeVisible()
  await expect(page.locator('.crop-choice')).toHaveCount(1)
 })
