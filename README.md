@@ -35,7 +35,7 @@
 - FastAPI, Python, Docker en Render Free.
 - Netlify enruta `/api/*` a Render; `EARTHDATA_TOKEN` solo en backend, nunca en frontend.
 - API: `GET /api/health`, `GET /api/arie/catalog`, `GET /api/arie/crops`, `POST /api/arie/evaluate`, `GET /api/environment/nasa-power/daily`, `GET /api/environment/terrain` y consultas históricas/satélite.
-- NASA GPM y SMAP tienen flujo de ingesta autenticada privada preparado con almacenamiento S3/R2 y cuotas; no hay bucket ni credenciales configuradas en Render Free. Las solicitudes públicas nunca descargan archivos NASA ni muestran valores ficticios; las visualizaciones NASA GIBS siguen siendo independientes.
+- NASA GPM IMERG ya completó una primera ingesta real autenticada a Cloudflare R2 (7 nov 2026; SHA-256 verificado, según los registros compartidos por el operador). La primera ingesta SMAP superó el límite inicial de 65 MiB; v0.16 introduce una extracción regional de celdas nativas con SHA del original, sin guardar el HDF5 global. La repetición de SMAP y lectura en Render aún requieren verificación en producción. Las solicitudes públicas no descargan granules NASA ni inventan valores; NASA GIBS es independiente.
 - CI: `.github/workflows/ci.yml`; pruebas de navegador: `.github/workflows/e2e.yml`; smoke público: `.github/workflows/smoke-production.yml`; actualización de ECOCROP: `.github/workflows/import-ecocrop.yml`.
 
 ## Ejecutar localmente (Windows PowerShell)
@@ -62,6 +62,6 @@ Abre `http://localhost:5173/`. No publiques archivos `.env`, tokens Earthdata, d
 
 ## Seguimiento y validación
 
-[Hoja de ruta actualizada v0.15](docs/roadmap-v0.15.md) · [Histórico v0.14](docs/roadmap-v0.14.md) · [Histórico v0.13](docs/roadmap-v0.13.md) · [Histórico v0.12](docs/roadmap-v0.12.md) · [Histórico v0.11](docs/roadmap-v0.11.md) · [Histórico v0.10](docs/roadmap-v0.10.md) · [Requisitos UX](docs/farmer-first-ux-redesign.md) · [Protocolo con agricultores](docs/farmer-validation-protocol.md) · [Capas NASA GIBS](docs/gibs-layers.md) · [GitHub Issues](https://github.com/Wilder-reyes/TERRA360-AI/issues).
+[Hoja de ruta actualizada v0.16](docs/roadmap-v0.16.md) · [Histórico v0.15](docs/roadmap-v0.15.md) · [Histórico v0.14](docs/roadmap-v0.14.md) · [Histórico v0.13](docs/roadmap-v0.13.md) · [Histórico v0.12](docs/roadmap-v0.12.md) · [Histórico v0.11](docs/roadmap-v0.11.md) · [Histórico v0.10](docs/roadmap-v0.10.md) · [Requisitos UX](docs/farmer-first-ux-redesign.md) · [Protocolo con agricultores](docs/farmer-validation-protocol.md) · [Capas NASA GIBS](docs/gibs-layers.md) · [GitHub Issues](https://github.com/Wilder-reyes/TERRA360-AI/issues).
 
 **El objetivo es que una persona sin conocimientos técnicos pueda ver, comprender y comparar información regional.** La validación agronómica real y la interpretación por clases de GAEZ v5 siguen pendientes de metodología y ensayos adicionales; el TIFF original de FAO ya se ha verificado técnicamente, pero solo se consulta el código bruto de una celda regional. El NDVI Sentinel-2 por polígono y por fechas separadas se calcula técnicamente con escenas reales, pero todavía no ha sido validado con mediciones de campo ni permite inferir tendencias agrícolas.
