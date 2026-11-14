@@ -1,14 +1,14 @@
-"""Private durable S3-compatible NASA granule archive with integrity and quotas.
+"""Private S3/R2 NASA granule archive: SHA-256 verified, quota-limited.
 
-R2/S3 keys are configured ONLY as Render/GitHub secrets. Public API callers
-cannot supply object keys, download NASA objects, or trigger ingestion.
+Uses s3fs installed by earthaccess (rather than a conflicting boto3 version).
+Requests from anonymous users cannot select object keys, URLs or start ingest.
 """
 from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
-import hashlib
+from datetime import date, datetime, timezone, timedelta
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -16,15 +16,13 @@ import re
 import tempfile
 from typing import Iterator
 
-import boto3
-from botocore.config import Config
-from botocore.exceptions import ClientError, BotoCoreError
+import s3fs
 
 PREFIX = "terra360-nasa-v1"
 PRODUCTS = {"gpm": "GPM_3IMERGDL", "smap": "SPL3SMP_E"}
 MAX_GRANULE_BYTES = 65 * 1024 * 1024
 MAX_FILES = 32
-MAX_ARCHIVE_BYTES = 1024 * 1024 * 1024  # 1 GiB before ingest must evict explicitly
+MAX_ARCHIVE_BYTES = 1024 * 1024 * 1024
 FILENAME = {
     "gpm": re.compile(r"3B-DAY-L\.MS\.MRG\.3IMERG\.(\d{8})-S000000-E235959\.[A-Za-z0-9_.-]+\.nc4$"),
     "smap": re.compile(r"SMAP_L3_SM_P_E_(\d{8})_[A-Za-z0-9_.-]+\.h5$"),
@@ -46,27 +44,30 @@ def settings() -> StorageConfig | None:
     bucket = os.getenv("TERRA_OBJECT_BUCKET", "").strip()
     if not bucket:
         return None
-    if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9.\-]{2,62}", bucket):
-        raise ArchiveError("Nombre de bucket inválido.")
+    if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9.-]{2,62}", bucket):
+        raise ArchiveError("Nombre de bucket privado inválido.")
     endpoint = os.getenv("TERRA_OBJECT_ENDPOINT", "").strip() or None
     if endpoint and (not endpoint.startswith("https://") or
                      "@" in endpoint or "?" in endpoint or "#" in endpoint):
-        raise ArchiveError("El almacenamiento requiere endpoint HTTPS confiable.")
-    return StorageConfig(bucket=bucket, endpoint=endpoint,
-                         region=os.getenv("TERRA_OBJECT_REGION", "auto"))
+        raise ArchiveError("Solo se permite endpoint HTTPS privado.")
+    region = os.getenv("TERRA_OBJECT_REGION", "").strip() or "auto"
+    return StorageConfig(bucket=bucket, endpoint=endpoint, region=region)
 
 
 def client(config: StorageConfig):
-    return boto3.client("s3", region_name=config.region,
-                        endpoint_url=config.endpoint,
-                        config=Config(signature_version="s3v4",
-                                      retries={"max_attempts": 2},
-                                      connect_timeout=4, read_timeout=20))
+    kwargs = {"region_name": config.region}
+    if config.endpoint:
+        kwargs["endpoint_url"] = config.endpoint
+    # Use only server-side environment secrets; no client-supplied credentials.
+    key = os.getenv("AWS_ACCESS_KEY_ID") or None
+    secret = os.getenv("AWS_SECRET_ACCESS_KEY") or None
+    return s3fs.S3FileSystem(anon=False, key=key, secret=secret,
+                             client_kwargs=kwargs, use_listings_cache=False)
 
 
 def object_keys(product: str, target: date) -> tuple[str, str]:
     if product not in PRODUCTS:
-        raise ValueError("Producto satelital no permitido.")
+        raise ValueError("Producto NASA no permitido.")
     if not isinstance(target, date):
         raise ValueError("Fecha inválida.")
     base = f"{PREFIX}/{product}/{target:%Y/%m/%d}"
@@ -74,15 +75,15 @@ def object_keys(product: str, target: date) -> tuple[str, str]:
 
 
 def verify_name(product: str, target: date, name: str):
-    if not isinstance(name, str) or Path(name).name != name:
+    if product not in PRODUCTS or not isinstance(name, str) or Path(name).name != name:
         raise ArchiveError("Nombre de granule no permitido.")
     match = FILENAME[product].fullmatch(name)
     if not match or match.group(1) != target.strftime("%Y%m%d"):
-        raise ArchiveError("El archivo no coincide con producto/fecha.")
+        raise ArchiveError("Granule y fecha NASA no coinciden.")
     return name
 
 
-def validate_manifest(product: str, target: date, manifest: dict) -> None:
+def validate_manifest(product: str, target: date, manifest: dict):
     if (manifest.get("product") != PRODUCTS[product] or
         manifest.get("date") != target.isoformat() or
         not isinstance(manifest.get("sha256"), str) or
@@ -90,166 +91,162 @@ def validate_manifest(product: str, target: date, manifest: dict) -> None:
         type(manifest.get("size_bytes")) is not int or
         not 1 <= manifest["size_bytes"] <= MAX_GRANULE_BYTES or
         manifest.get("verified_format") != "NASA-original-granule"):
-        raise ArchiveError("El manifiesto NASA no pasó integridad estructural.")
+        raise ArchiveError("Manifiesto privado sin integridad.")
     verify_name(product, target, manifest.get("filename"))
 
 
-def _read_manifest(s3, config: StorageConfig, product: str, target: date):
+def _uri(config: StorageConfig, key: str) -> str:
+    # Only keys generated by this module may reach the storage client.
+    if not key.startswith(PREFIX + "/") or ".." in key:
+        raise ArchiveError("Clave del archivo privado inválida.")
+    return f"{config.bucket}/{key}"
+
+
+def _read_manifest(fs, config: StorageConfig, product: str, target: date):
     _, manifest_key = object_keys(product, target)
+    uri = _uri(config, manifest_key)
     try:
-        body = s3.get_object(Bucket=config.bucket, Key=manifest_key)["Body"].read(8192)
-    except ClientError as exc:
-        if exc.response.get("Error", {}).get("Code") in ("NoSuchKey", "404"):
+        if not fs.exists(uri):
             return None
-        raise ArchiveError("No fue posible leer el índice privado NASA.") from exc
-    try:
-        manifest = json.loads(body)
-    except (TypeError, ValueError) as exc:
-        raise ArchiveError("Índice NASA corrupto.") from exc
+        info = fs.info(uri)
+        if info.get("size", 999999) > 8192:
+            raise ArchiveError("Manifiesto NASA supera tamaño permitido.")
+        with fs.open(uri, "rb") as input_file:
+            payload = input_file.read(8192)
+        manifest = json.loads(payload)
+    except (OSError, ValueError) as exc:
+        raise ArchiveError("No fue posible verificar manifiesto NASA.") from exc
     if not isinstance(manifest, dict):
-        raise ArchiveError("Índice NASA inválido.")
+        raise ArchiveError("Manifiesto NASA inválido.")
     validate_manifest(product, target, manifest)
     return manifest
 
 
 @contextmanager
 def staged_granule(product: str, target: date) -> Iterator[Path | None]:
-    """Yield a temporary verified file. Never persist under Render Free disk."""
+    """Stream a verified object into a self-cleaning temporary file.
+
+    Temporary Render filesystem is NOT treated as durable storage.
+    """
     config = settings()
     if config is None:
         yield None
         return
-    s3 = client(config)
-    manifest = _read_manifest(s3, config, product, target)
+    fs = client(config)
+    manifest = _read_manifest(fs, config, product, target)
     if manifest is None:
         yield None
         return
     data_key, _ = object_keys(product, target)
+    uri = _uri(config, data_key)
     try:
-        head = s3.head_object(Bucket=config.bucket, Key=data_key)
-        if head["ContentLength"] != manifest["size_bytes"]:
-            raise ArchiveError("Tamaño del granule no coincide con manifiesto.")
-    except ClientError as exc:
-        raise ArchiveError("Granule almacenado ausente o inaccesible.") from exc
+        info = fs.info(uri)
+        if info.get("size") != manifest["size_bytes"]:
+            raise ArchiveError("Tamaño NASA no coincide con manifiesto.")
+    except FileNotFoundError as exc:
+        raise ArchiveError("Granule NASA faltante.") from exc
     with tempfile.TemporaryDirectory(prefix="terra-nasa-") as directory:
         path = Path(directory) / manifest["filename"]
-        checksum = hashlib.sha256()
+        checksum = sha256()
         size = 0
         try:
-            response = s3.get_object(Bucket=config.bucket, Key=data_key)
-            with path.open("wb") as output:
-                for block in response["Body"].iter_chunks(chunk_size=256 * 1024):
-                    if not block:
-                        continue
-                    size += len(block)
+            with fs.open(uri, "rb") as input_file, path.open("wb") as dest:
+                while True:
+                    chunk = input_file.read(256 * 1024)
+                    if not chunk:
+                        break
+                    size += len(chunk)
                     if size > MAX_GRANULE_BYTES:
-                        raise ArchiveError("Granule supera límite de descarga.")
-                    checksum.update(block)
-                    output.write(block)
-        except (ClientError, BotoCoreError) as exc:
-            raise ArchiveError("Error de lectura de almacenamiento NASA.") from exc
+                        raise ArchiveError("Granule excede tamaño autorizado.")
+                    checksum.update(chunk)
+                    dest.write(chunk)
+        except OSError as exc:
+            raise ArchiveError("No fue posible leer granule privado.") from exc
         if size != manifest["size_bytes"] or checksum.hexdigest() != manifest["sha256"]:
-            raise ArchiveError("Checksum NASA no coincide; dato rechazado.")
+            raise ArchiveError("Checksum NASA incorrecto; se descarta el archivo.")
         yield path
 
 
-def _archive_usage(s3, config: StorageConfig) -> tuple[int, int]:
+def _archive_usage(fs, config: StorageConfig) -> tuple[int, int]:
+    try:
+        paths = fs.find(f"{config.bucket}/{PREFIX}")
+    except FileNotFoundError:
+        paths = []
     count = total = 0
-    paginator = s3.get_paginator("list_objects_v2")
-    for page in paginator.paginate(Bucket=config.bucket, Prefix=PREFIX + "/"):
-        for entry in page.get("Contents", []):
-            # Object listing must be bounded against runaway archives.
-            count += 1
-            total += entry["Size"]
-            if count > MAX_FILES * 2 + 8 or total > MAX_ARCHIVE_BYTES:
-                raise ArchiveError("Cuota de objetos NASA excedida.")
+    for path in paths:
+        count += 1
+        total += int(fs.info(path).get("size", 0))
+        if count > MAX_FILES * 2 + 8 or total > MAX_ARCHIVE_BYTES:
+            raise ArchiveError("Cuota NASA excedida; ejecutar retención primero.")
     return count, total
 
 
 def upload_verified(product: str, target: date, path: Path, *, source_id: str):
-    """Private offline ingestion only; use one verified original granule per day."""
-    if product not in PRODUCTS:
-        raise ValueError("Producto no permitido.")
+    """Offline only; upload max one original NASA granule per product/date."""
     verify_name(product, target, path.name)
     size = path.stat().st_size
     if not 1 <= size <= MAX_GRANULE_BYTES:
-        raise ArchiveError("Granule excede límite de tamaño (65 MiB).")
-    if not source_id or len(source_id) > 250 or any(c in source_id for c in "\r\n"):
-        raise ArchiveError("Identificador Earthdata de procedencia no válido.")
+        raise ArchiveError("Granule excede 65 MiB o está vacío.")
+    if not source_id or len(source_id) > 250 or any(x in source_id for x in "\r\n"):
+        raise ArchiveError("Procedencia NASA inválida.")
     config = settings()
     if config is None:
-        raise ArchiveError("No hay almacenamiento de objetos persistente configurado.")
-    s3 = client(config)
-    existing = _read_manifest(s3, config, product, target)
-    if existing is not None:
-        raise ArchiveError("La fecha ya está archivada; ingesta inmutable.")
-    count, total = _archive_usage(s3, config)
+        raise ArchiveError("Faltan variables de almacenamiento privado.")
+    fs = client(config)
+    if _read_manifest(fs, config, product, target) is not None:
+        raise ArchiveError("Granule ya almacenado: archivo inmutable.")
+    count, total = _archive_usage(fs, config)
     if count // 2 >= MAX_FILES or total + size > MAX_ARCHIVE_BYTES:
-        raise ArchiveError("Cuota privada excedida: máx. 32 granules y 1 GiB.")
-    sha = hashlib.sha256()
+        raise ArchiveError("Cuota 32 granules / 1 GiB excedida.")
+    checksum = sha256()
     with path.open("rb") as input_file:
         for chunk in iter(lambda: input_file.read(1024 * 1024), b""):
-            sha.update(chunk)
+            checksum.update(chunk)
     manifest = {
-        "product": PRODUCTS[product],
-        "date": target.isoformat(),
-        "filename": path.name,
-        "size_bytes": size,
-        "sha256": sha.hexdigest(),
-        "source_id": source_id,
+        "product": PRODUCTS[product], "date": target.isoformat(),
+        "filename": path.name, "size_bytes": size,
+        "sha256": checksum.hexdigest(), "source_id": source_id,
         "verified_format": "NASA-original-granule",
         "ingested_at": datetime.now(timezone.utc).isoformat(),
     }
     data_key, manifest_key = object_keys(product, target)
-    s3.upload_file(str(path), config.bucket, data_key, ExtraArgs={
-        "ContentType": "application/octet-stream",
-        "Metadata": {"sha256": manifest["sha256"]},
-    })
-    s3.put_object(Bucket=config.bucket, Key=manifest_key,
-                  Body=json.dumps(manifest, sort_keys=True).encode(),
-                  ContentType="application/json")
+    fs.put_file(str(path), _uri(config, data_key))
+    fs.pipe_file(_uri(config, manifest_key),
+                 json.dumps(manifest, sort_keys=True).encode("utf-8"))
     return {k: manifest[k] for k in ("product", "date", "size_bytes", "sha256")}
 
 
 def prune_expired(*, keep_days: int = 14, today: date | None = None) -> dict:
-    """Controlled retention for NASA archive. Never touches unknown S3 keys.
-
-    Only paths produced by object_keys() are eligible, and only dates strictly
-    older than the retention window. Call in a private ingestion workflow,
-    never an HTTP request. All storage is operator-owned.
-    """
-    from datetime import timedelta
+    """Private job only; delete old objects under exact allowed NASA prefixes."""
     if not 7 <= keep_days <= 30:
         raise ValueError("Retención admitida: 7–30 días.")
     config = settings()
     if config is None:
-        raise ArchiveError("El almacenamiento privado no está configurado.")
-    s3 = client(config)
+        raise ArchiveError("Almacenamiento privado no configurado.")
+    fs = client(config)
     cutoff = (today or date.today()) - timedelta(days=keep_days)
-    groups: dict[tuple[str, date], set[str]] = {}
-    paginator = s3.get_paginator("list_objects_v2")
-    for page in paginator.paginate(Bucket=config.bucket, Prefix=PREFIX + "/"):
-        for obj in page.get("Contents", []):
-            key = obj["Key"]
-            parts = key.split("/")
-            if len(parts) != 6 or parts[0] != PREFIX or parts[1] not in PRODUCTS or (
-                parts[5] not in ("manifest.json","granule")):
-                continue
-            try:
-                target = date(int(parts[2]), int(parts[3]), int(parts[4]))
-            except ValueError:
-                continue
-            if target >= cutoff:
-                continue
-            groups.setdefault((parts[1], target), set()).add(parts[5])
-    deleted_dates = 0
-    for (product, target), present in sorted(groups.items(), key=lambda x:x[0][1]):
-        data_key, manifest_key = object_keys(product, target)
-        keys = [data_key if name == "granule" else manifest_key for name in present]
-        if not keys:
+    try:
+        paths = fs.find(f"{config.bucket}/{PREFIX}")
+    except FileNotFoundError:
+        paths = []
+    pairs: dict[tuple[str, date], list[str]] = {}
+    for uri in paths:
+        key = uri.removeprefix(config.bucket + "/")
+        parts = key.split("/")
+        if (len(parts) != 6 or parts[0] != PREFIX or
+            parts[1] not in PRODUCTS or parts[5] not in ("granule", "manifest.json")):
             continue
-        s3.delete_objects(Bucket=config.bucket,
-                          Delete={"Objects":[{"Key":k} for k in keys], "Quiet":True})
-        deleted_dates += 1
-    return {"deleted_archive_dates":deleted_dates,"retention_days":keep_days,
-            "cutoff":cutoff.isoformat(),"scope":PREFIX}
+        try:
+            target = date(int(parts[2]), int(parts[3]), int(parts[4]))
+        except ValueError:
+            continue
+        if target < cutoff and uri in (
+                _uri(config, item) for item in object_keys(parts[1], target)):
+            pairs.setdefault((parts[1], target), []).append(uri)
+    deleted = 0
+    for _, uris in sorted(pairs.items(), key=lambda entry: entry[0][1]):
+        for uri in uris:
+            fs.rm(uri)
+        deleted += 1
+    return {"deleted_archive_dates": deleted, "retention_days": keep_days,
+            "cutoff": cutoff.isoformat(), "scope": PREFIX}
