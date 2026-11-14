@@ -36,7 +36,6 @@ export function selectRecentObservation(records:RecordRow[]) {
 function FollowPoint({target}:{target:Position|null}) {
  const map=useMap()
  useEffect(()=>{if(target)map.setView([target.lat,target.lng],Math.max(map.getZoom(),11))},[map,target?.lat,target?.lng])
- useEffect(()=>{const handler=()=>map.invalidateSize({pan:false});handler();return()=>{map.off('resize',handler)}},[map])
  return null
 }
 function MapInteractions({mode,onPlace,onVertex}:{mode:MapMode;onPlace:(p:Position)=>void;onVertex:(p:Position)=>void}) {
