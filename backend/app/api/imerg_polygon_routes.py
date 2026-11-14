@@ -29,7 +29,7 @@ async def polygon_daily(payload: IMERGPolygonRequest):
     """Area-weighted *grid* precipitation, never parcel-scale actual rainfall."""
     try:
         return await run_in_threadpool(
-            daily_polygon_from_staged_file,
+            daily_polygon_from_archive,
             payload.polygon,
             payload.target_date,
         )
