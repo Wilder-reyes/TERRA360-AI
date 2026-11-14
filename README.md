@@ -1,44 +1,52 @@
-# TERRA360 AI — NASA Space Apps Challenge 2026
+# TERRA360 AI · NASA Space Apps Challenge 2026
 
-**Sitio Netlify:** https://terra360-ai.netlify.app/ — acceso anónimo actualmente bloqueado con HTTP 401; activar Production visibility = Public en Netlify antes de anunciar la web a jueces.  
-**Backend:** https://terra360-api.onrender.com/api/health  
-**Repositorio:** `Wilder-reyes/TERRA360-AI` (privado)  
-**Estado:** prototipo demostrativo; **no** herramienta de prescripción de siembra. El smoke de producción verificó salud del backend, búsqueda, ARIE y NASA POWER; Netlify aún requiere autorización (HTTP 401).
+**Interfaz:** https://terra360-ai.netlify.app/  
+**API:** https://terra360-api.onrender.com/api/health  
+**Tipo:** prototipo de apoyo a decisiones agrícolas; **no** ofrece prescripciones de siembra validadas.
 
-## Qué puede hacer un agricultor
+## Qué hace hoy la plataforma
 
-**Explorar su terreno.** Seleccionar una ubicación en un mapa mundial, delimitar un rectángulo o polígono aproximado, ajustar vértices y consultar:
-- Datos puntuales de lluvia, temperatura y humedad del aire de NASA POWER.
-- Gráficos históricos de meses y años completos, sin convertirlos en pronósticos.
-- Mapas visuales de lluvia IMERG, humedad de suelo SMAP L4 e índice de vegetación MODIS NDVI desde NASA GIBS, con fecha y advertencias de escala regional.
-- Fechas de imágenes Sentinel-2 L2A disponibles en el catálogo ESA/Copernicus de Microsoft Planetary Computer. **No calcula NDVI Sentinel-2** ni diagnostica cultivos.
+- Mapa central con búsqueda mundial de localidades, ubicación por clic, polígonos editables y mediciones aproximadas de área.
+- Datos históricos regionales de NASA POWER y gráficos de lluvia en el panel del mapa.
+- Capas visuales de NASA GIBS: precipitación IMERG, humedad de suelo SMAP, NDVI MODIS y relieve SRTM, con fuente, fecha, escala y enlace a leyenda oficial. No se extraen píxeles de estos mosaicos para calcular la salud de cultivos.
+- Altitud y gradiente orientativo de cinco muestras SRTM90m a través de OpenTopoData, bajo consulta explícita y con cuota. No es una medición de campo.
+- Catálogo ampliado con **2.568 especies FAO ECOCROP + 95 fichas originales** (pueden existir especies repetidas). Búsqueda por nombres comunes, científicos y sinónimos. La fuente ECOCROP es experticia publicada, no aptitud local validada.
+- ARIE AI compara hasta cinco cultivos por reglas estructurales y restricciones declaradas, presenta un plan visual para revisar y se abstiene de proponer aptitud cuando faltan evidencias. No predice rendimiento, ahorro de agua ni fechas de cosecha.
+- Interfaces de usuario con lenguaje sencillo y sin descargar JSON. JSON sigue siendo el protocolo interno entre React y FastAPI.
 
-**Buscar cultivos.** Directorio introductorio de 95 especies y cultivos; búsqueda por nombre común, nombre científico, familia y sinónimos. De ellos, solo los cinco perfiles iniciales tienen referencias agronómicas particulares, y **ninguno demuestra aptitud local automática**. La API adicional `/api/arie/crops` permite consultas paginadas e insensibles a tildes.
+## Fuentes y límites
 
-**Comparar opciones.** ARIE AI explora órdenes de hasta cinco cultivos por familias botánicas y restricciones declaradas. Presenta un plan gráfico por campañas, la información faltante y comprobaciones antes de sembrar. Se abstiene de afirmar que un cultivo exploratorio es apto para una región. No predice cosechas, ahorro de agua, rentabilidad ni establece calendarios locales.
+| Sistema | Qué se usa | Qué NO permite afirmar |
+| --- | --- | --- |
+| NASA POWER | Lluvia, temperatura/humedad y periodos históricos de contexto regional | Agua disponible o sensores de parcela |
+| NASA GIBS IMERG/SMAP/MODIS/SRTM | Imágenes regionales originales del proveedor, no análisis de píxel propio | Precipitación, humedad o NDVI exactos en una parcela |
+| ESA Sentinel-2 vía Planetary Computer | Metadatos de escenas y fechas | NDVI Sentinel-2, nubes corregidas ni salud del cultivo |
+| FAO ECOCROP vía CGIAR | 2.568 fichas de estimaciones de requisitos ecológicos de calidad heterogénea | Aptitud local, producción garantizada o calendario confiable |
+| FAO GAEZ v5 | Documentación científica y vínculo para investigación | **Aún no hay rasters de aptitud GAEZ integrados** |
+| OpenTopoData SRTM90m | Altitud y gradiente ilustrativo de la zona (5 muestras) | Pendiente medida dentro del polígono |
 
-## Arquitectura
+**Fuente de las especies:** FAO ECOCROP mediante [CGIAR Climate Action Data Hub](https://cgiar-climate-data-hub.github.io/catalog/ecocrop/), con procedencia inmutable de OpenCLIM y licencia CC BY 4.0. **Attribution:** Source data from the FAO EcoCrop database, Food and Agriculture Organization of the United Nations. [Método reproducible](scripts/import_ecocrop.py).
 
-- `frontend/`: React + TypeScript + Vite + React Leaflet + Recharts; publicación automática por Netlify.
-- `backend/`: Python + FastAPI; Docker y Render Free; NASA POWER, GIBS visual en navegador, catálogo Sentinel-2 STAC, comparador de cultivos.
-- `tests/` y `frontend/tests/`: pruebas de contratos, catálogo, validaciones, motores y geometría.
-- `netlify.toml`: proxy de `/api/*` desde Netlify a Render.
-- `render.yaml`: configuración del backend Render gratuito.
-- `.github/workflows/ci.yml`: validación automática.
-- `.github/workflows/smoke-production.yml`: comprobación **manual** de la web pública, el backend y NASA POWER. No confundir pruebas automáticas con evaluación agronómica.
+## Arquitectura y despliegue
+
+- React / TypeScript / Vite, React Leaflet y Recharts en Netlify.
+- FastAPI, Python, Docker en Render Free.
+- Netlify enruta `/api/*` a Render; `EARTHDATA_TOKEN` solo en backend, nunca en frontend.
+- API: `GET /api/health`, `GET /api/arie/catalog`, `GET /api/arie/crops`, `POST /api/arie/evaluate`, `GET /api/environment/nasa-power/daily`, `GET /api/environment/terrain` y consultas históricas/satélite.
+- Descarga protegida de GPM deshabilitada en hosting público; visualizaciones NASA GIBS independientes.
+- CI: `.github/workflows/ci.yml`; pruebas de navegador: `.github/workflows/e2e.yml`; smoke público: `.github/workflows/smoke-production.yml`; actualización de ECOCROP: `.github/workflows/import-ecocrop.yml`.
 
 ## Ejecutar localmente (Windows PowerShell)
 
-En una terminal, desde la raíz del repositorio:
+Terminal 1, desde la raíz:
 
 ```powershell
 py -3.12 -m venv backend\.venv
 .\backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-$env:PYTHONPATH = (Resolve-Path .\backend).Path
 .\backend\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload
 ```
 
-En otra terminal:
+Terminal 2:
 
 ```powershell
 cd frontend
@@ -48,18 +56,10 @@ npm.cmd run build
 npm.cmd run dev
 ```
 
-Abre `http://localhost:5173/`. Para consultar GPM con Earthdata en un entorno privado, utiliza únicamente las variables seguras del backend. **No compartas ni subas `EARTHDATA_TOKEN` a Netlify ni al frontend.** El servicio público Render mantiene `GPM_DOWNLOADS_ENABLED=false` para evitar descargas protegidas sin control de uso; las visualizaciones NASA GIBS son un servicio público independiente.
+Abre `http://localhost:5173/`. No publiques archivos `.env`, tokens Earthdata, datos personales, `node_modules` ni modelos locales.
 
-## Fuentes y límites
+## Seguimiento y validación
 
-- NASA POWER, NASA GIBS, GPM IMERG y SMAP: datos regionales. La imagen de fondo Esri no es un producto agronómico NASA.
-- Sentinel-2 pertenece a ESA/Copernicus; el servicio STAC está alojado por Microsoft.
-- FAO-56, INIA y artículos científicos son referencias; no sustituyen la validación local.
-- ECOCROP (2.568 especies según FAO) y GAEZ v5 **aún no se han importado** ni se usan para determinar aptitud. Los 90 perfiles adicionales son un directorio exploratorio.
-- El motor ARIE es **simbólico y explicable**, no un modelo entrenado de predicción agrícola. No se han realizado pilotos con agricultores que validen sus recomendaciones.
+[Hoja de ruta detallada v0.10](docs/roadmap-v0.10.md) · [Requisitos UX](docs/farmer-first-ux-redesign.md) · [Protocolo con agricultores](docs/farmer-validation-protocol.md) · [Capas NASA GIBS](docs/gibs-layers.md) · [GitHub Issues](https://github.com/Wilder-reyes/TERRA360-AI/issues).
 
-## Desarrollo y criterios de finalización
-
-[Hoja de ruta verificable](docs/roadmap-v0.8.md) · [Requisitos UX centrados en el agricultor](docs/farmer-first-ux-redesign.md) · [Protocolo de validación](docs/farmer-validation-protocol.md) · [Datos y capas](docs/gibs-layers.md).
-
-**Punto principal:** un agricultor no tiene que abrir JSON ni entender los códigos internos de las estrategias. Cada mapa debe indicar qué se observó, de dónde viene, qué significa y qué falta confirmar. El proyecto es un sistema de apoyo, no una recomendación agronómica certificada.
+**El objetivo es que una persona sin conocimientos técnicos pueda ver, comprender y comparar información regional.** La validación agronómica real, la importación espacial GAEZ v5 y el cálculo NDVI Sentinel-2 sobre parcelas siguen pendientes de fuentes y ensayos adicionales.

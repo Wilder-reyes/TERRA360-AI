@@ -1,41 +1,32 @@
-# Capas NASA GIBS incorporadas en TERRA360
+# Capas y análisis geoespacial TERRA360 AI
 
-Las capas siguientes son imágenes WMS públicas entregadas por NASA GIBS/Worldview en el navegador, sin descargar NetCDF al servidor Render. No implican que TERRA360 lea sus píxeles numéricos ni cuantifique la superficie exacta de cada parcela.
+TERRA360 superpone imágenes WMS originales de NASA GIBS. **No lee ni convierte colores de las teselas en mediciones de parcela**. Los números de NASA POWER son un producto distinto.
 
-## Conexión técnica
-- WMS Web Mercator: `https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi`.
-- Visualización: `frontend/src/GeoWorkspace.tsx`, componente `WMSTileLayer` de React Leaflet.
-- Parámetros: `LAYERS`, `TIME=YYYY-MM-DD`, `FORMAT=image/png`, fondo transparente, atribución NASA GIBS.
-- El mapa ofrece un enlace a la leyenda original en NASA Worldview. Un día sin mosaico no equivale a cero lluvia, cero humedad ni cero vegetación.
-- **Pendiente de verificación visual y temporal en producción:** el proveedor puede no publicar un mosaico exacto para cada fecha elegida.
+| Capa WMS | Procedencia | Interpretación y limitaciones |
+| --- | --- | --- |
+| `IMERG_Precipitation_Rate` | NASA GPM/IMERG V07, precipitación, datos base ~0,1° | Tasa representada en colores, no precipitación acumulada exacta en cada parcela; esquema de cuadrícula azul **ilustrativo** |
+| `SMAP_L4_Analyzed_Surface_Soil_Moisture` | NASA SMAP L4, humedad superficial modelada ~9 km | No mide directamente agua disponible en las raíces ni en la parcela |
+| `MODIS_Terra_NDVI_8Day` | NASA MODIS/Terra, producto de ~250 m, ventana de 8 días | No es NDVI Sentinel-2 ni diagnóstico del estado del cultivo |
+| `SRTM_Color_Index` | NASA SRTM v3, referencia topográfica estática | Muestra relieve visual, no pendiente calculada en parcela |
 
-## Productos
+Todas están en el mapa Leaflet por NASA GIBS WMS EPSG:3857 `https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi`. La leyenda de colores procede de `GetLegendGraphic`, si existe; se enlaza el original NASA Worldview y se informa de fechas sin mosaico.
 
-| Layer ID exacto | Qué representa | Escala aproximada | Límite |
-| --- | --- | --- | --- |
-| `IMERG_Precipitation_Rate` | Visualización de intensidad/tasa de precipitación derivada de GPM IMERG, no lluvia acumulada de la parcela | IMERG base ~0,1° (alrededor de 10 km en el ecuador) | La visualización diaria puede derivarse de observaciones subdiarias; no es lo mismo que `GPM_3IMERGDF` descargado |
-| `SMAP_L4_Analyzed_Surface_Soil_Moisture` | Humedad superficial estimada con un modelo de asimilación SMAP | ~9 km | No es humedad medida en el terreno, ni agua de riego disponible |
-| `MODIS_Terra_NDVI_8Day` | Mosaico NDVI de vegetación a partir de MODIS/Terra | ~250 m, periodo compuesto de 8 días | No equivale al NDVI Sentinel-2 de 10 m; no identifica automáticamente estrés ni rendimiento |
+### SRTM cuantitativo, limitado
 
-Las resoluciones se refieren al producto, no a la precisión exacta de cada píxel renderizado ni a la ubicación seleccionada.
+A solicitud del agricultor, `GET /api/environment/terrain` consulta **cinco** alturas estimadas del DEM SRTM90m por OpenTopoData, alrededor de ±180 m de distancia. Calcula un gradiente espacial con diferencias centrales, informa la elevación/variación y expresa que **no es la pendiente real de la parcela**. Máximo 50 consultas nuevas por día por instancia, separación mínima 1,2 s, caché en memoria 24 h y validación de coordenadas entre latitudes ±59,95°. No se conecta este valor a la recomendación ARIE.
 
-## Diferencias entre productos
-- **NASA POWER:** valores regionales históricos solicitados por latitud/longitud; no forman parte de las imágenes GIBS.
-- **NASA GIBS:** color y patrón espacial visual del producto; no se usan actualmente para calcular ARIE.
-- **Sentinel-2 STAC:** solo fechas y nubosidad de escenas; no NDVI ni imagen multibanda procesada.
-- **GPM diario protegido Earthdata:** descarga directa desactivada inicialmente en producción para evitar sobrecarga, aunque la capa visual pública de IMERG sea accesible.
-- **Esri World Imagery:** fotografía aérea como fondo geográfico, no una capa científica de NASA.
+### Futuras capacidades que requieren más datos
 
-## Próximos requisitos para análisis cuantitativo por parcela
-1. Verificar disponibilidad, período temporal, formatos y georreferenciación de cada capa en NASA.
-2. Leer un producto cuantitativo con resolución, máscara de calidad y fecha, sin interpolarlo para simular sensores locales.
-3. Si se calcula NDVI Sentinel-2, usar B04/B08 de Sentinel-2 L2A con máscara SCL/nubes y evaluar la cobertura válida.
-4. Crear interpretación de estadísticas espaciales con porcentaje de píxeles válidos, incertidumbre y fuente.
-5. Validación con puntos de campo y revisión por especialista agronómico antes de convertirlo en consejo de siembra.
+- NDVI propio de Sentinel-2 L2A: rojo B04, NIR B08, clasificación/mascarilla SCL, áreas válidas, nubes, sombras, cobertura y metadatos.
+- Análisis sobre polígonos de rasters originales GPM y SMAP: valores físicos, porcentaje de píxeles válidos, unidad, resolución y incertidumbre.
+- SRTM/DEMs por área: pendiente, orientación, máscara, comparaciones con puntos topográficos validados; no extrapolar cinco muestras a una parcela.
+- FAO GAEZ v5: descargar y vincular raster geográfico identificado (cultivo, época, manejo, escala, escenario climático, licencia y método), sin confundir ECOCROP con GAEZ.
+- Evaluación de precisión en localidades concretas y validación con agrónomos.
 
-## Fuentes oficiales
-- NASA GIBS: https://nasa-gibs.github.io/gibs-api-docs/access-basics/
-- NASA GIBS WMS/Leaflet: https://nasa-gibs.github.io/gibs-api-docs/gis-usage/
-- NASA GIBS ejemplos IMERG: https://nasa-gibs.github.io/gibs-api-docs/python-usage/
-- NASA Worldview: https://worldview.earthdata.nasa.gov/
-- NASA NSIDC SMAP: https://nsidc.org/data/user-resources/help-center/visualize-and-download-nsidc-daac-data-nasa-worldview
+### Fuentes
+
+NASA GIBS: https://nasa-gibs.github.io/gibs-api-docs/access-basics/  
+WMS y leyendas: https://nasa-gibs.github.io/gibs-api-docs/access-advanced-topics/  
+GIBS metadata: https://gibs.earthdata.nasa.gov/layer-metadata/v1.0/  
+OpenTopoData SRTM: https://www.opentopodata.org/datasets/srtm/  
+FAO GAEZ v5: https://www.fao.org/gaez/en

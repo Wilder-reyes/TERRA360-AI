@@ -10,7 +10,7 @@ from app.api.terrain_routes import router as terrain_router
 app = FastAPI(
     title="TERRA360 API",
     description="Earth observation and agricultural decision support for user-selected coordinates worldwide.",
-    version="0.9.0",
+    version="0.10.0",
 )
 app.add_middleware(
     CORSMiddleware,
