@@ -1,6 +1,7 @@
 import React, {lazy, Suspense} from 'react'
 import {createRoot} from 'react-dom/client'
 import FarmerApp from './FarmerApp'
+import 'leaflet/dist/leaflet.css'
 import './i18n'
 import './style.css'
 
