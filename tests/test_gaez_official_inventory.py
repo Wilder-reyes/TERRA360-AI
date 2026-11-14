@@ -93,3 +93,30 @@ class FAOInventoryUnitTests(unittest.TestCase):
 
 if __name__=="__main__":
     unittest.main()
+
+
+class RealRasterInspectorContractTests(unittest.TestCase):
+    def test_inspection_of_small_georeferenced_tiff_is_not_crop_advice(self):
+        from tempfile import TemporaryDirectory
+        from pathlib import Path
+        import numpy as np
+        import rasterio
+        from rasterio.transform import from_origin
+        from scripts.inspect_fao_gaez_raster import inspect_raster
+        with TemporaryDirectory() as directory:
+            path=Path(directory)/"GAEZ-V5.RES05-SIX.HP0120.AGERA5.HIST.CSV.LRLM.tif"
+            with rasterio.open(path, "w", driver="GTiff", width=24, height=24,
+                               count=1, dtype="int16", crs="EPSG:4326",
+                               transform=from_origin(-72.0, -13.2, 0.01, 0.01),
+                               nodata=-9999) as out:
+                out.write(np.full((24,24), 57, dtype="int16"), 1)
+            record={"public_object_verified":True, "file_name":path.name}
+            details=inspect_raster(path,record)
+        self.assertEqual(details["driver"],"GTiff")
+        self.assertEqual(details["crs"],"EPSG:4326")
+        self.assertEqual(details["calca_reference_raw_pixel"],57)
+        self.assertEqual(len(details["tiff_sha256"]),64)
+        self.assertIsNone(details["suitability_index"])
+        self.assertFalse(details["exact_asset_license_verified"])
+        self.assertFalse(details["scale_semantics_verified"])
+        self.assertFalse(details["used_in_crop_decision"])
