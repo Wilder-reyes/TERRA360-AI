@@ -118,3 +118,6 @@
 .f-report-crop-list li span{font-size:.78rem;color:#5a7462;line-height:1.35;margin-top:2px}
 @media(max-width:560px){.f-report-crop-list{grid-template-columns:1fr}}
 @media print{.f-report-candidates{break-inside:avoid}.f-report-crop-list{grid-template-columns:repeat(2,1fr)!important;gap:5px}.f-report-crop-list li{padding:6px}}
+
+/* v0.18.1: single, readable crop search when camera is deferred. */
+.f-crop-start .f-crop-pickers{grid-template-columns:minmax(0,1fr);max-width:800px}
