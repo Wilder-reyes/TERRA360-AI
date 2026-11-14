@@ -157,12 +157,17 @@ def _safe_signed_asset(item: dict, key: str) -> str:
     if not isinstance(href, str):
         raise NDVIError("La escena no contiene las bandas B04, B08 y SCL.")
     parsed = urlparse(href)
-    if parsed.scheme != "https" or parsed.hostname not in (
-        "sentinel2l2a01.blob.core.windows.net",
-        "sentinel2l2a01.blob.core.windows.net",
-    ):
+    if parsed.scheme != "https" or parsed.hostname != "sentinel2l2a01.blob.core.windows.net":
         raise NDVIError("La ubicación del raster no es una fuente aprobada.")
-    return planetary_computer.sign(href)
+    try:
+        signed = planetary_computer.sign(href)
+    except Exception as exc:
+        raise NDVIError("El proveedor no pudo autorizar la lectura del raster.") from exc
+    # Defend against a malformed or provider-redirected URL being passed to GDAL.
+    signed_host = urlparse(signed).hostname if isinstance(signed, str) else None
+    if signed_host != parsed.hostname:
+        raise NDVIError("El raster firmado cambió de proveedor.")
+    return signed
 
 
 def process_scene(item: dict, parcel: Polygon, area_m2: float) -> dict[str, Any]:
