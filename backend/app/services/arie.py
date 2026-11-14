@@ -12,6 +12,7 @@ is inferred from regional NASA grids or generic FAO crop coefficients.
 
 from app.schemas.scenarios import ScenarioRequest
 from app.data.crop_directory import exploratory_crops
+from app.data.ecocrop_catalog import ecocrop_profiles
 from app.services.planning_preview import plan_preview
 
 
@@ -49,11 +50,20 @@ CROPS = {
 
 # Exploratory profiles contain names and family only; no FAO suitability or Kc inferred.
 CROPS.update(exploratory_crops())
+CROPS.update(ecocrop_profiles())
 REFERENCES['directory'] = {
  'title':'Directorio inicial de nombres de cultivos; pendiente de vinculación individual con ECOCROP/GAEZ',
  'organization':'TERRA360 - datos taxonómicos preliminares',
  'url':'https://www.fao.org/land-water/resources/tools/databases/ecocrop/en',
  'scope':'ECOCROP/GAEZ are candidate sources only. None of these additional profiles includes imported FAO climate or soil requirements.'
+}
+
+REFERENCES['ecocrop'] = {
+ 'title':'FAO ECOCROP expert ecological requirements via CGIAR Data Hub, pinned OpenCLIM CSV',
+ 'organization':'FAO via CGIAR Climate Action Data Hub',
+ 'year':2026,
+ 'url':'https://cgiar-climate-data-hub.github.io/catalog/ecocrop/',
+ 'scope':'Source data from the FAO EcoCrop database, Food and Agriculture Organization of the United Nations. Expert estimates have uneven provenance, may have errors, and are not validated locally.'
 }
 
 SCENARIOS = [

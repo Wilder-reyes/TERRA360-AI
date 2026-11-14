@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.data.crop_directory import CROP_DIRECTORY, KNOWN_CROP_IDS
 from app.services.arie import CROPS
+from app.data.ecocrop_catalog import snapshot
 
 
 class ExtendedCropDirectoryTests(unittest.TestCase):
@@ -16,6 +17,9 @@ class ExtendedCropDirectoryTests(unittest.TestCase):
         data=response.json()
         self.assertGreaterEqual(len(data['crops']),90)
         self.assertEqual(len(data['crops']),len(KNOWN_CROP_IDS))
+        self.assertGreaterEqual(len(data['crops']),2600)
+        self.assertEqual(len(snapshot()['species']),2568)
+        self.assertIn('ecocrop',data['references'])
         self.assertIn('quinoa',data['crops'])
         self.assertIn('tomato',data['crops'])
         self.assertEqual(data['crops']['tomato']['evidence_level'],'taxonomy_only_no_local_suitability')
@@ -28,6 +32,16 @@ class ExtendedCropDirectoryTests(unittest.TestCase):
         self.assertEqual(len(ids),len(set(ids)))
         self.assertTrue(all(CROPS[id]['evidence_level']=='taxonomy_only_no_local_suitability' for id in ids))
         self.assertTrue(all(CROPS[id]['kc'] is None for id in ids))
+
+    def test_ecocrop_estimates_are_not_locally_recommended(self):
+        example = snapshot()["species"][0]
+        profile = CROPS[example["id"]]
+        self.assertEqual(profile["evidence_level"],"ecocrop_expert_estimates_not_locally_validated")
+        self.assertIsNone(profile["kc"])
+        result=self.client.post("/api/arie/evaluate",json={"crops":[example["id"],"maize"]})
+        self.assertEqual(result.status_code,200,result.text)
+        self.assertEqual(result.json()["ai_decision"]["status"],"exploratory_catalog_only")
+        self.assertIsNone(result.json()["ai_decision"]["chosen_for_review"])
 
     def test_exploratory_crops_can_be_compared_without_fabricated_fitness(self):
         response=self.client.post('/api/arie/evaluate',json={

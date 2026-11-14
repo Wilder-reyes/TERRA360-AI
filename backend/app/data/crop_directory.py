@@ -639,7 +639,9 @@ CROP_DIRECTORY = (
   )
 )
 
-KNOWN_CROP_IDS = {'maize', 'tarwi', 'faba', 'potato', 'barley'} | {r[0] for r in CROP_DIRECTORY}
+from app.data.ecocrop_catalog import species_ids
+
+KNOWN_CROP_IDS = {'maize', 'tarwi', 'faba', 'potato', 'barley'} | {r[0] for r in CROP_DIRECTORY} | species_ids()
 
 def exploratory_crops():
     return {

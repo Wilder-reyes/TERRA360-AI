@@ -23,7 +23,7 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
     generic Kc value, taxonomic family or remotely sensed regional grid.
     """
     initial = list(request.crops)
-    exploratory = [c for c in initial if crops[c].get('evidence_level') == 'taxonomy_only_no_local_suitability']
+    exploratory = [c for c in initial if bool(crops[c].get('evidence_level'))]
     previous = request.baseline_crops[-1] if request.baseline_crops else None
     farmer_priority = request.priority
     target = {crop: i for i, crop in enumerate(initial)}
@@ -54,7 +54,7 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
     warnings: list[dict[str, Any]] = []
     if exploratory:
         warnings.append({'code':'exploratory_profiles', 'status':'needs_local_review',
-                         'message':'Algunos cultivos solo tienen datos generales de nombre y familia. No podemos verificar si se pueden sembrar en tu zona ni recomendar su rendimiento.'})
+                         'message':'Algunos cultivos tienen fichas exploratorias o umbrales generales FAO ECOCROP. No podemos verificar si son aptos para tu zona ni recomendar su rendimiento.'})
     missing: list[str] = []
     if exploratory:
         missing.append('Consultar requisitos climáticos y agrícolas verificados para los cultivos exploratorios.')
@@ -169,7 +169,7 @@ def evaluate_candidates(request: Any, crops: dict[str, dict[str, Any]]) -> dict[
     }
     warning_en = {
         'rainfed': 'Rainfed conditions reported: confirm local planting windows and dry months.',
-        'exploratory_profiles': 'Some crops have only preliminary name and botanical family data. Their suitability and productivity are not evaluated.',
+        'exploratory_profiles': 'Some crops only have introductory taxonomy or FAO EcoCrop expert estimates. Local suitability and productivity are not evaluated.',
         'market': 'Some proposed crops have no declared market: verify sale options or change the sequence.',
         'equipment': 'Equipment is recorded but crop-specific requirements are unverified.',
         'budget': 'Budget is recorded but no verified local cost data are available.',

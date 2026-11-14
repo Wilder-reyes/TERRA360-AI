@@ -67,7 +67,7 @@ class SearchAndPlanningTests(unittest.TestCase):
         self.assertEqual(body["ai_decision"]["status"],"exploratory_catalog_only")
         self.assertIsNone(body["ai_decision"]["chosen_for_review"])
         self.assertIn("crop_evidence",[c["id"] for c in body["plan_preview"]["missing_essentials"]])
-        self.assertTrue(all(s["evidence_status"]=="basic_profile_only" for s in body["plan_preview"]["stages"]))
+        self.assertTrue(all(s["evidence_status"]=="reference_not_locally_validated" for s in body["plan_preview"]["stages"]))
 
 
 if __name__ == "__main__":

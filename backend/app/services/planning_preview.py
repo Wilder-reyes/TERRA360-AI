@@ -11,7 +11,7 @@ def plan_preview(request, crops: dict, ai_decision: dict) -> dict:
     stages = []
     for index, crop_id in enumerate(sequence):
         crop = crops[crop_id]
-        exploratory = crop.get("evidence_level") == "taxonomy_only_no_local_suitability"
+        exploratory = bool(crop.get("evidence_level"))
         reference_cycle = crop.get("cycle_days") if not exploratory else None
         stages.append({
             "order": index + 1, "crop_id": crop_id, "name": crop["name"],
@@ -20,7 +20,7 @@ def plan_preview(request, crops: dict, ai_decision: dict) -> dict:
             "sowing_date": None, "harvest_date": None,
             "local_cycle_verified": False,
             "literature_cycle_days": reference_cycle,
-            "evidence_status": "basic_profile_only" if exploratory else "literature_reference_not_local",
+            "evidence_status": "reference_not_locally_validated" if exploratory else "literature_reference_not_local",
             "status_text": (
                 "Falta comprobar sus condiciones de cultivo en esta zona."
                 if exploratory else
@@ -45,7 +45,7 @@ def plan_preview(request, crops: dict, ai_decision: dict) -> dict:
     if not request.soil_test_available:
         checks.append(("soil", "Confirma las condiciones del suelo con una evaluación local.",
                        "Confirm soil conditions through a local assessment."))
-    if any(s["evidence_status"] == "basic_profile_only" for s in stages):
+    if any(s["evidence_status"] == "reference_not_locally_validated" for s in stages):
         checks.append(("crop_evidence", "Necesitamos fuentes agronómicas para los cultivos exploratorios.",
                        "Agronomic sources are needed for exploratory crops."))
     if not request.region_crop_validation:

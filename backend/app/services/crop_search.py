@@ -39,7 +39,7 @@ def search_directory(crops: dict, query: str = "", category: str | None = None,
         if category_norm and category_norm != normalize(crop["role"]):
             return False
         terms = [crop_id.replace("_", " "), crop["name"], crop["scientific_name"],
-                 crop["family"], crop["role"], *ALIASES.get(crop_id, ())]
+                 crop["family"], crop["role"], *ALIASES.get(crop_id, ()), *crop.get('common_names', ())]
         normalized = [normalize(t) for t in terms]
         return (not query or any(query in t for t in normalized))
 
@@ -53,7 +53,7 @@ def search_directory(crops: dict, query: str = "", category: str | None = None,
     items = [
         {"id": crop_id, "name": crop["name"], "scientific_name": crop["scientific_name"],
          "family": crop["family"], "category": crop["role"],
-         "evidence": "basic_taxonomy_only" if crop.get("evidence_level") else "literature_reference_only",
+         "evidence": crop.get("evidence_level", "literature_reference_only"),
          "locally_suitable": None,
          "description": "Su aptitud en tu región no está comprobada."}
         for crop_id, crop in matched[offset:offset + limit]
@@ -67,4 +67,4 @@ def search_directory(crops: dict, query: str = "", category: str | None = None,
     return {"items": items, "total": len(matched), "limit": limit, "offset": offset,
             "query": query, "suggestions": suggestions,
             "region_suitability_evaluated": False,
-            "catalog_basis": "TERRA360 introductory taxonomy and five evidence profiles, not imported GAEZ/ECOCROP data"}
+            "catalog_basis": "95 curated profiles + source-pinned FAO ECOCROP expert estimates. No regional GAEZ suitability imported."}
