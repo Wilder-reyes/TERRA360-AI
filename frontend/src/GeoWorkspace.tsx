@@ -38,6 +38,13 @@ function boundsForPoint(p:Position):[[number,number],[number,number]]{
   return [[Math.max(-90,p.lat-lat),Math.max(-180,p.lng-lon)],[Math.min(90,p.lat+lat),Math.min(180,p.lng+lon)]]
 }
 
+function approxHectares(area:Area):number{
+  const rad=Math.PI/180
+  const a=area[0].lat*rad,b=area[1].lat*rad
+  const lon=Math.abs(area[0].lng-area[1].lng)*rad
+  return 6371.0088**2*Math.abs(Math.sin(b)-Math.sin(a))*lon*100
+}
+
 function boundsForArea(area:Area):[[number,number],[number,number]]{
   return [[Math.min(area[0].lat,area[1].lat),Math.min(area[0].lng,area[1].lng)],[Math.max(area[0].lat,area[1].lat),Math.max(area[0].lng,area[1].lng)]]
 }
@@ -74,9 +81,10 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   const value=layer==='rain'?current?.PRECTOTCORR:layer==='temperature'?current?.T2M:layer==='humidity'?current?.RH2M:null
   const shownValue=value===null||value===undefined||!Number.isFinite(value)?'—':Number(value).toFixed(1)
   const title=layer==='rain'?(en?'Rain on this date':'Lluvia de ese día'):layer==='temperature'?(en?'Air temperature':'Temperatura del aire'):layer==='humidity'?(en?'Air humidity':'Humedad del aire'):(en?'Satellite scenes':'Imágenes disponibles')
+  function choosePoint(p:Position){setArea(null);setDraw(false);setCorner(null);onPick(p)}
   function chooseCorner(p:Position){
     if(!corner){setCorner(p);return}
-    if(Math.abs(corner.lat-p.lat)<.00001||Math.abs(corner.lng-p.lng)<.00001){return}
+    if(Math.abs(corner.lat-p.lat)<.00001||Math.abs(corner.lng-p.lng)<.00001||Math.abs(corner.lng-p.lng)>180){return}
     const a:Area=[corner,p]
     setArea(a);setCorner(null);setDraw(false)
     onPick({lat:Number(((corner.lat+p.lat)/2).toFixed(6)),lng:Number(((corner.lng+p.lng)/2).toFixed(6))})
@@ -107,7 +115,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
         <MapContainer center={[12,0]} zoom={2} scrollWheelZoom={false} className="terra-geo-map">
           {base==='streets'?<TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>:<TileLayer attribution='Tiles &copy; Esri, Maxar, Earthstar Geographics' url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>}
           <Recenter point={point}/>
-          <MapSelection draw={draw} corner={corner} onPoint={onPick} onCorner={chooseCorner}/>
+          <MapSelection draw={draw} corner={corner} onPoint={choosePoint} onCorner={chooseCorner}/>
           {point&&<Marker position={[point.lat,point.lng]} icon={markerIcon}><Popup>{en?'Your selected reference point':'Punto de referencia elegido'}<br/>{point.lat.toFixed(5)}, {point.lng.toFixed(5)}</Popup></Marker>}
 
           {point&&layer==='scenes'&&<Rectangle bounds={boundsForPoint(point)} pathOptions={{color:'#a45d2b',weight:2,dashArray:'7 5',fillOpacity:.07}}><Popup>{en?'Approximate scene search area, not a field boundary':'Área aproximada de búsqueda de imágenes, no límites de tu terreno'}</Popup></Rectangle>}
@@ -119,7 +127,7 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           <button type="button" aria-pressed={draw} onClick={()=>{setDraw(v=>!v);setCorner(null)}}>{draw?(corner?(en?'Pick opposite corner':'Marca la esquina opuesta'):(en?'Pick first corner':'Marca la primera esquina')):(en?'Draw approximate area':'Delimitar área aproximada')}</button>
           {area&&<button type="button" onClick={()=>{setArea(null);setCorner(null);setDraw(false)}}>{en?'Clear area':'Borrar área'}</button>}
         </div>
-        <div className="terra-geo-map-caption">{area?(en?'Green outline: area you drew; not surveyed.':'Contorno verde: área dibujada, no verificada.'):(en?'Click the map to choose a point.':'Haz clic para elegir un punto.')}</div>
+        <div className="terra-geo-map-caption">{area?(en?`Drawn area: approximately ${approxHectares(area).toLocaleString('en-US',{maximumFractionDigits:1})} hectares; not surveyed.`:`Área dibujada: aproximadamente ${approxHectares(area).toLocaleString('es-PE',{maximumFractionDigits:1})} hectáreas; sin medición catastral.`):(en?'Click the map to choose a point.':'Haz clic para elegir un punto.')}</div>
       </div>
       <aside className="terra-geo-inspector">
         <div className="terra-geo-layer-title"><strong>{en?'What do you want to explore?':'¿Qué quieres explorar?'}</strong><small>{en?'Select one view':'Elige una vista'}</small></div>

@@ -10,3 +10,5 @@
 .terra-geo-compact .terra-geo-shell{min-height:265px}.terra-geo-compact .terra-geo-mapbox,.terra-geo-compact .terra-geo-map{min-height:265px}.terra-geo-compact .terra-geo-inspector{max-height:365px}.terra-geo-compact .terra-geo-heading p{display:none}
 @media(max-width:850px){.terra-geo-shell{grid-template-columns:1fr}.terra-geo-mapbox,.terra-geo-map{min-height:450px}.terra-geo-inspector{display:grid;grid-template-columns:1fr 1fr;gap:8px}.terra-geo-layer-title,.terra-geo-layer-pills{grid-column:1/-1}.terra-geo-compact .terra-geo-mapbox,.terra-geo-compact .terra-geo-map{min-height:320px}.terra-geo-compact .terra-geo-inspector{max-height:none}}
 @media(max-width:550px){.terra-geoworkspace{padding:10px}.terra-geo-heading{align-items:flex-start;flex-direction:column}.terra-geo-base{width:100%}.terra-geo-base button{flex:1}.terra-geo-mapbox,.terra-geo-map{min-height:400px}.terra-geo-inspector{display:block}.terra-geo-compact .terra-geo-mapbox,.terra-geo-compact .terra-geo-map{min-height:300px}}
+
+.terra-geo-map-caption{font-weight:700;line-height:1.35}
