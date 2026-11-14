@@ -14,11 +14,12 @@ from urllib.request import Request, urlopen
 from urllib.parse import urlencode
 
 SITE = "https://terra360-ai.netlify.app"
+BACKEND = "https://terra360-api.onrender.com"
 TIMEOUT = 65
 
 
-def fetch(path: str, body: dict | None = None) -> tuple[int, bytes, str]:
-    url = f"{SITE}{path}"
+def fetch(path: str, body: dict | None = None, host: str = SITE) -> tuple[int, bytes, str]:
+    url = f"{host}{path}"
     raw = None if body is None else json.dumps(body).encode("utf-8")
     req = Request(url, data=raw, headers={"Accept": "application/json",
                                          "User-Agent": "TERRA360-public-smoke/1.0 (+https://terra360-ai.netlify.app/)"},
@@ -46,8 +47,8 @@ def fetch(path: str, body: dict | None = None) -> tuple[int, bytes, str]:
     raise RuntimeError(f"Public demo unavailable: {path} (HTTP/status {code})") from failure
 
 
-def json_from(path: str, body: dict | None = None) -> dict:
-    status, raw, content_type = fetch(path, body)
+def json_from(path: str, body: dict | None = None, host: str = SITE) -> dict:
+    status, raw, content_type = fetch(path, body, host)
     if status != 200 or "json" not in content_type:
         raise AssertionError(f"Expected JSON status 200 from {path}; received status={status} type={content_type}")
     result = json.loads(raw)
@@ -62,11 +63,23 @@ def check(name: str, fn):
 
 
 def main() -> None:
-    check("public frontend renders HTML", lambda: verify_html())
-    check("Netlify reverse-proxy health", lambda: verify_health())
-    check("paginated crop search", lambda: verify_search())
-    check("decision evaluation keeps evidence warnings", lambda: verify_decision())
-    check("NASA POWER returns real dated observations", lambda: verify_nasa())
+    tasks = [
+        ("Render backend health", lambda: verify_health(BACKEND)),
+        ("Render crop search", lambda: verify_search(BACKEND)),
+        ("Render ARIE decision", lambda: verify_decision(BACKEND)),
+        ("Render real NASA POWER", lambda: verify_nasa(BACKEND)),
+        ("anonymous Netlify home page", verify_html),
+        ("anonymous Netlify to Render proxy", lambda: verify_health(SITE)),
+    ]
+    failed = []
+    for name, runner in tasks:
+        try:
+            check(name, runner)
+        except Exception as exc:
+            print(f"FAIL — {name}: {exc}", file=sys.stderr)
+            failed.append(name)
+    if failed:
+        raise RuntimeError("Public smoke incomplete; failed checks: " + ", ".join(failed))
     print("PASS — public integration smoke complete; agronomic validation remains separate.")
 
 
@@ -76,21 +89,21 @@ def verify_html():
         raise AssertionError("Public website did not return TERRA360 HTML")
 
 
-def verify_health():
-    obj = json_from("/api/health")
+def verify_health(host: str = SITE):
+    obj = json_from("/api/health", host=host)
     assert obj.get("status") == "ok", obj
     assert obj.get("application") == "TERRA360", obj
 
 
-def verify_search():
-    obj = json_from("/api/arie/crops?query=quinua&limit=10")
+def verify_search(host: str = SITE):
+    obj = json_from("/api/arie/crops?query=quinua&limit=10", host=host)
     assert any(item["id"] == "quinoa" for item in obj.get("items", [])), obj
     assert obj.get("region_suitability_evaluated") is False, obj
 
 
-def verify_decision():
+def verify_decision(host: str = SITE):
     obj = json_from("/api/arie/evaluate", {"crops": ["quinoa", "tomato"],
-                                           "priority": "balanced", "water_access": "unknown"})
+                                           "priority": "balanced", "water_access": "unknown"}, host=host)
     decision = obj["ai_decision"]
     assert decision["chosen_for_review"] is None, decision
     assert decision["status"] == "exploratory_catalog_only", decision
@@ -98,12 +111,12 @@ def verify_decision():
     assert obj["plan_preview"]["is_planting_instruction"] is False
 
 
-def verify_nasa():
+def verify_nasa(host: str = SITE):
     end = date.today() - timedelta(days=6)
     start = end - timedelta(days=5)
     query = urlencode({"start": start.isoformat(), "end": end.isoformat(),
                       "latitude": -13.32175, "longitude": -71.95605})
-    obj = json_from("/api/environment/nasa-power/daily?" + query)
+    obj = json_from("/api/environment/nasa-power/daily?" + query, host=host)
     records = obj.get("records", [])
     if not isinstance(records, list) or not records:
         raise AssertionError("NASA POWER did not return observations")
