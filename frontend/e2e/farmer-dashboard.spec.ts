@@ -116,3 +116,16 @@ test('missing NASA data never turns unknown rainfall into zero or invented plant
  await page.getByRole('button',{name:'Ver cultivos para investigar'}).click()
  await expect(page.getByText(/No encontramos suficientes años completos/)).toBeVisible()
 })
+
+test('v0.18.1 release manifest and title identify the farmer Netlify build',async({page})=>{
+ await page.goto('/')
+ await expect(page).toHaveTitle('TERRA360 | Mi terreno · Cultivos para mi zona · Tablero')
+ await expect(page.locator('meta[name="terra360-release"]')).toHaveAttribute('content','v0.18.1-huando-farmer-dashboard')
+ const release=await page.request.get('/release.json')
+ expect(release.ok()).toBeTruthy()
+ const payload=await release.json()
+ expect(payload.release).toBe('v0.18.1-huando-farmer-dashboard')
+ expect(payload.computer_vision_enabled).toBe(false)
+ await page.getByRole('button',{name:'Cultivos para mi zona'}).click()
+ await expect(page.locator('#terra-photo-input')).toHaveCount(0)
+})
