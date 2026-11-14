@@ -19,7 +19,7 @@ test.beforeEach(async({page})=>{
 })
 
 test('farmer-first map works without exposing API codes or downloads',async({page})=>{
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await expect(page.getByRole('heading',{name:'Explora tu terreno y su entorno'})).toBeVisible()
  await expect(page.getByRole('region',{name:'Mapa agrícola interactivo'})).toBeVisible()
  await expect(page.getByRole('button',{name:'Dibujar polígono'})).toBeVisible()
@@ -36,7 +36,7 @@ test('farmer-first map works without exposing API codes or downloads',async({pag
 })
 
 test('find a city, open crop search, and read plain-language evidence',async({page})=>{
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
  await page.getByRole('button',{name:'Buscar',exact:true}).click()
  await page.getByRole('button',{name:/Calca.*Cusco.*Perú/}).click()
@@ -51,7 +51,7 @@ test('find a city, open crop search, and read plain-language evidence',async({pa
 
 test('mobile viewport preserves geospatial workspace and readable controls',async({page})=>{
  await page.setViewportSize({width:390,height:844})
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await expect(page.getByRole('region',{name:'Mapa agrícola interactivo'})).toBeVisible()
  await expect(page.getByLabel('Busca una localidad en el mapa')).toBeVisible()
  await expect(page.getByRole('button',{name:'Dibujar polígono'})).toBeVisible()
@@ -80,7 +80,7 @@ test('Sentinel-2 parcel NDVI needs a drawn area and explains pixel quality',asyn
    used_in_crop_decision:false
   })})
  })
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await page.getByRole('button',{name:'Vegetación de mi terreno'}).click()
  await expect(page.getByText(/Primero delimita un rectángulo o polígono/)).toBeVisible()
  await expect(page.getByRole('button',{name:'Calcular NDVI del terreno'})).toHaveCount(0)
@@ -129,7 +129,7 @@ test('multiple Sentinel-2 dates expose quality gaps without declaring crop trend
    ],limitations:[]
   })})
  })
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await page.getByRole('button',{name:'Vegetación de mi terreno'}).click()
  await expect(page.getByRole('button',{name:'Ver observaciones por fecha'})).toBeDisabled()
  await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
@@ -165,7 +165,7 @@ test('GPM polygon layer does not present invented rainfall when NASA file is abs
    used_in_crop_decision:false,can_infer_field_rainfall:false
   })})
  })
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await page.getByText('Más mapas y datos',{exact:true}).click()
  await page.getByRole('button',{name:'Lluvia GPM por área'}).click()
  await expect(page.getByRole('button',{name:'Consultar lluvia regional'})).toBeDisabled()
@@ -200,7 +200,7 @@ test('GPM polygon shows coarse area overlap and quality when valid sample is ret
    limitations:[],used_in_crop_decision:false,can_infer_field_rainfall:false
   })})
  })
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await page.getByText('Más mapas y datos',{exact:true}).click()
  await page.getByRole('button',{name:'Lluvia GPM por área'}).click()
  await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
@@ -230,7 +230,7 @@ test('SMAP native 9 km reading has explicit no-data and never acts as irrigation
    used_in_crop_decision:false,can_infer_field_soil_moisture:false,limitations:[]
   })})
  })
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await page.getByText('Más mapas y datos',{exact:true}).click()
  await page.getByRole('button',{name:'Humedad regional SMAP'}).click()
  await expect(page.getByText(/Celda satelital original de 9 km/)).toBeVisible()
@@ -269,7 +269,7 @@ test('FAO GAEZ real-source tab labels raw regional code without claiming crop su
    limitations:[]
   })})
  })
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await page.getByText('Más mapas y datos',{exact:true}).click()
  await page.getByRole('button',{name:'Código FAO GAEZ v5'}).click()
  await expect(page.getByRole('button',{name:'Consultar celda regional FAO'})).toBeDisabled()
@@ -296,7 +296,7 @@ test('network failure shows a friendly message and catalog can retry without ref
   if(attempts===1){await route.abort('failed');return}
   await route.fulfill({contentType:'application/json',body:JSON.stringify({crops,references:{},scenarios:[]})})
  })
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await expect(page.getByText(/No se pudo conectar con TERRA360/)).toBeVisible()
  await expect(page.getByText(/Failed to fetch/)).toHaveCount(0)
  await page.getByRole('button',{name:'Volver a intentar'}).click()
@@ -312,7 +312,7 @@ test('network failure shows a friendly message and catalog can retry without ref
 test('browser production must not depend on VITE_API_URL cross-origin override',async({page})=>{
  const requests:string[]=[]
  page.on('request',req=>{if(req.url().includes('/api/arie/catalog'))requests.push(req.url())})
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await expect(page.getByRole('heading',{name:'Explora tu terreno y su entorno'})).toBeVisible()
  await expect.poll(()=>requests.length).toBeGreaterThan(0)
  expect(new URL(requests[0]).origin).toBe(new URL(page.url()).origin)
@@ -320,7 +320,7 @@ test('browser production must not depend on VITE_API_URL cross-origin override',
 
 test('Huando farmer onboarding keeps photos local and no invented crop AI',async({page})=>{
  await page.setViewportSize({width:390,height:844})
- await page.goto('/')
+ await page.goto('/?vista=tecnica')
  await expect(page.getByText('Huando, Huaral · vista inicial')).toBeVisible()
  await expect(page.getByText('¿Qué significan los colores?')).toBeVisible()
  await expect(page.getByRole('button',{name:'Vegetación de mi terreno'})).toBeVisible()
