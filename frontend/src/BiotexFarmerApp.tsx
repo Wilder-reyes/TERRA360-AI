@@ -348,7 +348,7 @@ export default function BiotexFarmerApp(){
   {result.strategies.map(s=><div key={s.id} className="b-print-bar-row"><span>{strategyName(s)}</span><div className="b-print-bar-track"><div className="b-print-bar-fill" style={{width:(100*s.indicators.bare_months/24).toFixed(1)+'%'}}/></div><strong>{s.indicators.bare_months}/24</strong></div>)}
   </section>
   <div className="b-print-small"><h3>{t.sources}</h3>
-  <p>NASA POWER (2001–2025); NASA HLS v2.0 {source==='satellite_confirmed'?(lang==='es'?'(cultivo confirmado por el agricultor)':'(farmer-confirmed crop)'):''}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
+  <p>NASA POWER (2001–2025); {history?(lang==='es'?'NASA HLS v2.0 (imágenes consultadas; cultivos confirmados por una persona)':'NASA HLS v2.0 (images consulted; crops confirmed by a person)'):(lang==='es'?'historial de cultivos declarado por la persona (sin análisis HLS)':'farmer-declared crop history (no HLS analysis)')}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
   <p>{lang==='es'?'Solo se utiliza un calendario agrícola aproximado de Lima; no se conoce el análisis de suelo, turno real de riego o precio futuro. Los cálculos son comparaciones relativas, no recomendaciones garantizadas.':'Uses an approximate Lima sowing calendar. Soil test, actual irrigation allocation and future prices are not known. Results are relative comparisons, not guarantees.'}</p>
   <p>{sampleNote?t.exampleNote:''}</p></div></div>}
  return <div className="b-app">
