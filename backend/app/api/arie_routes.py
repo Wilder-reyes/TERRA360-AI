@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query, HTTPException
 from app.schemas.scenarios import ScenarioRequest
 from app.services.arie import CROPS, REFERENCES, SCENARIOS, evaluate
 from app.services.crop_search import search_directory
-from app.services.farmer_crop_guidance import build_crop_guidance
+from app.services.farmer_crop_guidance import build_crop_guidance, annual_summaries_from_daily
 
 router = APIRouter(prefix='/api/arie', tags=['ARIE - evidence-based scenarios'])
 
@@ -51,23 +51,26 @@ async def crop_guidance(
     """
     if selected_crop and selected_crop not in CROPS:
         raise HTTPException(422, detail="El cultivo seleccionado no existe en el catálogo.")
-    from app.api.history_routes import history
     from datetime import date
-    hist = await history(
-        latitude=latitude, longitude=longitude,
-        years=5, end_year=date.today().year - 1,
+    from app.api.routes import point_metadata
+    from app.connectors.nasa_power import (
+        fetch_daily_point, normalize_daily, NasaPowerError,
     )
-    result = build_crop_guidance(hist["records"], selected_crop)
+    last_year = date.today().year - 1
+    first_year = last_year - 4
+    start, end = date(first_year, 1, 1), date(last_year, 12, 31)
+    try:
+        # One NASA request, not five repeated queries for the same grid cell.
+        raw = await fetch_daily_point(latitude, longitude, start, end)
+        daily = normalize_daily(raw, start, end)["records"]
+    except (NasaPowerError, ValueError) as exc:
+        raise HTTPException(503, detail="NASA POWER no está disponible en este momento.") from exc
+    records = annual_summaries_from_daily(daily, first_year, last_year)
+    result = build_crop_guidance(records, selected_crop)
     return {
         **result,
-        "point": hist["location"],
-        "period": hist["period"],
-        "history": [
-            {
-                "year": r["year"], "status": r["status"],
-                "precipitation_total_mm": r.get("precipitation_total_mm"),
-                "temperature_mean_c": r.get("temperature_mean_c"),
-            } for r in hist["records"]
-        ],
-        "source": hist["source"],
+        "point": point_metadata(latitude, longitude),
+        "period": {"start_year": first_year, "end_year": last_year},
+        "history": records,
+        "source": "NASA POWER",
     }
