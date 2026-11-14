@@ -76,8 +76,11 @@ def ingest_one(product: str, target: date) -> dict:
                             "latitude","longitude","soil_moisture_dca","retrieval_qual_flag_dca"
                         )):
                             raise ArchiveError("NASA SMAP missing original AM DCA measurements.")
+                granule_id = (granule.get("meta") or {}).get("concept-id")
+                if not isinstance(granule_id, str) or not granule_id.startswith("G"):
+                    raise ArchiveError("El granule no tiene identificador oficial NASA CMR.")
                 return {"status": "ingested", **upload_verified(
-                    product, target, path, source_id=str(granule.get("meta",{}).get("concept-id","NASA CMR"))
+                    product, target, path, source_id=granule_id
                 )}
         return {"status": "no_matching_granule", "product": product,
                 "date": target.isoformat()}
