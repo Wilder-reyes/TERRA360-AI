@@ -88,6 +88,7 @@ class CompareRequest(BaseModel):
     priorities: Priorities = Priorities()
     water_turn: Literal["normal", "escaso", "no_se"] = "normal"
     history: dict[str, Any] | None = Field(None, description="summary: sensor, start, end, months_with_data")
+    current_source: Literal["farmer_declared", "satellite_confirmed", "team_demo"] = "farmer_declared"
     use_team_templates_as_fallback: bool = False
 
 
@@ -190,7 +191,7 @@ async def compare(req: CompareRequest):
     try:
         result = engine.compare([p.model_dump() for p in req.current], clim,
                                 priorities=req.priorities.model_dump(), water_turn=req.water_turn,
-                                history=req.history,
+                                history=req.history, current_origin=req.current_source,
                                 fallback=engine.TEMPLATES if req.use_team_templates_as_fallback else None)
     except engine.RotationError as exc:
         raise HTTPException(422, str(exc)) from exc
