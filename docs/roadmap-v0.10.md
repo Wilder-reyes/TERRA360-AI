@@ -15,7 +15,7 @@
 - ARIE permite seleccionar hasta cinco cultivos y comparar una secuencia estructural; se abstiene de certificar cultivos exploratorios. Las fichas enseñan referencias en lenguaje sencillo.
 - Plan de campañas no prescriptivo: indica secuencia, información faltante y ninguna fecha de cosecha inventada.
 - Sin S0/S1/S2 visibles como opciones ni botones para abrir archivos JSON en el flujo agrícola. La API sí utiliza JSON internamente.
-- Pruebas Python/React CI y pruebas de navegador en escritorio/móvil iniciadas. Smoke externo separa Netlify, Render, ARIE y NASA.
+- Pruebas Python/React CI aprobadas; pruebas reales de Chromium escritorio/móvil **3 de 3 aprobadas**; smoke externo Netlify, Render, ARIE y NASA POWER **aprobado**. Estas pruebas son técnicas, no ensayos con agricultores.
 
 **Lo no concluido científicamente:** importación e interpretación espacial específica de GAEZ v5, cálculo propio de NDVI Sentinel-2 con máscara SCL, estadísticas exactas de rasters GPM/SMAP sobre polígonos, calibración de calendarios/aptitud por variedad y lugar, modelo predictivo agronómico entrenado y validado, revisión independiente por agrónomos, pilotos con agricultores. **No se pueden marcar como hechos sin datos adicionales ni participantes.**
 
@@ -27,7 +27,7 @@
 | Superficie geodésica aproximada y rechazo de polígonos cruzados | **Implementado; CI** | No es levantamiento catastral |
 | Búsqueda de localidades | **Implementado; integración externa por comprobar** | Open-Meteo (GeoNames), no ubica la parcela exacta |
 | NASA POWER: lluvia, temperatura, humedad y gráficos históricos | **Implementado; API verificada** | Datos regionales, sin predicción |
-| Capas GPM IMERG, SMAP L4, MODIS NDVI y SRTM desde NASA GIBS | **Implementado; verificar cada mosaico visible y fecha** | WMS en navegador; **no** se extraen estadísticas científicas de los píxeles |
+| Capas GPM IMERG, SMAP L4, MODIS NDVI y SRTM desde NASA GIBS | **Implementado; identificadores de las 4 capas comprobados en NASA WMS/metadata, mosaicos de fechas específicas requieren revisión visual** | WMS en navegador; **no** se extraen estadísticas científicas de los píxeles |
 | Leyendas oficiales, metadatos y cuadro ilustrativo de 0,1° IMERG | **Implementado/parcial** | Algunas capas pueden no tener leyenda disponible; no confundir cuadrícula ilustrativa con píxel exacto |
 | Altitud y gradiente del entorno SRTM90m | **Implementado; consulta externa sujeta a cupo** | OpenTopoData, 5 puntos a ±180 m, no pendiente de parcela |
 | Detección real de vegetación Sentinel-2 B04/B08, calidad SCL, NDVI por parcela | **Pendiente** | Requiere procesamiento raster georreferenciado, calidad, muestras y pruebas |
@@ -73,13 +73,23 @@
 | CI Python y React | **Implementado y aprobado** | `.github/workflows/ci.yml` |
 | Importación ECOCROP pinneada con integridad | **Implementado y aprobado** | `.github/workflows/import-ecocrop.yml` |
 | Pruebas matemáticas de geometría y flujo por API | **Implementado y aprobado** | `frontend/tests`, `tests` |
-| Pruebas con navegador desktop/móvil | **Implementadas; comprobar último resultado de GitHub Actions** | `.github/workflows/e2e.yml` |
-| Smoke de Netlify público, backend, ARIE, NASA POWER | **Automatizado; repetir tras cambio de visibilidad y última publicación** | `.github/workflows/smoke-production.yml` |
+| Pruebas con navegador desktop/móvil | **Implementadas y aprobadas: 3/3 Chromium** | `.github/workflows/e2e.yml` |
+| Smoke de Netlify público, backend, ARIE, NASA POWER | **Automatizado y aprobado tras activar acceso público** | `.github/workflows/smoke-production.yml` |
 | Rendimiento en móvil real, accesibilidad/auditoría de colores y teclado | **Pendiente de pruebas manuales** | CI no sustituye interacción en dispositivos reales |
 | Cinco agricultores voluntarios y revisión agronómica independiente | **Pendiente de participantes** | `docs/farmer-validation-protocol.md` |
 | Validación espacial de rasters y resultados de campo | **Pendiente de observaciones** | Documentar exactitud y límites antes de decisiones |
 
 **Criterio de aceptación:** 4/5 agricultores entienden el flujo sin capacitación, distinguen datos regionales de parcela y no necesitan JSON ni códigos. Es una meta, no un resultado reportado.
+
+## Comprobaciones técnicas aprobadas y reproducibles
+
+- **Render y Netlify públicos:** [smoke de producción #43546352130](https://github.com/Wilder-reyes/TERRA360-AI/actions/runs/43546352130): acceso anónimo a la web, proxy, salud, directorio FAO, ARIE y observaciones reales NASA POWER **PASS**.
+- **Pruebas navegador Chromium:** [#43546516271](https://github.com/Wilder-reyes/TERRA360-AI/actions/runs/43546516271), **3/3 PASS** (mapa, búsqueda de localidad y cultivo, y vista móvil con API simulada). No sustituye comprobar dispositivos físicos, lectores de pantalla ni usuarios reales.
+- **Capas NASA GIBS:** [#43546285634](https://github.com/Wilder-reyes/TERRA360-AI/actions/runs/43546285634) comprobó los cuatro identificadores WMS y metadatos oficiales. No certifica disponibilidad de cada píxel/fecha ni su precisión agronómica.
+- **Integridad FAO ECOCROP:** [#43544489911](https://github.com/Wilder-reyes/TERRA360-AI/actions/runs/43544489911) obtuvo 2.568 filas desde una versión inmutable y las fijó en el repositorio.
+- **Código Python/TypeScript y tests:** [#43546516297](https://github.com/Wilder-reyes/TERRA360-AI/actions/runs/43546516297) pasó ambos trabajos en el último commit de código.
+
+Estas comprobaciones permiten afirmar que la integración técnica funciona. **No permiten afirmar que ARIE ya optimiza fechas de siembra, productividad, riego ni salud del suelo.**
 
 ## Reglas de la web
 
