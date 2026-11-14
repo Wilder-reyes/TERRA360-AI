@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from app.schemas.scenarios import ScenarioRequest
 from app.services.arie import CROPS, REFERENCES, SCENARIOS, evaluate
 from app.services.crop_search import search_directory
+from app.services.farmer_crop_guidance import build_crop_guidance
 
 router = APIRouter(prefix='/api/arie', tags=['ARIE - evidence-based scenarios'])
 
@@ -35,3 +36,34 @@ def parameter_catalog():
     from pathlib import Path
     path=Path(__file__).resolve().parents[1]/'data'/'parameter_catalog.json'
     return json.loads(path.read_text(encoding='utf-8'))
+
+
+@router.get('/crop-guidance')
+async def crop_guidance(
+    latitude: float = Query(..., ge=-90, le=90),
+    longitude: float = Query(..., ge=-180, le=180),
+    selected_crop: str | None = Query(None, max_length=80),
+):
+    """NASA five completed years + FAO species ranges, for *exploration only*.
+
+    No local suitability assertion. Expensive historical queries are
+    initiated only on explicit farmer request from the crop page.
+    """
+    if selected_crop and selected_crop not in CROPS:
+        raise HTTPException(422, detail="El cultivo seleccionado no existe en el catálogo.")
+    from app.api.history_routes import history
+    hist = await history(latitude=latitude, longitude=longitude, years=5)
+    result = build_crop_guidance(hist["records"], selected_crop)
+    return {
+        **result,
+        "point": hist["location"],
+        "period": hist["period"],
+        "history": [
+            {
+                "year": r["year"], "status": r["status"],
+                "precipitation_total_mm": r.get("precipitation_total_mm"),
+                "temperature_mean_c": r.get("temperature_mean_c"),
+            } for r in hist["records"]
+        ],
+        "source": hist["source"],
+    }
