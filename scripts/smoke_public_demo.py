@@ -257,7 +257,13 @@ def verify_gaez(host: str = BACKEND):
     assert data.get("variable_code") == "RES05-SIX"
     assert data.get("crop_code") == "CSV"
     assert data.get("management_code") == "LRLM"
-    assert data.get("status") == "source_selected_raster_not_verified"
+    assert data.get("status") == "official_raster_inspected_not_activated"
+    assert data.get("inspected_sha256") == "196c8d806e2fa2e6da4bc09fe30de2c6e40607ba2436d5b484d5957bb7c25156"
+    assert data.get("exact_tiff_object_verified") is True
+    assert data.get("native_resolution_verified") is True
+    assert data.get("inspected_nodata") == 0
+    assert data.get("license_for_exact_asset_verified") is False
+    assert data.get("scale_semantics_verified") is False
     assert data.get("suitability_index") is None
     assert data.get("used_in_crop_decision") is False
     print("FAO GAEZ v5 selected:",data["variable_code"],
