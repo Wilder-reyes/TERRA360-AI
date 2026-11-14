@@ -79,6 +79,31 @@ class NDVIPixelTests(TestCase):
                 [-72,-14],[-71,-14],[-71,-13],[-72,-13],[-72,-14]
             ]]})
 
+    def test_only_approved_raster_host_and_signing_failures(self):
+        from app.services.sentinel_ndvi import _safe_signed_asset
+        for href in ("file:///etc/passwd", "https://example.org/test.tif",
+                     "http://sentinel2l2a01.blob.core.windows.net/test.tif"):
+            with self.assertRaises(NDVIError):
+                _safe_signed_asset({"assets":{"B04":{"href":href}}}, "B04")
+        asset = {"assets":{"B04":{"href":
+            "https://sentinel2l2a01.blob.core.windows.net/example/file.tif"}}}
+        with patch("app.services.sentinel_ndvi.planetary_computer.sign",
+                   side_effect=RuntimeError("provider throttled")):
+            with self.assertRaises(NDVIError):
+                _safe_signed_asset(asset, "B04")
+
+    def test_api_success_preserves_science_abstention(self):
+        fake = {"status":"available", "scene":{"date":"2026-11-04"},
+                "metrics":{"ndvi":{"mean":.1776}},
+                "used_in_crop_decision":False}
+        with patch("app.api.ndvi_routes.calculate_parcel_ndvi", return_value=fake):
+            response = TestClient(app).post(
+                "/api/environment/sentinel-2/parcel-ndvi",
+                json={"polygon":POLYGON})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["metrics"]["ndvi"]["mean"], .1776)
+        self.assertFalse(response.json()["used_in_crop_decision"])
+
     def test_api_rejects_unsafe_and_small_areas(self):
         client = TestClient(app)
         self.assertEqual(client.post("/api/environment/sentinel-2/parcel-ndvi", json={}).status_code, 422)
