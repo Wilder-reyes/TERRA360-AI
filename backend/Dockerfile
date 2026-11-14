@@ -16,7 +16,7 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 
 # Fail at Docker build time, not when Render attempts to launch the new instance.
-RUN python -c "import rasterio; import planetary_computer; from app.main import app; assert '/api/environment/sentinel-2/parcel-ndvi' in app.openapi()['paths']; print('Native raster / FastAPI import OK')"
+RUN python -c "import rasterio; import planetary_computer; from app.main import app; assert '/api/environment/sentinel-2/parcel-ndvi' in app.openapi()['paths']; assert '/api/environment/smap/regional-daily' in app.openapi()['paths']; assert '/api/environment/gaez-v5/selected-layer' in app.openapi()['paths']; assert '/api/environment/gpm-imerg/polygon-daily' in app.openapi()['paths']; print('Native raster / FastAPI import OK')"
 
 EXPOSE 8000
 CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

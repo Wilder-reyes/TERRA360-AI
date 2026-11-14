@@ -211,3 +211,34 @@ test('GPM polygon shows coarse area overlap and quality when valid sample is ret
  await expect(page.getByText(/Una sola celda de 0,1°/)).toBeVisible()
  await expect(page.getByText(/NO la resolución del satélite/)).toBeVisible()
 })
+
+test('SMAP native 9 km reading has explicit no-data and never acts as irrigation advice',async({page})=>{
+ await page.route('**/api/environment/smap/regional-daily',async route=>{
+  const input=route.request().postDataJSON()
+  expect(input.polygon.type).toBe('Polygon')
+  expect(input.polygon.coordinates[0]).toHaveLength(5)
+  await route.fulfill({contentType:'application/json',body:JSON.stringify({
+   status:'data_unavailable',source_url:'https://nsidc.org/data/spl3smp_e/versions/6',
+   date:input.target_date,product:'SPL3SMP_E',version:'006',unit:'m3/m3',
+   native_resolution_m:9000,soil_moisture_m3_m3:null,cell:null,
+   used_in_crop_decision:false,can_infer_field_soil_moisture:false,limitations:[]
+  })})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:'Humedad regional SMAP'}).click()
+ await expect(page.getByText(/Celda satelital original de 9 km/)).toBeVisible()
+ await expect(page.getByRole('button',{name:'Consultar celda regional SMAP'})).toBeDisabled()
+ await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
+ await page.getByRole('button',{name:'Buscar',exact:true}).click()
+ await page.getByRole('button',{name:/Calca.*Cusco.*Perú/}).click()
+ for(let i=0;i<6;i++)await page.locator('.leaflet-control-zoom-in').click()
+ const map=page.locator('.terra-geo-map')
+ const rect=await map.boundingBox();expect(rect).not.toBeNull()
+ await page.getByRole('button',{name:'Delimitar área aproximada'}).click()
+ await map.click({position:{x:Math.round(rect!.width/2-45),y:Math.round(rect!.height/2-40)}})
+ await map.click({position:{x:Math.round(rect!.width/2+45),y:Math.round(rect!.height/2+40)}})
+ await page.getByRole('button',{name:'Consultar celda regional SMAP'}).click()
+ await expect(page.getByText(/No hay un archivo SMAP autorizado/)).toBeVisible()
+ await expect(page.getByText(/No determina el riego/)).toBeVisible()
+ await expect(page.getByText(/m³\/m³/)).toHaveCount(0)
+})
