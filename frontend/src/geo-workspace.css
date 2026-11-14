@@ -34,3 +34,15 @@
 /* Drawing toolbar occupies the map's upper-left: put Leaflet zoom controls at lower-right. */
 .terra-geo-map .leaflet-top.leaflet-left{top:auto;left:auto;right:12px;bottom:46px}
 .terra-geo-map .leaflet-top.leaflet-left .leaflet-control{margin:0}
+
+/* Farmer-first Huando pilot: visually simple explanations, technical maps on request. */
+.terra-geo-pilot-note{display:flex;align-items:center;flex-wrap:wrap;gap:7px 13px;margin-top:11px;padding:9px 12px;border-radius:11px;border:1px solid #cde3d3;background:#f0f8f1;font-size:.87rem;color:#234b33}
+.terra-geo-pilot-note strong{font-weight:800}.terra-geo-pilot-note span{font-weight:500}
+.terra-geo-more-layers{margin:11px 0;padding:10px 12px;border:1px solid #d8e6da;border-radius:12px;background:#fafcf9}
+.terra-geo-more-layers summary,.terra-geo-explainer summary{cursor:pointer;font-weight:750;color:#215741;min-height:32px;display:list-item;padding:3px 0}
+.terra-geo-more-layers[open] .terra-geo-layer-pills{padding-top:10px}
+.terra-geo-technical-caution{font-size:.81rem;color:#5a695d;margin:10px 0 0}
+.terra-geo-legend-missing{display:inline-block;width:12px;height:12px;background:#d7dbdb;border:1px dashed #65746b;margin-right:6px;vertical-align:middle}
+.terra-geo-explainer{margin-top:10px;border-top:1px solid #dce5de;padding-top:7px}
+.terra-geo-explainer p{font-size:.82rem;line-height:1.5}
+@media(max-width:600px){.terra-geo-pilot-note{font-size:.83rem}.terra-geo-layer-pills button{min-height:40px}}

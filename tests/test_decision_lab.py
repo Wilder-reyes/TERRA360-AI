@@ -65,11 +65,15 @@ class DecisionLabTests(unittest.TestCase):
         for check in r['checks']:
             self.assertTrue(all(ref in REFERENCES for ref in check['references']))
 
-    def test_selected_point_cannot_masquerade_as_calca_town(self):
-        self.assertEqual(point_metadata(-13.32175,-71.95605)['coordinate_type'],'town_reference_point')
-        selected = point_metadata(-13.33,-71.95)
-        self.assertEqual(selected['coordinate_type'],'user_selected_query_point_not_surveyed_parcel')
-        self.assertNotIn('Calca',selected['name'])
+    def test_selected_point_cannot_masquerade_as_huando_sector(self):
+        official = point_metadata(-11.47918514,-77.18041962)
+        self.assertEqual(official['coordinate_type'], 'official_sector_centroid_not_parcel')
+        self.assertIn('Huaral', official['name'])
+        selected = point_metadata(-11.48,-77.18)
+        self.assertEqual(selected['coordinate_type'], 'user_selected_query_point_not_surveyed_parcel')
+        self.assertNotIn('Huando', selected['name'])
+        historical_calca = point_metadata(-13.32175,-71.95605)
+        self.assertNotEqual(historical_calca['coordinate_type'], 'official_sector_centroid_not_parcel')
 
     def test_descriptive_stats_are_not_performance_scores(self):
         r = family_facts(['maize','barley','tarwi'])

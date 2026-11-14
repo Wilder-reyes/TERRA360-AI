@@ -1,4 +1,4 @@
-name: Private NASA GPM and SMAP bounded ingest
+name: Private NASA GPM ingest (SMAP Huaral pending)
 on:
   workflow_dispatch:
   schedule:
@@ -38,7 +38,7 @@ jobs:
       - name: Install bounded NASA ingest dependencies
         if: steps.gate.outputs.ready == 'true'
         run: python -m pip install -r backend/requirements.txt
-      - name: Prune 14-day private retention and ingest 1 GPM + 1 SMAP file
+      - name: Prune 14-day private retention and ingest 1 original GPM file
         if: steps.gate.outputs.ready == 'true'
         env:
           PYTHONPATH: backend
@@ -52,4 +52,7 @@ jobs:
         run: |
           python scripts/prune_nasa_archive.py
           python scripts/ingest_nasa_archive.py --product gpm --lag-days 7
-          python scripts/ingest_nasa_archive.py --product smap --lag-days 7
+          # Do not keep ingesting Calca/Cusco SMAP subsets for the Huaral pilot.
+          # Preserve historical manifests; enable SMAP only after an official
+          # Huando-area AOI and a versioned verified subset migration exist.
+          echo "SMAP automated ingestion paused: Huando Huaral AOI not verified yet."

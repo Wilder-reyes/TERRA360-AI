@@ -6,9 +6,9 @@
 
 ## Nueva dirección de producto (v0.17, en planificación)
 
-El siguiente piloto tendrá como público objetivo a **agricultores peruanos** y se concentrará en **una zona agrícola específica de Huaral (Lima)**, cuyo perímetro todavía debe delimitarse. Se priorizará un mapa móvil con **colores, leyendas y frases sencillas**, y un flujo de **fotografía para reconocer el posible tipo de cultivo**, con confirmación humana y selección manual si el modelo desconoce la planta. El catálogo completo de cultivos y la futura inferencia visual pertenecen al **backend**, no a una lista compleja que tenga que recorrer el agricultor.
+El siguiente piloto tiene como público objetivo a **agricultores peruanos** y se inicia en el **sector agrícola Huando (distrito y provincia de Huaral, Lima)**, usando el centroide estadístico MIDAGRI 2024 únicamente para orientar el mapa. Aún no se dispone de un perímetro verificado de chacra. Se priorizará un mapa móvil con **colores, leyendas y frases sencillas**, y un flujo de **fotografía para reconocer el posible tipo de cultivo**, con confirmación humana y selección manual si el modelo desconoce la planta. El catálogo completo de cultivos y la futura inferencia visual pertenecen al **backend**, no a una lista compleja que tenga que recorrer el agricultor.
 
-**Importante:** esto es una especificación nueva, **no** una función publicada. La versión anterior contiene un recorte privado de SMAP **para Calca, Cusco**, que **no** debe mostrarse como Huaral hasta migrar su ámbito geográfico con validación. No existe todavía un modelo visual entrenado y validado para los cultivos del piloto.
+**Importante:** el primer incremento v0.17 ya abre el mapa en Huando, simplifica las leyendas y permite una vista previa local de foto; **no existe un modelo visual entrenado ni se envían fotos al backend**. La programación automática de recortes SMAP de **Calca, Cusco** está en pausa hasta migrar con una zona verificada. No presentar los datos Calca como si midieran Huaral.
 
 [Plan de producto, privacidad, arquitectura y criterios de aceptación v0.17](docs/roadmap-v0.17-huaral-farmer-vision.md).
 
