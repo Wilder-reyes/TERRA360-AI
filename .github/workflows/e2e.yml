@@ -8,6 +8,8 @@ on:
       - 'frontend/src/SentinelSeries.tsx'
       - 'frontend/src/GpmPolygon.tsx'
       - 'frontend/src/SmapRegional.tsx'
+      - 'frontend/src/GaezRaw.tsx'
+      - 'frontend/src/gaez-raw.css'
       - 'frontend/src/smap-regional.css'
       - 'frontend/src/gpm-polygon.css'
       - 'frontend/src/sentinel-series.css'

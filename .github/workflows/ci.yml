@@ -57,6 +57,7 @@ jobs:
           assert '/api/environment/sentinel-2/parcel-ndvi' in app.openapi()['paths']
           assert client.post('/api/environment/sentinel-2/parcel-ndvi', json={}).status_code == 422
           assert client.get('/api/environment/gaez-v5/selected-layer').json()['suitability_index'] is None
+          assert client.post('/api/environment/gaez-v5/selected-layer/raw-cell', json={}).status_code == 422
           assert client.post('/api/environment/smap/regional-daily', json={}).status_code == 422
           assert client.post('/api/environment/gpm-imerg/polygon-daily', json={}).status_code == 422
           print('Render image starts and Sentinel-2 route is reachable')

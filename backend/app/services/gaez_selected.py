@@ -20,6 +20,16 @@ from app.services.sentinel_ndvi import validate_parcel
 SOURCE_URL = "https://data.fao.org/catalog/dataset/gaez-v5-master-config/resource/31abf121-1644-4473-8c1b-bfec83112749"
 METHOD_URL = "https://github.com/un-fao/gaezv5/wiki/21.-GAEZ-v5-Platform-User-Guide"
 BUCKET_PREFIX = "gs://fao-gismgr-gaez-v5-data/DATA/GAEZ-V5/MAPSET/RES05-SIX/"
+# Independently inspected FAO raster, 2026-11-14: not yet authorized
+# for public use as a scientific index or recommendation.
+OFFICIAL_FILENAME = "GAEZ-V5.RES05-SIX.HP0120.AGERA5.HIST.CSV.LRLM.tif"
+OFFICIAL_SHA256 = "196c8d806e2fa2e6da4bc09fe30de2c6e40607ba2436d5b484d5957bb7c25156"
+OFFICIAL_BYTES = 437903
+OFFICIAL_NODATA = 0
+OFFICIAL_CRS = "EPSG:4326"
+OFFICIAL_RESOLUTION_DEG = 1.0 / 12.0
+VERIFICATION_RUN = "https://github.com/Wilder-reyes/TERRA360-AI/actions/runs/43600588841"
+
 SELECTED = {
     "source": "FAO/IIASA GAEZ v5",
     "source_url": SOURCE_URL,
@@ -36,9 +46,17 @@ SELECTED = {
     "management_code": "LRLM",
     "management": "Rainfed, low inputs",
     "official_gcs_folder": BUCKET_PREFIX,
-    "exact_tiff_object_verified": False,
+    "exact_tiff_object_verified": True,
+    "inspected_filename": OFFICIAL_FILENAME,
+    "inspected_sha256": OFFICIAL_SHA256,
+    "inspected_bytes": OFFICIAL_BYTES,
+    "inspected_crs": OFFICIAL_CRS,
+    "inspected_resolution_deg": OFFICIAL_RESOLUTION_DEG,
+    "inspected_nodata": OFFICIAL_NODATA,
+    "verification_evidence": VERIFICATION_RUN,
     "license_for_exact_asset_verified": False,
-    "native_resolution_verified": False,
+    "scale_semantics_verified": False,
+    "native_resolution_verified": True,
 }
 FILENAME_PATTERN = re.compile(
     r"GAEZ-V5\.RES05-SIX\.HP0120\.[A-Za-z0-9_-]+\.HIST\.CSV\.LRLM\.tif$",
@@ -52,11 +70,11 @@ class GAEZError(RuntimeError):
 def selected_metadata() -> dict:
     return {
         **SELECTED,
-        "status": "source_selected_raster_not_verified",
+        "status": "official_raster_inspected_not_activated",
         "suitability_index": None,
         "region_suitability_evaluated": False,
         "used_in_crop_decision": False,
-        "note": "El catálogo FAO confirma variables y dimensiones, pero el TIFF exacto aún no ha sido verificado ni publicado en TERRA360.",
+        "note": "Se verificó el GeoTIFF original de FAO (SHA-256, EPSG:4326, 5 minutos y no-data 0). La licencia exacta y las unidades/semántica científicas no se han autorizado; no se publica aptitud agrícola.",
     }
 
 
@@ -70,9 +88,13 @@ def selected_raster_sample(raw_polygon: dict) -> dict:
     scale_text = os.getenv("GAEZ5_APPROVED_SCALE", "")
     nodata_text = os.getenv("GAEZ5_APPROVED_NODATA", "")
     license_url = os.getenv("GAEZ5_LICENSE_URL", "")
-    # A partial operator setup must never show pseudo-suitability.
-    if not (filename and trusted_sha and scale_text and nodata_text and license_url):
+    scientific_approval = os.getenv("GAEZ5_SCIENTIFIC_SCALE_APPROVED", "").lower() == "true"
+    # A partial operator setup never publishes a plausible but unverified value.
+    if not (filename and trusted_sha and scale_text and nodata_text and
+            license_url and scientific_approval):
         return result
+    if trusted_sha != OFFICIAL_SHA256 or Path(filename).name != OFFICIAL_FILENAME:
+        raise GAEZError("El archivo no coincide con el objeto FAO verificado.")
     path = Path(filename)
     if (not FILENAME_PATTERN.fullmatch(path.name) or
         not re.fullmatch(r"[a-f0-9]{64}", trusted_sha) or

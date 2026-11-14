@@ -1,6 +1,7 @@
 /** Sparse ESA Sentinel-2 observations; NOT a growth trend or agronomic diagnosis. */
 import {useEffect,useMemo,useRef,useState} from 'react'
 import type {Position} from './domain'
+import {readableApiError,httpErrorMessage} from './network'
 import './sentinel-series.css'
 
 type Metrics={valid_pixels:number;valid_fraction_percent:number;
@@ -44,11 +45,11 @@ export function SentinelSeries({vertices,api,en}:{vertices:Position[]|null;api:s
    })
    if(!response.ok){
     if(response.status===422)throw new Error(en?'The outlined plot is outside supported area limits.':'El terreno delimitado supera los límites del análisis.')
-    throw new Error(en?'The multi-date satellite service is unavailable.':'No se pudo consultar la serie satelital.')
+    throw Error(await httpErrorMessage(response,en))
    }
    const result=await response.json() as Response
    if(!control.signal.aborted)setData(result)
-  }catch(e){if(!control.signal.aborted)setError(e instanceof Error?e.message:String(e))}
+  }catch(e){if(!control.signal.aborted)setError(readableApiError(e,en))}
   finally{if(!control.signal.aborted)setBusy(false)}
  }
  return <section className="terra-ndvi-series" aria-label={en?'Satellite observations on separate dates':'Observaciones satelitales de distintas fechas'}>

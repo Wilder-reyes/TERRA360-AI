@@ -1,6 +1,7 @@
 /** NASA NSIDC native 9-km DCA soil moisture: never field-scale. */
 import {useEffect,useMemo,useRef,useState} from 'react'
 import type {Position} from './domain'
+import {readableApiError,httpErrorMessage} from './network'
 import './smap-regional.css'
 
 type Result={
@@ -31,10 +32,10 @@ export function SmapRegional({vertices,api,en}:{vertices:Position[]|null;api:str
     method:'POST',headers:{'Content-Type':'application/json'},signal:ctrl.signal,
     body:JSON.stringify({polygon:{type:'Polygon',coordinates:[[...coords,coords[0]]]},target_date:day})
    })
-   if(!res.ok)throw Error(en?'SMAP unavailable or area/date invalid.':'SMAP no está disponible o el área/fecha no es válida.')
+   if(!res.ok)throw Error(await httpErrorMessage(res,en))
    const data:Result=await res.json()
    if(!ctrl.signal.aborted)setResult(data)
-  }catch(err){if(!ctrl.signal.aborted)setError(err instanceof Error?err.message:String(err))}
+  }catch(err){if(!ctrl.signal.aborted)setError(readableApiError(err,en))}
   finally{if(!ctrl.signal.aborted)setLoading(false)}
  }
  return <section className="terra-geo-reading terra-smap-regional" aria-label={en?'Regional SMAP 9 km soil moisture':'Humedad regional SMAP de 9 km'}>

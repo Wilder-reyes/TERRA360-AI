@@ -242,3 +242,72 @@ test('SMAP native 9 km reading has explicit no-data and never acts as irrigation
  await expect(page.getByText(/No determina el riego/)).toBeVisible()
  await expect(page.getByText(/m³\/m³/)).toHaveCount(0)
 })
+
+test('FAO GAEZ real-source tab labels raw regional code without claiming crop suitability',async({page})=>{
+ await page.route('**/api/environment/gaez-v5/selected-layer/raw-cell',async route=>{
+  const input=route.request().postDataJSON()
+  expect(input.polygon.type).toBe('Polygon')
+  expect(input.polygon.coordinates[0]).toHaveLength(5)
+  await route.fulfill({contentType:'application/json',body:JSON.stringify({
+   status:'raw_code_available',variable_code:'RES05-SIX',
+   crop:'Cassava / Manihot esculenta',period:'2001–2020 historical',
+   management:'Rainfed, low inputs',
+   inspected_sha256:'196c8d806e2fa2e6da4bc09fe30de2c6e40607ba2436d5b484d5957bb7c25156',
+   source_raster_url:'https://storage.googleapis.com/fao-gismgr-gaez-v5-data/DATA/GAEZ-V5/MAPSET/RES05-SIX/GAEZ-V5.RES05-SIX.HP0120.AGERA5.HIST.CSV.LRLM.tif',
+   source_dataset_license_url:'https://creativecommons.org/licenses/by/4.0/',
+   original_cell_class_code:8,
+   cell_center_lon_lat:[-71.9583,-13.2917],
+   native_grid_resolution_degrees:1/12,
+   suitability_index:null,used_in_crop_decision:false,
+   interpretation_status:'uninterpreted_original_class_code',
+   limitations:[]
+  })})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:'Código FAO GAEZ v5'}).click()
+ await expect(page.getByRole('button',{name:'Consultar celda regional FAO'})).toBeDisabled()
+ await expect(page.getByText(/La codificación numérica aún no está interpretada científicamente/)).toBeVisible()
+ await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
+ await page.getByRole('button',{name:'Buscar',exact:true}).click()
+ await page.getByRole('button',{name:/Calca.*Cusco.*Perú/}).click()
+ for(let i=0;i<6;i++)await page.locator('.leaflet-control-zoom-in').click()
+ const map=page.locator('.terra-geo-map')
+ const rect=await map.boundingBox();expect(rect).not.toBeNull()
+ await page.getByRole('button',{name:'Delimitar área aproximada'}).click()
+ await map.click({position:{x:Math.round(rect!.width/2-45),y:Math.round(rect!.height/2-40)}})
+ await map.click({position:{x:Math.round(rect!.width/2+45),y:Math.round(rect!.height/2+40)}})
+ await page.getByRole('button',{name:'Consultar celda regional FAO'}).click()
+ await expect(page.locator('.terra-gaez-raw-number')).toContainText('Código original de celda FAO: 8')
+ await expect(page.locator('.terra-gaez-raw-number')).toContainText('no es un %')
+ await expect(page.getByText(/No se genera ninguna recomendación de siembra/)).toBeVisible()
+ await expect(page.getByRole('link',{name:/Licencia del conjunto CC BY 4.0/})).toBeVisible()
+})
+
+test('network failure shows a friendly message and catalog can retry without refresh',async({page})=>{
+ let attempts=0
+ await page.route('**/api/arie/catalog',async route=>{
+  attempts+=1
+  if(attempts===1){await route.abort('failed');return}
+  await route.fulfill({contentType:'application/json',body:JSON.stringify({crops,references:{},scenarios:[]})})
+ })
+ await page.goto('/')
+ await expect(page.getByText(/No se pudo conectar con TERRA360/)).toBeVisible()
+ await expect(page.getByText(/Failed to fetch/)).toHaveCount(0)
+ await page.getByRole('button',{name:'Volver a intentar'}).click()
+ await expect(page.getByText(/No se pudo conectar con TERRA360/)).toHaveCount(0)
+ await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
+ await page.getByRole('button',{name:'Buscar',exact:true}).click()
+ await page.getByRole('button',{name:/Calca.*Cusco.*Perú/}).click()
+ await page.locator('.step-nav button').filter({hasText:'Mis cultivos'}).click()
+ await expect(page.getByRole('heading',{name:/Maíz Blanco Gigante/})).toBeVisible()
+ expect(attempts).toBeGreaterThanOrEqual(2)
+})
+
+test('browser production must not depend on VITE_API_URL cross-origin override',async({page})=>{
+ const requests:string[]=[]
+ page.on('request',req=>{if(req.url().includes('/api/arie/catalog'))requests.push(req.url())})
+ await page.goto('/')
+ await expect(page.getByRole('heading',{name:'Explora tu terreno y su entorno'})).toBeVisible()
+ await expect.poll(()=>requests.length).toBeGreaterThan(0)
+ expect(new URL(requests[0]).origin).toBe(new URL(page.url()).origin)
+})

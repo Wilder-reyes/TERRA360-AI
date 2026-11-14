@@ -1,6 +1,7 @@
 /** Real ESA Sentinel-2 parcel NDVI, separate from NASA MODIS visual tiles. */
 import {useEffect,useMemo,useRef,useState} from 'react'
 import type {Position} from './domain'
+import {readableApiError,httpErrorMessage} from './network'
 import './parcel-ndvi.css'
 import {SentinelSeries} from './SentinelSeries'
 
@@ -42,11 +43,11 @@ export function ParcelNDVI({vertices,api,en}:{vertices:Position[]|null;api:strin
    })
    if(!response.ok){
     if(response.status===422)throw Error(en?'Plot is outside the supported area (0.1–500 ha) or has invalid corners.':'El contorno no es válido o está fuera del área admitida (0,1–500 ha).')
-    throw Error(en?'Satellite data temporarily unavailable. Please try again.':'Datos satelitales temporalmente no disponibles. Intenta de nuevo.')
+    throw Error(await httpErrorMessage(response,en))
    }
    const data:ParcelResult=await response.json()
    if(!ctrl.signal.aborted)setResult(data)
-  }catch(err){if(!ctrl.signal.aborted)setError(err instanceof Error?err.message:String(err))}
+  }catch(err){if(!ctrl.signal.aborted)setError(readableApiError(err,en))}
   finally{if(!ctrl.signal.aborted)setBusy(false)}
  }
  const metrics=result?.metrics
