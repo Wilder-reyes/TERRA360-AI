@@ -109,3 +109,12 @@
 .r-map-tools .r-map-error{background:#fdecea;color:#8a2a1f;border:1px solid #f3c1bb}
 .r-map .leaflet-interactive{cursor:crosshair}
 .r-bar.basin{background:#4f8fc9}
+
+/* v0.22: farmer-entered rotation instead of inferred crop confirmations. */
+.r-manual{background:#f8fbf7;border:1px solid var(--r-edge);padding:12px;border-radius:14px;margin:12px 0}
+.r-manual-controls{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) auto;gap:10px;align-items:end;margin:10px 0}
+.r-manual-controls label{display:flex;flex-direction:column;gap:5px;color:var(--r-dark);font-size:.85rem;font-weight:700}
+.r-manual-controls select{width:100%;min-height:44px;padding:9px 12px;border:1px solid #aec9b6;border-radius:10px;background:#fff;color:var(--r-text);font:inherit}
+.r-manual-controls .r-btn{min-width:160px}
+.r-manual-remove{margin-left:12px;border:1px solid #dbbbb0;background:#fff7f4;color:#8a2a1f;border-radius:7px;padding:3px 8px;font-size:.78rem;min-height:30px}
+@media(max-width:720px){.r-manual-controls{grid-template-columns:1fr}.r-manual-controls .r-btn{width:100%}}
