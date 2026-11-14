@@ -86,6 +86,7 @@ function FarmerDashboard({data,loading,metric,onMetric,days,onDays,guidance,sele
  const records=data?.records||[]
  const climate=useMemo(()=>computeClimate(records),[data])
  const completeness=climate.validRain+'/'+records.length
+ const activeCropGuidance=guidance?.selected_crop?.id===selectedCrop?.id?guidance.selected_crop:guidance?.candidates.find(c=>c.id===selectedCrop?.id)
  return <section id="farmer-report" className="f-report" aria-labelledby="f-report-title">
   <div className="f-report-top"><div><span className="f-eyebrow">MI INFORME AGRÍCOLA</span><h2 id="f-report-title">Así está la información de tu zona</h2><p>Datos que conocemos, información que falta y cultivos que puedes revisar.</p></div><button type="button" className="f-btn f-btn-primary f-print" onClick={onPrint}>Imprimir o guardar en PDF</button></div>
   <div className="f-report-meta"><span><strong>Lugar:</strong> {fieldName.trim()||'Huando / punto elegido en el mapa'}</span><span><strong>Fecha del informe:</strong> {nowStamp()}</span><span><strong>Consulta:</strong> {referenceOnly?'Referencia estadística de Huando; no es una chacra':'Punto marcado por el agricultor; no delimita una propiedad'}</span></div>
@@ -104,7 +105,7 @@ function FarmerDashboard({data,loading,metric,onMetric,days,onDays,guidance,sele
    <div className="f-panel">
     <div className="f-panel-title"><h3>Mi cultivo</h3><p>{selectedCrop?selectedCrop.name:'Aún no has elegido un cultivo.'}</p></div>
     {selectedCrop&&<p className="f-small">Elegirlo no significa que sea apto para sembrarlo. El suelo, el agua y la variedad deben comprobarse en campo.</p>}
-    {guidance?.selected_crop&&<StatusMessage message={guidance.selected_crop.reason}/>}
+    {activeCropGuidance&&<StatusMessage message={activeCropGuidance.reason}/>}
     {!guidance&&<StatusMessage message="Consulta «Cultivos para mi zona» para revisar referencias agrícolas. No hay una recomendación automática."/>}
     {guidance&&<p className="f-small">FAO ECOCROP: estimaciones generales para especies; no son un estudio local.</p>}
    </div>
@@ -152,7 +153,7 @@ export default function FarmerApp(){
  function chooseCrop(id:string,name:string){
   setSelectedCrop({id,name,scientific_name:'',category:'',description:''})
   setGuideError('')
-  if(guidance?.selected_crop?.id!==id)setGuidance(null)
+  // Keep historical climate and candidate cards; the selected crop can change.
  }
  useEffect(()=>{
   const controller=new AbortController()
@@ -238,7 +239,7 @@ export default function FarmerApp(){
      {guidance&&<><div className="f-evidence-summary"><strong>Datos regionales de {guidance.period.start_year} a {guidance.period.end_year}</strong><span>Temperatura media: {number(guidance.climate.temperature_mean_c)} °C</span><span>Lluvia anual media: {number(guidance.climate.annual_rain_mm)} mm</span><span>Años completos: {guidance.climate.complete_years}/5</span></div>
       {guidance.status==='insufficient_data'&&<StatusMessage message="No encontramos suficientes años completos. No se puede comparar el clima con las referencias de los cultivos."/>}
       <div className="f-candidates">{guidance.candidates.map(item=><CandidateCard key={item.id} item={item} selected={selectedCrop?.id===item.id} onChoose={chooseCrop}/>)}</div>
-      {guidance.selected_crop&&!guidance.candidates.some(item=>item.id===guidance.selected_crop?.id)&&<div className="f-selected-guidance"><h3>Tu cultivo: {guidance.selected_crop.name}</h3><p>{guidance.selected_crop.reason}</p></div>}
+      {selectedCrop&&guidance.selected_crop?.id===selectedCrop.id&&!guidance.candidates.some(item=>item.id===guidance.selected_crop?.id)&&<div className="f-selected-guidance"><h3>Tu cultivo: {guidance.selected_crop.name}</h3><p>{guidance.selected_crop.reason}</p></div>}
       <StatusMessage message={guidance.limitation}/>
       <p className="f-small">Estas fichas se muestran en un orden fijo, no por rendimiento ni por aptitud. No se ha verificado la variedad, el suelo, el agua ni el calendario.</p>
      </>}
