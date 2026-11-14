@@ -87,13 +87,13 @@ test('report invokes native print dialog, from which PDF can be saved',async({pa
  await expect(page.getByText(/Guardar como PDF/)).toBeVisible()
 })
 
-test('mobile camera remains private and user can use crop search instead',async({page})=>{
+test('mobile crop search works without photo or unvalidated artificial vision',async({page})=>{
  await page.setViewportSize({width:390,height:844})
  await page.goto('/')
  await page.getByRole('button',{name:'Consultar la zona de Huando'}).click()
  await page.getByRole('button',{name:'Cultivos para mi zona'}).click()
- await expect(page.locator('#terra-photo-input')).toHaveAttribute('capture','environment')
- await expect(page.getByText(/identificación automática aún no está disponible/)).toBeVisible()
+ await expect(page.locator('#terra-photo-input')).toHaveCount(0)
+ await expect(page.getByRole('heading',{name:'Encuentra tu cultivo por su nombre'})).toBeVisible()
  await expect(page.getByLabel('¿Qué cultivo tienes o quieres sembrar?')).toBeVisible()
  await page.getByRole('button',{name:'Tomate',exact:true}).click()
  await expect(page.getByText('Cultivo elegido:')).toBeVisible()
