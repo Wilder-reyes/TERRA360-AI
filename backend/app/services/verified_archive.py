@@ -26,8 +26,8 @@ MAX_GRANULE_BYTES = 65 * 1024 * 1024
 MAX_FILES = 32
 MAX_ARCHIVE_BYTES = 1024 * 1024 * 1024  # 1 GiB before ingest must evict explicitly
 FILENAME = {
-    "gpm": re.compile(r"3B-DAY-L\\.MS\\.MRG\\.3IMERG\\.(\\d{8})-S000000-E235959\\.[A-Za-z0-9_.-]+\\.nc4$"),
-    "smap": re.compile(r"SMAP_L3_SM_P_E_(\\d{8})_[A-Za-z0-9_.-]+\\.h5$"),
+    "gpm": re.compile(r"3B-DAY-L\.MS\.MRG\.3IMERG\.(\d{8})-S000000-E235959\.[A-Za-z0-9_.-]+\.nc4$"),
+    "smap": re.compile(r"SMAP_L3_SM_P_E_(\d{8})_[A-Za-z0-9_.-]+\.h5$"),
 }
 
 
@@ -46,7 +46,7 @@ def settings() -> StorageConfig | None:
     bucket = os.getenv("TERRA_OBJECT_BUCKET", "").strip()
     if not bucket:
         return None
-    if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9.\\-]{2,62}", bucket):
+    if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9.\-]{2,62}", bucket):
         raise ArchiveError("Nombre de bucket inválido.")
     endpoint = os.getenv("TERRA_OBJECT_ENDPOINT", "").strip() or None
     if endpoint and (not endpoint.startswith("https://") or
