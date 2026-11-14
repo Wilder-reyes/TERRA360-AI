@@ -65,7 +65,8 @@ def check(name: str, fn):
 def main() -> None:
     tasks = [
         ("Render backend health", lambda: verify_health(BACKEND)),
-        ("Render crop search", lambda: verify_search(BACKEND)),
+        ("Render full FAO catalog search", lambda: verify_search(BACKEND)),
+        ("Render SRTM terrain route contract", lambda: verify_terrain_contract(BACKEND)),
         ("Render ARIE decision", lambda: verify_decision(BACKEND)),
         ("Render real NASA POWER", lambda: verify_nasa(BACKEND)),
         ("anonymous Netlify home page", verify_html),
@@ -93,12 +94,20 @@ def verify_health(host: str = SITE):
     obj = json_from("/api/health", host=host)
     assert obj.get("status") == "ok", obj
     assert obj.get("application") == "TERRA360", obj
+    assert obj.get("version") == "0.10.0", obj
 
 
 def verify_search(host: str = SITE):
     obj = json_from("/api/arie/crops?query=quinua&limit=10", host=host)
     assert any(item["id"] == "quinoa" for item in obj.get("items", [])), obj
     assert obj.get("region_suitability_evaluated") is False, obj
+    all_crops=json_from("/api/arie/crops?limit=1",host=host)
+    assert all_crops["total"]>=2600, all_crops
+
+
+def verify_terrain_contract(host: str = BACKEND):
+    spec=json_from("/openapi.json",host=host)
+    assert "/api/environment/terrain" in spec.get("paths", {}), "Missing SRTM endpoint; public provider should not be called automatically"
 
 
 def verify_decision(host: str = SITE):
