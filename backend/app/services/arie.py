@@ -12,6 +12,7 @@ is inferred from regional NASA grids or generic FAO crop coefficients.
 
 from app.schemas.scenarios import ScenarioRequest
 from app.data.crop_directory import exploratory_crops
+from app.services.planning_preview import plan_preview
 
 
 
@@ -407,6 +408,7 @@ def evaluate(request: ScenarioRequest) -> dict:
 
     return {
       'ai_decision': ai_decision,
+      'plan_preview': plan_preview(request, CROPS, ai_decision),
       'method':'qualitative_constraint_screening_v3_plus_symbolic_AI',
 
       'is_yield_prediction':False, 'is_irrigation_prescription':False,

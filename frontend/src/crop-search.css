@@ -8,3 +8,5 @@
 .crop-choice .select-crop:disabled{opacity:.37;cursor:not-allowed}
 @media(max-width:650px){.terra-crop-search{grid-template-columns:1fr;gap:10px}.terra-crop-search p{grid-column:1}.crop-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.crop-cards{grid-template-columns:1fr}}
+
+.terra-plan-preview{margin:18px 0}.terra-plan-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;list-style:none;padding:0;margin:12px 0}.terra-plan-steps li{display:flex;align-items:flex-start;gap:9px;border:1px solid #d9e6dd;background:#f9fbf9;border-radius:13px;padding:12px}.terra-plan-index{display:grid;place-items:center;flex-shrink:0;width:27px;height:27px;border-radius:50%;color:#fff;font-weight:800;background:#21684f}.terra-plan-steps strong{display:block;font-size:.88rem;color:#214d37}.terra-plan-steps small{display:block;font-size:.75rem;color:#66796d;line-height:1.35;margin-top:5px}.terra-plan-checks summary{font-size:.86rem;font-weight:700;cursor:pointer;color:#205944}.terra-plan-checks li{font-size:.81rem;line-height:1.5;margin-top:5px}
