@@ -57,6 +57,7 @@ Other views: `/?vista=clima` (previous farmer weather dashboard) and `/?vista=te
 | `GET /api/rotation/climate?zone=huaral` | Monthly ET0, Tmax, solar radiation and warmest months from NASA POWER |
 | `POST /api/rotation/history` `{polygon, start_year}` | Monthly NDVI series and detected seasons. Returns `202 {"status":"processing"}` while a new field is computed; repeat the same POST. |
 | `POST /api/rotation/compare` | `{zone, current:[{crop_id, start_index}], priorities:{water,soil,income,pests}, water_turn, history}` → S0/S1/S2 with timelines, indicators, icons and 5 sections in ES/EN |
+| `GET /api/rotation/upper-basin-rain?zone=huaral` | "Water to come": GPM IMERG monthly rain over the upper basin (climatology and recent seasons, % of normal). Precomputed with an Earthdata token; abstains if not available. |
 | `GET /api/rotation/templates` | Team S0/S1/S2 test rotations (`start_index` 0 = August of year 1) |
 
 ## Data used
@@ -64,6 +65,7 @@ Other views: `/?vista=clima` (previous farmer weather dashboard) and `/?vista=te
 - **NASA HLS v2.0** (Harmonized Landsat Sentinel-2), via Microsoft Planetary Computer: field NDVI history.
 - **NASA POWER** (Agroclimatology, climatology 2001–2025): ET0 and heat.
 - **ESA Copernicus Sentinel-2 L2A** (via Planetary Computer): fallback NDVI and existing parcel NDVI tools.
+- **NASA GPM IMERG** Final Run monthly (GPM_3IMERGM v07): rain in the upper Chancay-Huaral and Pativilca basins, shown as "water to come" context.
 - **NASA GIBS** (IMERG, MODIS NDVI) map layers, plus NASA GPM IMERG, SMAP and SRTM in the technical view.
 - **FAO Irrigation & Drainage Paper 56:** crop coefficients (Kc) and stage lengths.
 - **MIDAGRI / DRA Lima:** *Evaluación mensual de la dinámica agropecuaria*, Oct 2025 (sowing calendar, 2024–2025 season). *Padrón Nacional de Sectores Estadísticos 2024* (zones).
@@ -78,6 +80,7 @@ The challenge rules allow AI to speed up work, and we declare where it was used.
 - `backend/app/services/rotation_engine.py`: S0/S1/S2 engine, constrained search and 5-section explanations
 - `backend/app/services/rotation_zones.py`, `backend/app/api/rotation_routes.py`
 - `frontend/src/RotationApp.tsx`, `frontend/src/rotation.css`, `frontend/src/rotationZones.ts`
+- `backend/app/services/imerg_basin.py`, `scripts/precompute_imerg_basins.py`: GPM IMERG upper-basin rain ("water to come")
 - `scripts/precompute_rotation_history.py`, `tests/test_rotation.py`
 
 Data files: `backend/app/data/rotation_crops.json` is the team's catalogue, copied unchanged. `backend/app/data/history_seed/*.json` are satellite histories computed by the code above. The technical-test field polygons were found by an AI-assisted script, as described above. Modules from earlier versions (v0.1–v0.19) keep their own history in git; the team will state any AI use in them.
