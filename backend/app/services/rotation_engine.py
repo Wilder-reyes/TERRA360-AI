@@ -252,6 +252,49 @@ def simulate(plantings: list[dict], climate: dict) -> dict:
     }
 
 
+CAL_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+
+def low_river_share(crop_id: str, sow_month: int, climate: dict, sow_day: int = 15) -> dict:
+    """Share of ONE campaign's crop water (Kc x ET0) that falls in low-river months.
+
+    Uses a real day calendar and a mid-month sowing date (default day 15), the
+    convention of the team's verification note (09-verificacion-agua-y-calor.md, 2b),
+    e.g. maize sown on 15 Feb vs 15 Mar. Relative estimate, not a prescription.
+    """
+    c = crop(crop_id)
+    low = set(load_catalog()["seasons"]["river_low_months"])
+    et0 = {m["month"]: m["et0_mm_day"] for m in climate["months"]}
+    month, day = sow_month, sow_day
+    total = in_low = 0.0
+    for kc in kc_curve(c)[:365]:
+        water = kc * et0[month]
+        total += water
+        in_low += water if month in low else 0.0
+        day += 1
+        if day > CAL_DAYS[month - 1]:
+            day, month = 1, month % 12 + 1
+    return {"crop_id": crop_id, "sow_month": sow_month, "sow_day": sow_day,
+            "water_mm": round(total, 0),
+            "low_river_share_percent": round(100 * in_low / total, 0) if total else 0.0}
+
+
+def maize_water_phrases(plantings: list[dict], climate: dict) -> tuple[list[str], list[str]]:
+    """«X % del agua de tu maíz cae cuando el río baja» for each maize campaign."""
+    es, en = [], []
+    seen = set()
+    for p in plantings:
+        if p["crop_id"] != "maiz_amarillo_duro":
+            continue
+        m = cal_month(p["start_index"])
+        if m in seen:
+            continue
+        seen.add(m)
+        share = low_river_share(p["crop_id"], m, climate)
+        es.append(f"{share['low_river_share_percent']:.0f} % del agua de tu maíz sembrado en {MONTH_ES[m - 1]} cae cuando el río baja (may–nov).")
+        en.append(f"{share['low_river_share_percent']:.0f}% of the water of your maize sown in {MONTH_EN[m - 1]} falls when the river is low (May–Nov).")
+    return es, en
+
 # --------------------------------------------------------------------------- #
 # Constrained search for S1 / S2
 # --------------------------------------------------------------------------- #
@@ -445,6 +488,9 @@ def sections(key: str, ind: dict, base: dict | None, plantings: list[dict], clim
                   f"Your field is left without a crop {ind['bare_months']} of 24 months ({ind['bare_months_low_river']} in the low-river season).",
                   f"Peak crop water use falls in {peak_en}; the low-river season is {low_en}.",
                   f"{ind['water_low_river_share_percent']:.0f}% of crop water is needed in low-river months."]
+        maize_es, maize_en = maize_water_phrases(plantings, climate)
+        why_es += maize_es
+        why_en += maize_en
         benefits_es = ["Es la referencia para comparar: no se calculan beneficios sobre sí misma."]
         benefits_en = ["This is the reference for comparison: no benefits are computed against itself."]
     else:
@@ -482,6 +528,13 @@ def sections(key: str, ind: dict, base: dict | None, plantings: list[dict], clim
         if ind["same_family_consecutive"] < base["same_family_consecutive"]:
             benefits_es.append("Menos repeticiones de la misma familia: ayuda a cortar plagas.")
             benefits_en.append("Fewer same-family repeats: helps break pest cycles.")
+    if key in ("current", "water"):
+        maize_es, maize_en = maize_water_phrases(plantings, climate)
+        if maize_es:
+            evidence_es += [x.replace("tu maíz", "el maíz") for x in maize_es] + [
+                "Siembra a mitad de mes; el mismo maíz puede tomar ¼ o ¾ de su agua en estiaje según el mes de siembra (ET0 de NASA POWER, Kc FAO-56)."]
+            evidence_en += [x.replace("your maize", "maize") for x in maize_en] + [
+                "Mid-month sowing; the same maize can take ¼ or ¾ of its water in the low-river season depending on the sowing month (NASA POWER ET0, FAO-56 Kc)."]
     return {
         "why": {"es": why_es, "en": why_en},
         "evidence": {"es": evidence_es, "en": evidence_en},

@@ -217,5 +217,48 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(r.status_code, 422)
 
 
+class MaizeLowRiverShareTests(unittest.TestCase):
+    """Team verification note 09 (sec. 2b): share of a MAD campaign's water in May-Nov, Huaral."""
+    # Snapshot of NASA POWER climatology ET0 (mm/day), Huaral coastal cell, 2001-2025.
+    ET0_HUARAL = [4.02, 4.06, 3.97, 3.5, 2.79, 2.41, 2.44, 2.61, 2.89, 3.2, 3.46, 3.6]
+
+    def test_matches_team_verification_table(self):
+        clim = {"months": [{"month": i + 1, "et0_mm_day": v} for i, v in enumerate(self.ET0_HUARAL)]}
+        expected = {1: 23, 2: 51, 3: 79, 8: 71, 9: 39}
+        for month, pct in expected.items():
+            got = E.low_river_share("maiz_amarillo_duro", month, clim)["low_river_share_percent"]
+            self.assertAlmostEqual(got, pct, delta=3, msg=f"sowing month {month}")
+
+    def test_s0_explanation_states_maize_share(self):
+        clim = coastal_climate()
+        why = E.compare(E.TEMPLATES["current"], clim)["strategies"][0]["sections"]["why"]["es"]
+        self.assertTrue(any("del agua de tu maíz" in x for x in why))
+
+class ImergBasinTests(unittest.TestCase):
+    def test_box_mean_converts_rate_and_rejects_fill(self):
+        from app.services.imerg_basin import box_mean_mm_month
+        lons = np.array([-77.05, -76.95, -76.85, -76.75])
+        lats = np.array([-11.45, -11.35, -11.25])
+        rate = np.full((4, 3), 0.1)  # mm/hr
+        rate[0, 0] = -9999.9
+        v = box_mean_mm_month(rate, lons, lats, [-77.0, -11.5, -76.7, -11.2], 1)
+        self.assertAlmostEqual(v, 0.1 * 24 * 31, places=1)
+        self.assertIsNone(box_mean_mm_month(rate, lons, lats, [10, 10, 11, 11], 1))
+
+    def test_summary_climatology_and_season_percent(self):
+        from app.services.imerg_basin import summarise
+        series = {f"{y}-{m:02d}": (100.0 if m in (1, 2, 3) else 10.0) for y in range(2005, 2025) for m in range(1, 13)}
+        s = summarise(series)
+        self.assertEqual(s["climatology_mm_month"][2], 100.0)
+        self.assertEqual(s["seasons"][-1]["percent_of_normal"], 100)
+
+    def test_api_abstains_without_imerg_summary(self):
+        from app.services import imerg_basin
+        with patch.object(imerg_basin, "load_seed", return_value=None):
+            r = TestClient(app).get("/api/rotation/upper-basin-rain?zone=huaral").json()
+        self.assertEqual(r["status"], "unavailable")
+        self.assertIn("Earthdata", r["message_en"])
+
+
 if __name__ == "__main__":
     unittest.main()

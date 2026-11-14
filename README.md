@@ -71,7 +71,7 @@ Other views: `/?vista=clima` (previous farmer weather dashboard) and `/?vista=te
 
 ## AI assistance
 
-The challenge rules allow AI to speed up work, and we declare where it was used. The **problem framing and the solution design were decided by the team** (see the team's analysis documents). **Claude Code (Anthropic)** helped write and test the code that implements the rotation comparator. Every AI-assisted file starts with the header comment `AI-assisted: written with Claude Code (Anthropic) and reviewed by the TERRA360 team.`:
+The challenge rules allow AI to speed up work, and we declare where it was used. The team chose the problem focus, target farmers, demo zones and solution direction. AI assistants (Claude) were used to research official statistics, draft the analysis documents, and write and test the code; the team reviewed all of it. In the code, **Claude Code (Anthropic)** helped write and test the rotation comparator. Every AI-assisted file starts with the header comment `AI-assisted: written with Claude Code (Anthropic) and reviewed by the TERRA360 team.`:
 
 - `backend/app/services/hls_history.py`: HLS monthly NDVI history and season detection
 - `backend/app/services/power_climatology.py`: NASA POWER climatology and FAO-56 ET0
