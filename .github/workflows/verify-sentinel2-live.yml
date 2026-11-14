@@ -1,0 +1,29 @@
+name: Sentinel-2 live raster verification
+on:
+  pull_request:
+    paths:
+      - 'backend/app/services/sentinel_ndvi.py'
+      - 'backend/app/api/ndvi_routes.py'
+      - 'backend/requirements.txt'
+      - 'scripts/verify_sentinel2_live.py'
+      - '.github/workflows/verify-sentinel2-live.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-satellite-cogs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install geospatial dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Read and verify real Copernicus Sentinel-2 B04, B08 and SCL imagery
+        env:
+          PYTHONPATH: backend
+        run: python scripts/verify_sentinel2_live.py
