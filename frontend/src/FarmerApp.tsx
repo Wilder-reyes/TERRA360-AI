@@ -213,9 +213,9 @@ export default function FarmerApp(){
    </nav>
   </div></header>
   <main className="f-main">
-   <section className="f-hero"><div><span className="f-eyebrow">HECHO PARA AGRICULTORES DEL PERÚ</span><h1>{headline}</h1><p>{subhead}</p></div><div className="f-location"><span>Tu zona</span><strong>{point?(fieldName.trim()||'Punto elegido en Huaral'):'Huando, Huaral'}</strong><small>{point?(referenceOnly?'Referencia regional, no una chacra':'Ubicación aproximada marcada por ti'):'Elige dónde quieres consultar los datos'}</small></div></section>
+   <section className="f-hero"><div><span className="f-eyebrow">HECHO PARA AGRICULTORES DEL PERÚ</span><h1>{headline}</h1><p>{subhead}</p></div><div className="f-location"><span>Tu zona</span><strong>{point?(fieldName.trim()||'Punto elegido en el mapa'):'Huando, Huaral'}</strong><small>{point?(referenceOnly?'Referencia regional, no una chacra':'Ubicación aproximada marcada por ti'):'Elige dónde quieres consultar los datos'}</small></div></section>
    {page==='terreno'&&<>
-    <div className="f-map-layout"><FarmerMap point={point} polygon={polygon} onPick={pick} onPolygon={setPolygon} lastDate={lastDate}/>
+    <div className="f-map-layout"><FarmerMap point={point} polygon={polygon} onPick={pick} onPolygon={setPolygon} lastDate={lastDate} records={data?.records||[]} loading={loading} error={dataError}/>
      <aside className="f-howto"><span className="f-eyebrow">ES MUY FÁCIL</span><h2>¿Cómo funciona?</h2>
       <div className="f-steps"><div><b>1</b><span><strong>Ubica tu chacra</strong><small>Toca un lugar en el mapa o dibuja su contorno.</small></span></div><div><b>2</b><span><strong>Revisa tus cultivos</strong><small>Busca uno por su nombre o explora opciones.</small></span></div><div><b>3</b><span><strong>Lee tu informe</strong><small>Consulta datos reales y guárdalos en PDF.</small></span></div></div>
       <label className="f-simple-label" htmlFor="f-field-name">¿Cómo llamas a tu chacra? (opcional)</label><input id="f-field-name" className="f-input" value={fieldName} maxLength={70} placeholder="Ej. Mi parcela" onChange={e=>setFieldName(e.target.value)}/>

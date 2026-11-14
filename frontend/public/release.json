@@ -1,14 +1,15 @@
 {
   "application": "TERRA360 AI",
-  "release": "v0.18.1-huando-farmer-dashboard",
+  "release": "v0.19-nasa-map-huaral",
   "pilot": "Huando, Huaral, Lima, Perú",
   "features": [
-    "Mapa de la chacra",
+    "Mapa responsive con NASA GIBS y datos NASA POWER visibles",
     "Cultivos para mi zona",
-    "Tablero climático NASA POWER",
-    "Imprimir o guardar como PDF"
+    "Dashboard climático",
+    "Informe imprimible en PDF"
   ],
   "computer_vision_enabled": false,
   "environment": "production",
-  "source_branch": "main"
+  "source_branch": "main",
+  "primary_url": "https://terra360-aix.netlify.app/"
 }
