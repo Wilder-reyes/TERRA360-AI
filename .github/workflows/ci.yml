@@ -39,3 +39,22 @@ jobs:
       - name: Compile production frontend
         working-directory: frontend
         run: npm run build
+
+  docker-backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build the exact Render Docker context and verify native dependencies
+        run: docker build -f backend/Dockerfile -t terra360-backend:ci backend
+      - name: Exercise the API health and Sentinel-2 routes inside the container
+        run: |
+          docker run --rm terra360-backend:ci python -c "
+          from fastapi.testclient import TestClient
+          from app.main import app
+          client = TestClient(app)
+          assert client.get('/api/health').status_code == 200
+          assert '/api/environment/sentinel-2/parcel-ndvi' in app.openapi()['paths']
+          assert client.post('/api/environment/sentinel-2/parcel-ndvi', json={}).status_code == 422
+          print('Render image starts and Sentinel-2 route is reachable')
+          "
