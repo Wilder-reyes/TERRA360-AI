@@ -10,6 +10,8 @@ type Base = 'streets' | 'satellite'
 type Scene = {date:string;cloud_cover_percent:number;satellite:string;scene_id:string}
 type SceneResponse = {scenes:Scene[];status:string;source_url:string}
 type Area = [Position,Position]
+type Seasonality={source:string;period:{from:number;to:number};coverage_ok:boolean;months:{month:number;years_with_data:number;median_rain_mm:number|null}[]}
+type History={source:string;period:{start_year:number;end_year:number};records:{year:number;status:'complete'|'partial'|'unavailable';precipitation_total_mm:number|null}[]}
 
 const vertexIcon = L.divIcon({className:'terra-poly-vertex',html:'<span aria-hidden="true"></span>',iconSize:[17,17],iconAnchor:[8,8]})
 
@@ -65,7 +67,7 @@ function interpret(row:RecordRow|null,layer:Layer,en:boolean):string{
   return en?'Scene dates do not measure crop health.':'Las fechas de imágenes no miden la salud de los cultivos.'
 }
 
-export function GeoWorkspace({point,onPick,data,loading,language,api,compact=false}:{point:Position|null;onPick:(p:Position)=>void;data:ApiResult|null;loading:boolean;language:string;api:string;compact?:boolean}){
+export function GeoWorkspace({point,onPick,data,loading,language,api,compact=false,seasonal,seasonalLoading=false,seasonalError='',onSeasonality,history,historyLoading=false,historyError='',onHistory}:{point:Position|null;onPick:(p:Position)=>void;data:ApiResult|null;loading:boolean;language:string;api:string;compact?:boolean;seasonal:Seasonality|null;seasonalLoading:boolean;seasonalError:string;onSeasonality:()=>void;history:History|null;historyLoading:boolean;historyError:string;onHistory:()=>void}){
   const en=language==='en'
   const [layer,setLayer]=useState<Layer>('rain')
   const [base,setBase]=useState<Base>('streets')
@@ -83,6 +85,9 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
   useEffect(()=>{setScenes(null);setSceneError('')},[point?.lat,point?.lng])
   const records=data?.records||[]
   const last=records.length?records[records.length-1].date:''
+  const maxMonthlyRain=Math.max(0,...(seasonal?.months.map(m=>m.median_rain_mm||0)||[]))
+  const fullHistory=history?.records.filter(y=>y.status==='complete'&&y.precipitation_total_mm!==null)||[]
+  const maxAnnualRain=Math.max(0,...fullHistory.map(y=>y.precipitation_total_mm||0))
   const current=useMemo(()=>records.find(r=>r.date===date)||records[records.length-1]||null,[records,date])
   const unit=layer==='rain'?'mm':layer==='temperature'?'°C':layer==='humidity'?'%':''
   const nasaLayer=layer==='gpm_map'?'IMERG_Precipitation_Rate':layer==='smap_map'?'SMAP_L4_Analyzed_Surface_Soil_Moisture':null
@@ -187,6 +192,29 @@ export function GeoWorkspace({point,onPick,data,loading,language,api,compact=fal
           <strong className="terra-geo-value">{loading?'…':shownValue} <span>{shownValue==='—'?'':unit}</span></strong>
           <label className="terra-geo-date">{en?'Date of observation':'Fecha del dato'}<select value={current?.date||last} onChange={e=>setDate(e.target.value)} disabled={!records.length}>{records.slice().reverse().map(r=><option key={r.date} value={r.date}>{r.date}</option>)}</select></label>
           <p>{interpret(current,layer,en)}</p>
+          {layer==='rain'&&point&&<details className="terra-geo-history">
+            <summary>{en?'How does rainfall change during the year?':'¿En qué meses suele llover más?'}</summary>
+            <p>{en?'A regional historic overview, not a forecast or a farm measurement.':'Resumen histórico regional, no pronóstico ni medición en tu terreno.'}</p>
+            {!seasonal&&<button type="button" disabled={seasonalLoading} onClick={onSeasonality}>{seasonalLoading?(en?'Consulting NASA…':'Consultando NASA…'):(en?'Show rainfall by month':'Ver la lluvia por meses')}</button>}
+            {seasonalError&&<p role="alert">{seasonalError}</p>}
+            {seasonal&&<><p className="terra-geo-subtitle">NASA POWER · {seasonal.period.from}–{seasonal.period.to}</p>
+              <div className="terra-geo-bars" role="img" aria-label={en?'Regional monthly rainfall from NASA POWER':'Lluvia mensual regional según NASA POWER'}>
+                {seasonal.months.map(m=><div key={m.month} className="terra-geo-bar-cell" title={m.median_rain_mm===null?'Sin datos':`${m.median_rain_mm.toFixed(1)} mm · ${m.years_with_data} años`}>
+                  <span>{m.median_rain_mm===null?'—':Math.round(m.median_rain_mm)}</span>
+                  <i style={{height:`${m.median_rain_mm===null?0:Math.max(2,(m.median_rain_mm/Math.max(1,maxMonthlyRain))*100)}%`}}/>
+                  <small>{new Date(2026,m.month-1,1).toLocaleDateString(en?'en-US':'es-PE',{month:'short'})}</small>
+                </div>)}
+              </div>
+              <p>{seasonal.coverage_ok?(en?'Higher bars indicate months with more historical rain in this regional dataset. They do not tell you when to sow.':'Las barras más altas indican los meses históricamente más lluviosos de esta región. No indican cuándo debes sembrar.'):(en?'Some months do not have enough complete data for reliable comparison.':'Algunos meses no tienen suficientes años completos para compararlos.')}</p>
+            </>}
+            <details className="terra-geo-year-history"><summary>{en?'Compare five complete years':'Comparar cinco años completos'}</summary>
+              {!history&&<button type="button" disabled={historyLoading} onClick={onHistory}>{historyLoading?(en?'Consulting NASA…':'Consultando NASA…'):(en?'Show year comparison':'Ver comparación por años')}</button>}
+              {historyError&&<p role="alert">{historyError}</p>}
+              {history&&<><div className="terra-geo-year-bars">{fullHistory.map(y=><div key={y.year} className="terra-geo-year-row"><span>{y.year}</span><i><b style={{width:`${Math.max(1,((y.precipitation_total_mm||0)/Math.max(1,maxAnnualRain))*100)}%`}}/></i><strong>{Math.round(y.precipitation_total_mm||0)} mm</strong></div>)}</div>
+                <p>{en?'Only complete years are shown. Year-to-year differences are not forecasts or verified trends.':'Solo se muestran años completos. Las diferencias entre años no son pronósticos ni tendencias climáticas verificadas.'}</p></>}
+            </details>
+          </details>}
+
           {!point&&<p>{en?'Choose a point on the map first.':'Primero elige un punto en el mapa.'}</p>}
           {data&&<small>{data.period.start} — {data.period.end}</small>}
         </div>}
