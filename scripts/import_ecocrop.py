@@ -42,7 +42,7 @@ def clean_number(v: str | None) -> int | float | None:
 
 
 def parse_csv(source: bytes) -> list[dict]:
-    txt = source.decode("cp1252-sig")
+    txt = source.decode("cp1252").lstrip("\\ufeff")
     reader = csv.DictReader(io.StringIO(txt, newline=""))
     fields = set(reader.fieldnames or ())
     lower = {str(f).strip().lower(): f for f in fields}
