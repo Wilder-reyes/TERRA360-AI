@@ -1,0 +1,15 @@
+# Never upload local environments, caches or secrets to Vercel.
+.env
+.env.*
+!.env.example
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.pyc
+backend/.cache/
+backend/data/
+backend/models/
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+*.log

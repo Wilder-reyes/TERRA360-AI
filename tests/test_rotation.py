@@ -1,0 +1,221 @@
+# AI-assisted: written with Claude Code (Anthropic) and reviewed by the TERRA360 team.
+"""Field Shift rotation comparator: ET0, catalogue, engine, detection and API (no network)."""
+import asyncio
+import json
+import sys
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+from app.main import app  # noqa: E402
+from app.services import rotation_engine as E  # noqa: E402
+from app.services.hls_history import FMASK_REJECT, detect_campaigns, hls_ndvi_from_arrays, suggest_crops  # noqa: E402
+from app.services.power_climatology import build_monthly, et0_penman_monteith  # noqa: E402
+
+
+def coastal_climate():
+    """Synthetic but realistic coastal-Lima climatology (summer Jan-Mar warm)."""
+    tmax = [26.6, 26.4, 26.4, 25.0, 23.9, 23.2, 22.7, 21.3, 21.8, 21.8, 22.8, 24.1]
+    payload = {"header": {"range": "test 2001-2025"}, "geometry": {"coordinates": [-77.45, -11.48, 224.0]},
+               "properties": {"parameter": {
+                   "T2M_MAX": dict(zip(E.MONTH_EN, tmax)),
+                   "T2M_MIN": dict(zip(E.MONTH_EN, [t - 7 for t in tmax])),
+                   "T2M": dict(zip(E.MONTH_EN, [t - 3.5 for t in tmax])),
+                   "RH2M": dict(zip(E.MONTH_EN, [78] * 12)),
+                   "WS2M": dict(zip(E.MONTH_EN, [2.5] * 12)),
+                   "ALLSKY_SFC_SW_DWN": dict(zip(E.MONTH_EN, [22.5, 22.3, 21.9, 20.3, 15.8, 11.9, 11.6, 13.2, 15.7, 19.0, 20.8, 21.4])),
+                   "PRECTOTCORR": dict(zip(E.MONTH_EN, [0.1] * 12)),
+               }}}
+    payload["properties"]["parameter"] = {k: {kk.upper(): vv for kk, vv in v.items()} for k, v in payload["properties"]["parameter"].items()}
+    clim = build_monthly(payload, -11.48, -77.45)
+    clim["cell_adjustment"] = None
+    return clim
+
+
+class ET0Tests(unittest.TestCase):
+    def test_fao56_example_17_bangkok_april(self):
+        # FAO-56 Example 17: monthly ET0 = 5.72 mm/day (ea 2.85 kPa → RH ≈ 64.5 %).
+        et0 = et0_penman_monteith(4, 13.73, 2, 34.8, 25.6, 64.5, 2.0, 22.65, t_prev=29.2, t_next=31.2)
+        self.assertAlmostEqual(et0, 5.72, delta=0.35)
+
+    def test_monthly_climate_and_relative_heat_months(self):
+        clim = coastal_climate()
+        self.assertEqual(len(clim["months"]), 12)
+        self.assertEqual(clim["hot_months"], [1, 2, 3])
+        jan, jul = clim["months"][0]["et0_mm_day"], clim["months"][6]["et0_mm_day"]
+        self.assertGreater(jan, jul)  # summer demand > winter demand
+
+    def test_missing_month_is_rejected_not_filled(self):
+        payload = {"properties": {"parameter": {p: {m: 1.0 for m in E.MONTH_EN} for p in
+                   ["T2M_MAX", "T2M_MIN", "T2M", "RH2M", "WS2M", "ALLSKY_SFC_SW_DWN", "PRECTOTCORR"]}}}
+        payload["properties"]["parameter"]["T2M_MAX"]["JAN"] = -999
+        with self.assertRaises(Exception):
+            build_monthly({**payload, "geometry": {"coordinates": [0, 0, 0]}}, 0, 0)
+
+
+class CatalogTests(unittest.TestCase):
+    def test_team_catalogue_used_as_is(self):
+        cat = E.load_catalog()
+        self.assertEqual(len(cat["crops"]), 13)
+        for c in cat["crops"].values():
+            self.assertEqual(len(c["kc"]), 3)
+            self.assertEqual(sum(c["stages_days"]), c["cycle_days"]) if c["cycle_days"] < 365 else None
+            self.assertTrue(set(c["sowing_months_lima"]) <= set(range(1, 13)))
+        self.assertEqual(cat["seasons"]["river_low_months"], [5, 6, 7, 8, 9, 10, 11])
+
+    def test_kc_curve_follows_fao56_shape(self):
+        mad = E.crop("maiz_amarillo_duro")
+        curve = E.kc_curve(mad)
+        self.assertEqual(len(curve), mad["cycle_days"])
+        self.assertAlmostEqual(curve[0], 0.30)
+        self.assertAlmostEqual(max(curve), 1.20)
+        self.assertAlmostEqual(curve[-1], 0.35, places=2)
+
+
+class EngineTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.clim = coastal_climate()
+
+    def sim(self, key):
+        return E.simulate(E.normalize_plantings(E.TEMPLATES[key]), self.clim)["indicators"]
+
+    def test_team_template_s1_uses_less_low_river_water_than_s0(self):
+        self.assertLess(self.sim("water")["water_low_river_mm"], self.sim("current")["water_low_river_mm"])
+
+    def test_team_template_s2_has_no_bare_months_and_two_legumes(self):
+        s2 = self.sim("soil")
+        self.assertEqual(s2["bare_months"], 0)
+        self.assertEqual(s2["legume_plantings"], 2)  # 2 per 24 months in the team template
+        self.assertEqual(s2["same_family_consecutive"], 0)
+
+    def test_s0_maize_monoculture_flags_family_repeats(self):
+        s0 = self.sim("current")
+        self.assertEqual(s0["legume_plantings"], 0)
+        self.assertGreater(s0["same_family_consecutive"], 0)
+        self.assertEqual(s0["bare_months"], 4)
+
+    def test_compare_generates_two_distinct_alternatives_with_five_sections(self):
+        r = E.compare(E.TEMPLATES["current"], self.clim)
+        self.assertEqual([s["id"] for s in r["strategies"]], ["S0", "S1", "S2"])
+        s0, s1, s2 = r["strategies"]
+        self.assertEqual(s1["origin"], "constrained_search")
+        self.assertLess(s1["indicators"]["water_low_river_mm"], s0["indicators"]["water_low_river_mm"])
+        self.assertLessEqual(s1["indicators"]["bare_months"], max(s0["indicators"]["bare_months"], 2))
+        self.assertLess(s2["indicators"]["bare_months"], s0["indicators"]["bare_months"])
+        self.assertGreaterEqual(s2["indicators"]["legume_plantings"], 2)
+        self.assertNotEqual([(p["crop_id"], p["start_index"]) for p in s1["plantings"]],
+                            [(p["crop_id"], p["start_index"]) for p in s2["plantings"]])
+        for s in r["strategies"]:
+            self.assertEqual(set(s["sections"]), {"why", "evidence", "benefits", "gaps", "risks"})
+            for sec in s["sections"].values():
+                self.assertTrue(sec["es"] and sec["en"])
+            for p in s["plantings"][1:] if s["key"] != "current" else []:
+                self.assertTrue(p["sowing_month_in_catalog"])
+            self.assertIn("maiz_amarillo_duro", [p["crop_id"] for p in s["plantings"]])
+
+    def test_alternatives_respect_sowing_months_and_no_back_to_back_crop(self):
+        r = E.compare(E.TEMPLATES["current"], self.clim, priorities={"water": 2, "soil": 2})
+        for s in r["strategies"][1:]:
+            ids = [p["crop_id"] for p in s["plantings"]]
+            self.assertTrue(all(a != b for a, b in zip(ids, ids[1:])))
+            self.assertTrue(all(p["sowing_month_in_catalog"] for p in s["plantings"]))
+
+    def test_invalid_inputs_are_rejected(self):
+        with self.assertRaises(E.RotationError):
+            E.normalize_plantings([{"crop_id": "palta", "start_index": 0}])
+        with self.assertRaises(E.RotationError):
+            E.normalize_plantings([{"crop_id": "camote", "start_index": 30}])
+        with self.assertRaises(E.RotationError):
+            E.compare(E.TEMPLATES["current"], self.clim, water_turn="mucho")
+
+    def test_current_rotation_overlap_is_fitted_and_marked(self):
+        plan = E.fit_to_cycle(E.normalize_plantings([{"crop_id": "maiz_amarillo_duro", "start_index": 0},
+                                                     {"crop_id": "camote", "start_index": 3}]))
+        self.assertTrue(plan[0]["adjusted_to_observed_gap"])
+        E.simulate(plan, self.clim)  # no overlap error
+
+
+class DetectionTests(unittest.TestCase):
+    def months(self, values):
+        out, y, m = [], 2021, 1
+        for v in values:
+            out.append({"month": f"{y}-{m:02d}", "ndvi": v})
+            y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+        return out
+
+    def test_two_campaigns_and_bare_period_without_interpolation(self):
+        vals = [0.15, 0.18, 0.45, 0.7, 0.6, 0.25, 0.15, 0.12, None, 0.3, 0.65, 0.72, 0.4, 0.16, 0.14]
+        d = detect_campaigns(self.months(vals))
+        self.assertEqual(len(d["campaigns"]), 2)
+        self.assertEqual(d["campaigns"][0]["peak_month"], "2021-04")
+        self.assertEqual(d["states"][8], "unknown")
+        self.assertTrue(any(p["months"] >= 2 for p in d["sustained_bare_periods"]))
+        self.assertTrue(d["thresholds"]["heuristic"])
+
+    def test_long_cloud_gap_keeps_peaks_separate(self):
+        vals = [0.5, 0.8, 0.75, None, None, None, None, None, None, 0.5, 0.6, 0.62]
+        self.assertEqual(len(detect_campaigns(self.months(vals))["campaigns"]), 2)
+
+    def test_crop_suggestions_come_from_catalogue(self):
+        c = {"start": "2023-09", "months": 3}
+        ids = [x["crop_id"] for x in suggest_crops(c, list(E.load_catalog()["crops"].values()))]
+        self.assertTrue(ids)
+        self.assertTrue(set(ids) <= set(E.load_catalog()["crops"]))
+
+    def test_hls_fmask_rejects_cloud_and_water(self):
+        red = np.full((4, 4), 500, np.int16)
+        nir = np.full((4, 4), 3000, np.int16)
+        fmask = np.zeros((4, 4), np.uint8)
+        fmask[0, :] = 1 << 1   # cloud
+        fmask[1, :] = 1 << 5   # water
+        inside = np.ones((4, 4), bool)
+        r = hls_ndvi_from_arrays(red, nir, fmask, inside, 16 * 900, 900)
+        self.assertEqual(r["valid_pixels"], 8)
+        self.assertEqual(r["status"], "available")
+        self.assertAlmostEqual(r["ndvi_median"], (0.3 - 0.05) / 0.35, places=3)
+        self.assertTrue(FMASK_REJECT & (1 << 3))
+
+
+class ApiTests(unittest.TestCase):
+    def setUp(self):
+        self.client = TestClient(app)
+
+    def test_zones_include_huaral_and_barranca_from_same_padron(self):
+        z = self.client.get("/api/rotation/zones").json()["zones"]
+        self.assertEqual({x["id"] for x in z}, {"huaral", "barranca"})
+        self.assertEqual(len({x["source_url"] for x in z}), 1)
+        self.assertEqual({x["sector"]["code"] for x in z}, {"15060105", "15020105"})
+
+    def test_compare_abstains_without_current_rotation(self):
+        r = self.client.post("/api/rotation/compare", json={"zone": "huaral", "current": []}).json()
+        self.assertEqual(r["status"], "needs_current_rotation")
+        self.assertEqual(r["strategies"], [])
+
+    def test_compare_endpoint_with_mocked_power(self):
+        clim = coastal_climate()
+
+        async def fake(lat, lon, client=None, coastal=True):
+            return clim
+        with patch("app.api.rotation_routes.monthly_climate", fake):
+            r = self.client.post("/api/rotation/compare", json={"zone": "barranca", "current": E.TEMPLATES["current"],
+                                                                "water_turn": "escaso"})
+        self.assertEqual(r.status_code, 200, r.text)
+        body = r.json()
+        self.assertEqual(len(body["strategies"]), 3)
+        self.assertEqual(len(body["window"]["context"]), 24)
+        self.assertTrue(body["method"]["relative_only"])
+
+    def test_history_rejects_non_polygon_geojson(self):
+        r = self.client.post("/api/rotation/history", json={"polygon": {"type": "Point", "coordinates": [0, 0]}})
+        self.assertEqual(r.status_code, 422)
+
+
+if __name__ == "__main__":
+    unittest.main()
