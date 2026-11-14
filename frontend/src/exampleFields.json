@@ -1,12 +1,138 @@
 {
- "_note": "Example fields for the rotation comparator. TEAM: add huaral-1, huaral-2, barranca-1, barranca-2 to team_fields (GeoJSON Polygon, WGS84 [lng, lat]), then run: python scripts/precompute_rotation_history.py",
- "team_fields": [],
- "test_fields": [
-  {"id": "huaral-test-1", "zone": "huaral", "label_es": "Huaral · terreno de prueba", "label_en": "Huaral · test field",
-   "polygon": {"type": "Polygon", "coordinates": [[[-77.178124, -11.55313], [-77.17675, -11.55314], [-77.17676, -11.554496], [-77.178135, -11.554485], [-77.178124, -11.55313]]]}},
-  {"id": "barranca-test-1", "zone": "barranca", "label_es": "Barranca · terreno de prueba A", "label_en": "Barranca · test field A",
-   "polygon": {"type": "Polygon", "coordinates": [[[-77.711245, -10.670211], [-77.709875, -10.670223], [-77.709887, -10.671578], [-77.711257, -10.671566], [-77.711245, -10.670211]]]}},
-  {"id": "barranca-test-2", "zone": "barranca", "label_es": "Barranca · terreno de prueba B", "label_en": "Barranca · test field B",
-   "polygon": {"type": "Polygon", "coordinates": [[[-77.740219, -10.692725], [-77.738849, -10.692737], [-77.738861, -10.694092], [-77.740232, -10.69408], [-77.740219, -10.692725]]]}}
- ]
+ "_note": "Example fields for the rotation comparator. team_fields: huaral-1/2 and barranca-1/2, found by HLS NDVI variability and reviewed by the team on satellite imagery ('Terreno representativo identificado en imagen; no corresponde a un agricultor identificado'). After editing, run: python scripts/precompute_rotation_history.py",
+ "team_fields": [
+  {
+   "id": "barranca-1",
+   "zone": "barranca",
+   "label_es": "Barranca · terreno pelado varias veces al año",
+   "label_en": "Barranca · field often left bare",
+   "polygon": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77.739236,
+       -10.699368
+      ],
+      [
+       -77.737867,
+       -10.699354
+      ],
+      [
+       -77.737852,
+       -10.700708
+      ],
+      [
+       -77.739222,
+       -10.700723
+      ],
+      [
+       -77.739236,
+       -10.699368
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "barranca-2",
+   "zone": "barranca",
+   "label_es": "Barranca · terreno con cobertura más continua",
+   "label_en": "Barranca · field with more continuous cover",
+   "polygon": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77.667242,
+       -10.670163
+      ],
+      [
+       -77.665872,
+       -10.670148
+      ],
+      [
+       -77.665858,
+       -10.671503
+      ],
+      [
+       -77.667227,
+       -10.671517
+      ],
+      [
+       -77.667242,
+       -10.670163
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "huaral-1",
+   "zone": "huaral",
+   "label_es": "Huaral · terreno pelado varias veces al año",
+   "label_en": "Huaral · field often left bare",
+   "polygon": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77.125365,
+       -11.557588
+      ],
+      [
+       -77.123991,
+       -11.557598
+      ],
+      [
+       -77.124001,
+       -11.558954
+      ],
+      [
+       -77.125376,
+       -11.558944
+      ],
+      [
+       -77.125365,
+       -11.557588
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "id": "huaral-2",
+   "zone": "huaral",
+   "label_es": "Huaral · terreno con cobertura más continua",
+   "label_en": "Huaral · field with more continuous cover",
+   "polygon": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -77.130606,
+       -11.486783
+      ],
+      [
+       -77.129232,
+       -11.486793
+      ],
+      [
+       -77.129242,
+       -11.488149
+      ],
+      [
+       -77.130616,
+       -11.488139
+      ],
+      [
+       -77.130606,
+       -11.486783
+      ]
+     ]
+    ]
+   }
+  }
+ ],
+ "test_fields": []
 }
