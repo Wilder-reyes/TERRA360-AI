@@ -120,10 +120,16 @@ class ArchiveTests(TestCase):
         fake={"product":"SPL3SMP_E","date":DATE.isoformat(),
               "filename":f"SMAP_L3_SM_P_E_{DATE:%Y%m%d}_R001_006.h5",
               "size_bytes":1024,"sha256":"f"*64,
-              "verified_format":"NASA-original-granule"}
+              "verified_format":"NASA-native-grid-regional-subset",
+              "source_original_sha256":"a"*64,
+              "source_original_size_bytes":300_000_000,
+              "subset_bounds":[-72.65,-14.0,-71.2,-12.75],
+              "subset_method":"unmodified_native_grid_AM_window_v1"}
         validate_manifest("smap",DATE,fake)
         for invalid in ({**fake,"sha256":"xyz"}, {**fake,"date":"2020-01-01"},
-                        {**fake,"size_bytes":999999999},{**fake,"product":"GPM_3IMERGDL"}):
+                        {**fake,"size_bytes":999999999},{**fake,"product":"GPM_3IMERGDL"},
+                        {**fake,"source_original_sha256":"invalid"},
+                        {**fake,"verified_format":"NASA-original-granule"}):
             with self.assertRaises(ArchiveError):
                 validate_manifest("smap",DATE,invalid)
 
