@@ -282,3 +282,28 @@ test('FAO GAEZ real-source tab labels raw regional code without claiming crop su
  await expect(page.getByText(/No se genera ninguna recomendación de siembra/)).toBeVisible()
  await expect(page.getByRole('link',{name:/Licencia del conjunto CC BY 4.0/})).toBeVisible()
 })
+
+test('network failure shows a friendly message and catalog can retry without refresh',async({page})=>{
+ let attempts=0
+ await page.route('**/api/arie/catalog',async route=>{
+  attempts+=1
+  if(attempts===1){await route.abort('failed');return}
+  await route.fulfill({contentType:'application/json',body:JSON.stringify({crops,references:{},scenarios:[]})})
+ })
+ await page.goto('/')
+ await page.locator('.step-nav button').filter({hasText:'Mis cultivos'}).click()
+ await expect(page.getByText(/No se pudo conectar con TERRA360/)).toBeVisible()
+ await expect(page.getByText(/Failed to fetch/)).toHaveCount(0)
+ await page.getByRole('button',{name:'Volver a intentar'}).click()
+ await expect(page.getByRole('heading',{name:/Maíz Blanco Gigante/})).toBeVisible()
+ expect(attempts).toBeGreaterThanOrEqual(2)
+})
+
+test('browser production must not depend on VITE_API_URL cross-origin override',async({page})=>{
+ const requests:string[]=[]
+ page.on('request',req=>{if(req.url().includes('/api/arie/catalog'))requests.push(req.url())})
+ await page.goto('/')
+ await expect(page.getByRole('heading',{name:'Explora tu terreno y su entorno'})).toBeVisible()
+ await expect.poll(()=>requests.length).toBeGreaterThan(0)
+ expect(new URL(requests[0]).origin).toBe(new URL(page.url()).origin)
+})
