@@ -30,7 +30,7 @@ type Strategy={id:'S0'|'S1'|'S2';key:'current'|'water'|'soil';title_es:string;ti
  icons:{water:string;soil_cover:string;nitrogen:string;pests:string;heat:string};sections:Record<Section,{es:string[];en:string[]}>}
 type Context={index:number;calendar_month:number;year:number;low_river:boolean;hot:boolean;et0_mm_month:number;tmax_c:number;basin_rain_mm?:number|null}
 type BasinRain={status:string;message_es?:string;message_en?:string;source?:string;basin_es?:string;basin_en?:string;years?:string[];years_count?:number;last_season?:{season:string;rain_mm:number;percent_of_normal:number|null}|null;note_es?:string;note_en?:string}
-type CompareResult={status:string;upper_basin_rain?:BasinRain;income_crop?:string;strategies:Strategy[];window?:{context:Context[]};climate?:{period:string;hot_months:number[];annual_et0_mm:number;limitations:string[];limitations_en?:string[];cell_adjustment:{reason_es:string;reason_en:string}|null};disclaimer_es?:string;disclaimer_en?:string;message_es?:string;message_en?:string}
+type CompareResult={status:string;upper_basin_rain?:BasinRain;income_crop?:string;income_crop_origin?:'farmer_selected'|'most_frequent_in_current';strategies:Strategy[];window?:{context:Context[]};climate?:{period:string;hot_months:number[];annual_et0_mm:number;limitations:string[];limitations_en?:string[];cell_adjustment:{reason_es:string;reason_en:string}|null};disclaimer_es?:string;disclaimer_en?:string;message_es?:string;message_en?:string}
 type Planting={crop_id:string;start_index:number}
 
 const CROPS:Record<string,{es:string;en:string;icon:string;color:string}>={
@@ -68,7 +68,7 @@ const T={
   windowNote:(a:string,b:string)=>`Para comparar usamos tus últimos 24 meses completos: ${a} a ${b}.`,noCampaigns:'No vimos campañas claras en esos 24 meses.',
   useTemplate:'Probar rotación ficticia de demostración',historyError:'No pudimos leer el historial satelital.',retry:'Reintentar',
   manualLead:'Añade los cultivos y meses en que realmente sembraste. No se identifican automáticamente desde el satélite.',manualCrop:'Cultivo',manualMonth:'Mes de siembra',manualAdd:'Añadir siembra',manualRemove:'Quitar',manualLimit:'Máximo 10 siembras en 24 meses.',manualDuplicate:'Ya hay una siembra en ese mes. Elige otro mes.',backToHistory:'Volver al historial satelital',partial:'No fue posible calcular ambas alternativas con estas restricciones; no usamos plantillas ficticias como resultados.',demoOnly:'Solo demostración: estos cultivos son una muestra ficticia, no datos de tu parcela.',manualTitle:'Tu rotación actual',confirmed:(n:number)=>`${n} campaña(s) confirmada(s).`,next:'Siguiente →',back:'← Volver',
-  s3Title:'¿Qué te importa más?',s3Lead:'Mueve cada barra. Esto cambia cómo buscamos las dos ideas.',incomePick:'¿Cuál es tu cultivo de ingreso?',incomeAuto:'No sé: usar el más frecuente en mi rotación',incomeHint:'BIOTEX mantendrá este cultivo en las opciones cuando priorices tus ingresos.',
+  s3Title:'¿Qué te importa más?',s3Lead:'Mueve cada barra. Esto cambia cómo buscamos las dos ideas.',incomePick:'¿Cuál es tu cultivo de ingreso?',incomeAuto:'No sé: usar el más frecuente en mi rotación',incomeHint:'BIOTEX mantendrá este cultivo en las opciones cuando priorices tus ingresos.',incomeProvenance:(crop:string,manual:boolean)=>manual?`Cultivo de ingreso elegido por ti: ${crop}.`:`Cultivo de ingreso estimado por frecuencia en tu rotación: ${crop}. Puedes cambiarlo en el paso anterior.`,
   prio:{water:'Ahorrar agua',soil:'Mejorar el suelo',income:'Mantener mi cultivo de ingreso',pests:'Menos plagas'},levels:['Poco','Normal','Mucho'],
   turnQ:'¿Cómo suele estar tu turno de agua entre mayo y noviembre?',turn:{normal:'Normal',escaso:'Escaso',no_se:'No sé'},compare:'Comparar 3 rotaciones →',comparing:'Calculando con NASA POWER y el catálogo de cultivos…',
   s4Title:'Tu forma de sembrar y dos ideas para cuidar tu suelo y tu agua',
@@ -99,7 +99,7 @@ const T={
   windowNote:(a:string,b:string)=>`To compare we use your last 24 complete months: ${a} to ${b}.`,noCampaigns:'We did not see clear seasons in those 24 months.',
   useTemplate:'Try a sample rotation (demo only)',historyError:'We could not read the satellite history.',retry:'Retry',
   manualLead:'Add the crops and months you actually planted. Crops are not automatically identified from space.',manualCrop:'Crop',manualMonth:'Sowing month',manualAdd:'Add planting',manualRemove:'Remove',manualLimit:'Maximum 10 plantings over 24 months.',manualDuplicate:'There is already a planting in that month. Choose another.',backToHistory:'Return to satellite history',partial:'Both alternatives could not be calculated under these constraints; sample templates were not substituted as results.',demoOnly:'Demo only: this is a fictitious sample rotation, not real field data.',manualTitle:'Your current rotation',confirmed:(n:number)=>`${n} season(s) confirmed.`,next:'Next →',back:'← Back',
-  s3Title:'What matters most to you?',s3Lead:'Move each bar. This changes how we search for the two ideas.',incomePick:'Which crop supports your farm income?',incomeAuto:'Not sure: use the most frequent crop in my rotation',incomeHint:'BIOTEX will retain this crop in the alternatives when income matters to you.',
+  s3Title:'What matters most to you?',s3Lead:'Move each bar. This changes how we search for the two ideas.',incomePick:'Which crop supports your farm income?',incomeAuto:'Not sure: use the most frequent crop in my rotation',incomeHint:'BIOTEX will retain this crop in the alternatives when income matters to you.',incomeProvenance:(crop:string,manual:boolean)=>manual?`Income crop chosen by you: ${crop}.`:`Income crop inferred from rotation frequency: ${crop}. You can change it in the previous step.`,
   prio:{water:'Save water',soil:'Improve the soil',income:'Keep my income crop',pests:'Fewer pests'},levels:['Low','Normal','High'],
   turnQ:'How is your irrigation turn usually between May and November?',turn:{normal:'Normal',escaso:'Scarce',no_se:"I don't know"},compare:'Compare 3 rotations →',comparing:'Computing with NASA POWER and the crop catalogue…',
   s4Title:'Your way of planting and two ideas to care for your soil and water',
@@ -467,6 +467,7 @@ export default function RotationApp(){
    {step===4&&result&&<section className="r-panel r-compare" id="rotation-report">
     <h1>{t.s4Title}</h1>
     <p className="r-disclaimer">{lang==='es'?(result.disclaimer_es||t.disclaimer):(result.disclaimer_en||t.disclaimer)}</p>
+    {result.income_crop&&<p className="r-note">{t.incomeProvenance(cropName(result.income_crop,lang),result.income_crop_origin==='farmer_selected')}</p>}
     {result.strategies.length===0?<p className="r-note">{t.abstain} {lang==='es'?result.message_es:result.message_en}</p>:<>
      <div className="r-print-meta">{field?.label} · {ZONES[zone].name} · {new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US')}</div>
      {result.status==='partial'&&<p className="r-note" role="status">{t.partial}</p>}
