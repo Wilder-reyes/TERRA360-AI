@@ -141,3 +141,38 @@ def build_crop_guidance(annual_records: list[dict], selected_crop_id: str | None
             "no verifica aptitud ni rendimiento. NASA POWER no mide una chacra."
         ),
     }
+
+
+def annual_summaries_from_daily(rows: list[dict], start_year: int, end_year: int) -> list[dict]:
+    """Reconstruct complete calendar years from NASA POWER normalized daily rows.
+
+    Missing days/values cause partial status; incomplete precipitation is not
+    extrapolated to a fictitious annual total.
+    """
+    import calendar
+    from datetime import date
+    grouped: dict[int, dict[str, dict]] = {year: {} for year in range(start_year, end_year + 1)}
+    for row in rows:
+        try:
+            observed = date.fromisoformat(str(row["date"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+        if observed.year in grouped:
+            grouped[observed.year][observed.isoformat()] = row
+    result = []
+    for year, days in grouped.items():
+        expected = 366 if calendar.isleap(year) else 365
+        rainy = [r["PRECTOTCORR"] for r in days.values()
+                 if type(r.get("PRECTOTCORR")) in (int, float)
+                 and isfinite(r["PRECTOTCORR"]) and 0 <= r["PRECTOTCORR"] <= 1000]
+        temps = [r["T2M"] for r in days.values()
+                 if type(r.get("T2M")) in (int, float)
+                 and isfinite(r["T2M"]) and -60 <= r["T2M"] <= 65]
+        complete = len(days) == expected and len(rainy) == expected and len(temps) == expected
+        result.append({
+            "year": year,
+            "status": "complete" if complete else "partial",
+            "precipitation_total_mm": round(sum(rainy), 2) if complete else None,
+            "temperature_mean_c": round(mean(temps), 2) if complete else None,
+        })
+    return result
