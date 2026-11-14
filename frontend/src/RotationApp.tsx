@@ -9,6 +9,7 @@ import {useEffect,useMemo,useRef,useState} from 'react'
 import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {CartesianGrid,Line,LineChart,ReferenceArea,ReferenceLine,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts'
 import {API,httpErrorMessage,readableApiError} from './network'
+import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
 import {approximatePolygonHectares,validatePolygon} from './geometry'
 import {PADRON_URL,TEAM_FIELDS,TEST_FIELDS,ZONES,parseGeoJSONPolygon,type ExampleField,type GeoPolygon,type ZoneId} from './rotationZones'
 import './rotation.css'
@@ -65,8 +66,8 @@ const T={
   sensor:(s:string,a:number,b:number)=>`Fuente: ${s}. Meses con foto: ${a} de ${b}. Los meses sin foto no se rellenan.`,
   ask:(a:string,b:string)=>`Entre ${a} y ${b} hubo un cultivo. ¿Qué sembraste?`,suggested:'Sugerido por el satélite y el calendario',dontRemember:'No me acuerdo',
   windowNote:(a:string,b:string)=>`Para comparar usamos tus últimos 24 meses completos: ${a} a ${b}.`,noCampaigns:'No vimos campañas claras en esos 24 meses.',
-  useTemplate:'Usar la rotación típica de la zona (maíz tras maíz)',historyError:'No pudimos leer el historial satelital.',retry:'Reintentar',
-  manualTitle:'Tu rotación actual',confirmed:(n:number)=>`${n} campaña(s) confirmada(s).`,next:'Siguiente →',back:'← Volver',
+  useTemplate:'Probar rotación ficticia de demostración',historyError:'No pudimos leer el historial satelital.',retry:'Reintentar',
+  manualLead:'Añade los cultivos y meses en que realmente sembraste. No se identifican automáticamente desde el satélite.',manualCrop:'Cultivo',manualMonth:'Mes de siembra',manualAdd:'Añadir siembra',manualRemove:'Quitar',manualLimit:'Máximo 10 siembras en 24 meses.',manualDuplicate:'Ya hay una siembra en ese mes. Elige otro mes.',backToHistory:'Volver al historial satelital',partial:'No fue posible calcular ambas alternativas con estas restricciones; no usamos plantillas ficticias como resultados.',demoOnly:'Solo demostración: estos cultivos son una muestra ficticia, no datos de tu parcela.',manualTitle:'Tu rotación actual',confirmed:(n:number)=>`${n} campaña(s) confirmada(s).`,next:'Siguiente →',back:'← Volver',
   s3Title:'¿Qué te importa más?',s3Lead:'Mueve cada barra. Esto cambia cómo buscamos las dos ideas.',
   prio:{water:'Ahorrar agua',soil:'Mejorar el suelo',income:'Mantener mi cultivo de ingreso',pests:'Menos plagas'},levels:['Poco','Normal','Mucho'],
   turnQ:'¿Cómo suele estar tu turno de agua entre mayo y noviembre?',turn:{normal:'Normal',escaso:'Escaso',no_se:'No sé'},compare:'Comparar 3 rotaciones →',comparing:'Calculando con NASA POWER y el catálogo de cultivos…',
@@ -78,8 +79,8 @@ const T={
   icon:{water:'💧 Agua en estiaje',soil:'🌱 Suelo cubierto',n:'🫘 Aporta nitrógeno',pests:'🐛 Corta plagas',market:'💰 Cultivo de ingreso',heat:'🔥 Calor en etapa sensible'},
   better:'mejor',worse:'peor',same:'igual',reference:'referencia',yes:'sí',no:'no',ok:'sí',repeat:'repite familia',alert:'revisar',
   print:'Imprimir o guardar PDF',technician:'Llévalo a tu técnico',techHelp:'En la ventana de impresión elige «Guardar como PDF» y compártelo con tu técnico.',
-  approx:'dato aproximado',adjusted:'ajustado a lo visto por satélite',origin:{constrained_search:'Generada por búsqueda con restricciones',team_template:'Plantilla del equipo (respaldo)',declared_or_detected:'Detectada por satélite y confirmada por ti'} as Record<string,string>,
-  abstain:'No podemos comparar todavía.',climate:'Clima',footer:'TERRA360 · NASA Space Apps 2026 · Field Shift',otherViews:'Otras vistas:',weatherView:'Clima de mi zona',techView:'Herramientas técnicas',
+  approx:'dato aproximado',adjusted:'ajustado a lo visto por satélite',origin:{constrained_search:'Calculada con restricciones',team_template:'Plantilla de demostración',declared_or_detected:'Confirmada por agricultor',farmer_declared:'Declarada por agricultor',satellite_confirmed:'Sugerida por satélite y confirmada por agricultor',team_demo:'Plantilla ficticia de demostración'} as Record<string,string>,
+  abstain:'No podemos comparar todavía.',climate:'Clima',footer:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',otherViews:'Otras vistas:',weatherView:'Clima de mi zona',techView:'Herramientas técnicas',
   year:'Año',sowIn:'siembra',months:'meses',
  },
  en:{
@@ -96,8 +97,8 @@ const T={
   sensor:(s:string,a:number,b:number)=>`Source: ${s}. Months with an image: ${a} of ${b}. Months without an image are not filled in.`,
   ask:(a:string,b:string)=>`Between ${a} and ${b} there was a crop. What did you plant?`,suggested:'Suggested by the satellite and the calendar',dontRemember:"I don't remember",
   windowNote:(a:string,b:string)=>`To compare we use your last 24 complete months: ${a} to ${b}.`,noCampaigns:'We did not see clear seasons in those 24 months.',
-  useTemplate:'Use the typical rotation of the zone (maize after maize)',historyError:'We could not read the satellite history.',retry:'Retry',
-  manualTitle:'Your current rotation',confirmed:(n:number)=>`${n} season(s) confirmed.`,next:'Next →',back:'← Back',
+  useTemplate:'Try a sample rotation (demo only)',historyError:'We could not read the satellite history.',retry:'Retry',
+  manualLead:'Add the crops and months you actually planted. Crops are not automatically identified from space.',manualCrop:'Crop',manualMonth:'Sowing month',manualAdd:'Add planting',manualRemove:'Remove',manualLimit:'Maximum 10 plantings over 24 months.',manualDuplicate:'There is already a planting in that month. Choose another.',backToHistory:'Return to satellite history',partial:'Both alternatives could not be calculated under these constraints; sample templates were not substituted as results.',demoOnly:'Demo only: this is a fictitious sample rotation, not real field data.',manualTitle:'Your current rotation',confirmed:(n:number)=>`${n} season(s) confirmed.`,next:'Next →',back:'← Back',
   s3Title:'What matters most to you?',s3Lead:'Move each bar. This changes how we search for the two ideas.',
   prio:{water:'Save water',soil:'Improve the soil',income:'Keep my income crop',pests:'Fewer pests'},levels:['Low','Normal','High'],
   turnQ:'How is your irrigation turn usually between May and November?',turn:{normal:'Normal',escaso:'Scarce',no_se:"I don't know"},compare:'Compare 3 rotations →',comparing:'Computing with NASA POWER and the crop catalogue…',
@@ -109,16 +110,16 @@ const T={
   icon:{water:'💧 Dry-season water',soil:'🌱 Covered soil',n:'🫘 Adds nitrogen',pests:'🐛 Breaks pests',market:'💰 Income crop',heat:'🔥 Heat in sensitive stage'},
   better:'better',worse:'worse',same:'same',reference:'reference',yes:'yes',no:'no',ok:'yes',repeat:'repeats family',alert:'check',
   print:'Print or save PDF',technician:'Take it to your technician',techHelp:'In the print window choose «Save as PDF» and share it with your technician.',
-  approx:'approximate data',adjusted:'adjusted to what the satellite saw',origin:{constrained_search:'Generated by constrained search',team_template:'Team template (backup)',declared_or_detected:'Detected by satellite and confirmed by you'} as Record<string,string>,
-  abstain:'We cannot compare yet.',climate:'Climate',footer:'TERRA360 · NASA Space Apps 2026 · Field Shift',otherViews:'Other views:',weatherView:'My zone weather',techView:'Technical tools',
+  approx:'approximate data',adjusted:'adjusted to what the satellite saw',origin:{constrained_search:'Generated by constrained search',team_template:'Demo template',declared_or_detected:'Confirmed by farmer',farmer_declared:'Declared by farmer',satellite_confirmed:'Satellite-suggested and farmer-confirmed',team_demo:'Fictitious demo template'} as Record<string,string>,
+  abstain:'We cannot compare yet.',climate:'Climate',footer:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',otherViews:'Other views:',weatherView:'My zone weather',techView:'Technical tools',
   year:'Year',sowIn:'sown',months:'months',
  },
 }
 
 function initialLang():Lang{
- try{const v=localStorage.getItem('terra360-lang');if(v==='es'||v==='en')return v}catch{/* storage unavailable */}
  const q=new URLSearchParams(window.location.search).get('lang')
  if(q==='en'||q==='es')return q
+ try{const v=localStorage.getItem('terra360-lang');if(v==='es'||v==='en')return v}catch{/* storage unavailable */}
  return navigator.language?.toLowerCase().startsWith('es')?'es':'en'
 }
 const cropName=(id:string,lang:Lang)=>CROPS[id]?.[lang]||id
@@ -262,6 +263,10 @@ export default function RotationApp(){
  const [historyError,setHistoryError]=useState('')
  const [answers,setAnswers]=useState<Record<string,string>>({})
  const [templateCurrent,setTemplateCurrent]=useState<Planting[]|null>(null)
+ const [manualCurrent,setManualCurrent]=useState<Planting[]|null>(null)
+ const [manualCrop,setManualCrop]=useState('maiz_amarillo_duro')
+ const [manualMonth,setManualMonth]=useState(0)
+ const [manualError,setManualError]=useState('')
  const [priorities,setPriorities]=useState({water:1,soil:1,income:1,pests:1})
  const [turn,setTurn]=useState<'normal'|'escaso'|'no_se'>('normal')
  const [result,setResult]=useState<CompareResult|null>(null)
@@ -278,7 +283,7 @@ export default function RotationApp(){
  const examples=[...TEAM_FIELDS,...TEST_FIELDS].filter(f=>f.zone===zone)
 
  function chooseExample(f:ExampleField){setDrawing(false);setVertices([]);setField({polygon:f.polygon,label:lang==='es'?f.label_es:f.label_en,note:lang==='es'?f.note_es:f.note_en});resetDownstream()}
- function resetDownstream(){epoch.current++;setHistory(null);setHistoryError('');setAnswers({});setTemplateCurrent(null);setResult(null)}
+ function resetDownstream(){epoch.current++;setHistory(null);setHistoryError('');setAnswers({});setTemplateCurrent(null);setManualCurrent(null);setManualError('');setResult(null)}
  function finishDrawing(){
   const v=validatePolygon(vertices)
   if(!v.valid){setDrawError(t.drawError+' '+(t.drawReasons[v.reason]||''));return}
@@ -289,6 +294,8 @@ export default function RotationApp(){
  function useGeo(text:string){
   const p=parseGeoJSONPolygon(text)
   if(!p||!validatePolygon(toLatLngs(p)).valid){setDrawError(t.geojsonError);return}
+  const ha=approximatePolygonHectares(toLatLngs(p))
+  if(ha<0.1||ha>500||!Number.isFinite(ha)){setDrawError(t.parcelSize);return}
   setField({polygon:p,label:'GeoJSON'});setDrawError('');resetDownstream()
  }
 
@@ -309,9 +316,8 @@ export default function RotationApp(){
    const h=await r.json() as History
    if(my!==epoch.current)return
    setHistory(h)
-   const defaults:Record<string,string>={}
-   h.detection.campaigns.forEach(c=>{if(c.candidates[0])defaults[c.start]=c.candidates[0].crop_id})
-   setAnswers(defaults)
+   // Candidate crops are suggestions, not farmer confirmations.
+   setAnswers({})
   }catch(e){if(my===epoch.current)setHistoryError(readableApiError(e,lang==='en'))}
   finally{if(my===epoch.current)setHistoryLoading(false)}
  }
@@ -333,14 +339,24 @@ export default function RotationApp(){
   }
   return out
  },[windowCampaigns,answers,windowStart])
- const current=templateCurrent||currentFromHistory
+ const current=manualCurrent??templateCurrent??currentFromHistory
+ function addManualPlanting(){
+  const baseline=manualCurrent??(templateCurrent?[]:currentFromHistory)
+  const next=addPlantingToRotation(baseline,manualCrop,manualMonth)
+  if(next.status!=='added'){
+   setManualError(next.status==='duplicate'?t.manualDuplicate:t.manualLimit);return
+  }
+  setManualCurrent(next.current)
+  setTemplateCurrent(null);setResult(null);setManualError('')
+ }
 
  async function runCompare(){
   const my=++epoch.current
   setComparing(true);setCompareError('');setResult(null)
   try{
-   const summary=history?{sensor:history.sensor,start:history.period.start,end:history.period.end,months_with_data:history.months_with_data}:null
-   const r=await fetch(API+'/api/rotation/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zone,current,priorities,water_turn:turn,history:summary})})
+   const summary=history&&!manualCurrent&&!templateCurrent?{sensor:history.sensor,start:history.period.start,end:history.period.end,months_with_data:history.months_with_data}:null
+   const current_source=templateCurrent?'team_demo':manualCurrent?'farmer_declared':'satellite_confirmed'
+   const r=await fetch(API+'/api/rotation/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zone,current,priorities,water_turn:turn,history:summary,current_source,use_team_templates_as_fallback:false})})
    if(!r.ok){let d='';try{d=(await r.json()).detail}catch{/* */};throw Error(typeof d==='string'&&d?d:await httpErrorMessage(r,lang==='en'))}
    const v=await r.json() as CompareResult
    if(my!==epoch.current)return
@@ -355,7 +371,7 @@ export default function RotationApp(){
 
  return <div className="rotation-app">
   <header className="r-header"><div className="r-header-in">
-   <div className="r-brand"><span className="r-logo" aria-hidden="true">✳</span><span>TERRA<b>360</b><small>{t.brand}</small></span></div>
+   <div className="r-brand"><span className="r-logo" aria-hidden="true">✳</span><span>BIOTEX<small>{t.brand}</small></span></div>
    <span className="r-pilot">{t.pilot}</span>
    <div className="r-lang" role="group" aria-label="Language / Idioma">
     <button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button>
@@ -409,21 +425,32 @@ export default function RotationApp(){
      <div className="r-campaigns">{windowCampaigns.map(c=><div key={c.start} className="r-campaign">
       <p><b>{t.ask(monthLabel(c.start,lang),monthLabel(c.end,lang))}</b></p>
       {c.candidates[0]&&<p className="r-small">{t.suggested}: {cropName(c.candidates[0].crop_id,lang)}</p>}
-      <div className="r-chips">{CROP_IDS.map(id=><button key={id} type="button" className={'r-chip'+(answers[c.start]===id?' on':'')} aria-pressed={answers[c.start]===id} onClick={()=>{setTemplateCurrent(null);setAnswers(a=>({...a,[c.start]:id}))}}>{CROPS[id].icon} {cropName(id,lang)}</button>)}
-       <button type="button" className={'r-chip muted'+(answers[c.start]==='unknown'?' on':'')} onClick={()=>setAnswers(a=>({...a,[c.start]:'unknown'}))}>{t.dontRemember}</button></div>
+      <div className="r-chips">{CROP_IDS.map(id=><button key={id} type="button" className={'r-chip'+(answers[c.start]===id?' on':'')} aria-pressed={answers[c.start]===id} onClick={()=>{setTemplateCurrent(null);setManualCurrent(null);setResult(null);setAnswers(a=>({...a,[c.start]:id}))}}>{CROPS[id].icon} {cropName(id,lang)}</button>)}
+       <button type="button" className={'r-chip muted'+(answers[c.start]==='unknown'?' on':'')} onClick={()=>{setTemplateCurrent(null);setManualCurrent(null);setResult(null);setAnswers(a=>({...a,[c.start]:'unknown'}))}}>{t.dontRemember}</button></div>
      </div>)}</div>
     </>}
-    {(history||historyError)&&<button type="button" className="r-btn r-btn-outline" onClick={async()=>{try{const r=await fetch(API+'/api/rotation/templates');const v=await r.json();setTemplateCurrent(v.templates.current)}catch(e){setHistoryError(readableApiError(e,lang==='en'))}}}>{t.useTemplate}</button>}
-    {current.length>0&&<div className="r-current"><h3>{t.manualTitle}</h3><p className="r-small">{templateCurrent?t.useTemplate:t.confirmed(current.length)}</p>
-     <ul className="r-plantings">{current.map((p,k)=><li key={k}><span className="r-dot" style={{background:CROPS[p.crop_id]?.color}}/>{CROPS[p.crop_id]?.icon} {cropName(p.crop_id,lang)} · {t.sowIn} {fmtWin(windowStart+p.start_index)}</li>)}</ul></div>}
+    {(history||historyError)&&<button type="button" className="r-btn r-btn-outline" onClick={async()=>{try{const r=await fetch(API+'/api/rotation/templates');const v=await r.json();setTemplateCurrent(v.templates.current);setManualCurrent(null);setResult(null)}catch(e){setHistoryError(readableApiError(e,lang==='en'))}}}>{t.useTemplate}</button>}
+    <div className="r-manual">
+     <h3>{t.manualTitle}</h3><p className="r-small">{t.manualLead}</p>
+     <div className="r-manual-controls">
+      <label>{t.manualCrop}<select value={manualCrop} onChange={e=>setManualCrop(e.target.value)}>{CROP_IDS.map(id=><option key={id} value={id}>{cropName(id,lang)}</option>)}</select></label>
+      <label>{t.manualMonth}<select value={manualMonth} onChange={e=>setManualMonth(Number(e.target.value))}>{Array.from({length:24},(_,i)=><option key={i} value={i}>{fmtWin(windowStart+i)}</option>)}</select></label>
+      <button type="button" className="r-btn" disabled={current.length>=10} onClick={addManualPlanting}>{t.manualAdd}</button>
+     </div>
+     {manualError&&<p className="r-error" role="alert">{manualError}</p>}
+     {manualCurrent&&<button type="button" className="r-btn r-btn-outline" onClick={()=>{setManualCurrent(null);setResult(null);setManualError('')}}>{t.backToHistory}</button>}
+    </div>
+    {templateCurrent&&<p className="r-note" role="status">{t.demoOnly}</p>}
+    {current.length>0&&<div className="r-current"><h3>{t.manualTitle}</h3><p className="r-small">{templateCurrent?t.demoOnly:t.confirmed(current.length)}</p>
+     <ul className="r-plantings">{current.map((p,k)=><li key={k}><span className="r-dot" style={{background:CROPS[p.crop_id]?.color}}/>{CROPS[p.crop_id]?.icon} {cropName(p.crop_id,lang)} · {t.sowIn} {fmtWin(windowStart+p.start_index)}{manualCurrent&&<button type="button" className="r-manual-remove" onClick={()=>{setManualCurrent(a=>removePlantingFromRotation(a||[],k));setResult(null)}}>{t.manualRemove}</button>}</li>)}</ul></div>}
     <div className="r-nav"><button type="button" className="r-btn r-btn-outline" onClick={()=>go(1)}>{t.back}</button><button type="button" className="r-btn" disabled={current.length===0} onClick={()=>go(3)}>{t.next}</button></div>
    </section>}
 
    {step===3&&<section className="r-panel">
     <h1>{t.s3Title}</h1><p>{t.s3Lead}</p>
     <div className="r-sliders">{(Object.keys(priorities) as (keyof typeof priorities)[]).map(k=><label key={k} className="r-slider"><span>{t.prio[k]}</span>
-     <input type="range" min={0} max={2} step={1} value={priorities[k]} onChange={e=>setPriorities(p=>({...p,[k]:Number(e.target.value)}))} aria-valuetext={t.levels[priorities[k]]}/><b>{t.levels[priorities[k]]}</b></label>)}</div>
-    <fieldset className="r-turn"><legend>{t.turnQ}</legend>{(['normal','escaso','no_se'] as const).map(v=><button key={v} type="button" aria-pressed={turn===v} className={'r-chip'+(turn===v?' on':'')} onClick={()=>setTurn(v)}>{t.turn[v]}</button>)}</fieldset>
+     <input type="range" min={0} max={2} step={1} value={priorities[k]} onChange={e=>{setPriorities(p=>({...p,[k]:Number(e.target.value)}));setResult(null)}} aria-valuetext={t.levels[priorities[k]]}/><b>{t.levels[priorities[k]]}</b></label>)}</div>
+    <fieldset className="r-turn"><legend>{t.turnQ}</legend>{(['normal','escaso','no_se'] as const).map(v=><button key={v} type="button" aria-pressed={turn===v} className={'r-chip'+(turn===v?' on':'')} onClick={()=>{setTurn(v);setResult(null)}}>{t.turn[v]}</button>)}</fieldset>
     {compareError&&<p className="r-error" role="alert">{compareError}</p>}
     <div className="r-nav"><button type="button" className="r-btn r-btn-outline" onClick={()=>go(2)}>{t.back}</button><button type="button" className="r-btn" disabled={comparing||current.length===0} onClick={()=>void runCompare()}>{comparing?t.comparing:t.compare}</button></div>
    </section>}
@@ -433,6 +460,7 @@ export default function RotationApp(){
     <p className="r-disclaimer">{lang==='es'?(result.disclaimer_es||t.disclaimer):(result.disclaimer_en||t.disclaimer)}</p>
     {result.strategies.length===0?<p className="r-note">{t.abstain} {lang==='es'?result.message_es:result.message_en}</p>:<>
      <div className="r-print-meta">{field?.label} · {ZONES[zone].name} · {new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US')}</div>
+     {result.status==='partial'&&<p className="r-note" role="status">{t.partial}</p>}
      <ContextStrips ctx={ctx} lang={lang}/>
      <div className="r-strategies">{result.strategies.map(s=><StrategyCard key={s.id} s={s} ctx={ctx} lang={lang} maxWater={maxWater} incomeCrop={result.income_crop} open={!!open[s.id]} onToggle={()=>setOpen(o=>({...o,[s.id]:!o[s.id]}))}/>)}</div>
      {result.climate&&<div className="r-climate"><h3>{t.climate}</h3><ul>

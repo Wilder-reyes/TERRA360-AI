@@ -1,15 +1,17 @@
 {
-  "application": "TERRA360 AI",
-  "release": "v0.19-nasa-map-huaral",
-  "pilot": "Huando, Huaral, Lima, Perú",
+  "application": "BIOTEX · NSPACE BIOTEX",
+  "release": "v0.22-biotex-field-shift",
+  "pilot": "Huaral y Barranca, Lima, Perú",
   "features": [
-    "Mapa responsive con NASA GIBS y datos NASA POWER visibles",
-    "Cultivos para mi zona",
-    "Dashboard climático",
-    "Informe imprimible en PDF"
+    "Terreno real o de prueba declarado",
+    "Historial NDVI NASA HLS con confirmación humana o entrada manual",
+    "Comparación S0/S1/S2 con prioridades del agricultor",
+    "Indicadores relativos de agua, cobertura del suelo y riesgos",
+    "Informe imprimible y fuentes verificables"
   ],
   "computer_vision_enabled": false,
   "environment": "production",
   "source_branch": "main",
-  "primary_url": "https://terra360-aix.netlify.app/"
+  "primary_url": "https://terra360-ai.netlify.app/",
+  "notes": "Las parcelas de prueba no son parcelas verificadas de agricultores. IMERG se abstiene sin precálculo. Sin plantaciones confirmadas no se generan estrategias."
 }

@@ -205,12 +205,56 @@ class ApiTests(unittest.TestCase):
             return clim
         with patch("app.api.rotation_routes.monthly_climate", fake):
             r = self.client.post("/api/rotation/compare", json={"zone": "barranca", "current": E.TEMPLATES["current"],
-                                                                "water_turn": "escaso"})
+                                                                "water_turn": "escaso",
+                                                                "current_source": "team_demo",
+                                                                "use_team_templates_as_fallback": True})
         self.assertEqual(r.status_code, 200, r.text)
         body = r.json()
         self.assertEqual(len(body["strategies"]), 3)
         self.assertEqual(len(body["window"]["context"]), 24)
         self.assertTrue(body["method"]["relative_only"])
+
+    def test_real_farm_mode_never_falls_back_to_team_templates(self):
+        """An impossible constrained search abstains instead of inventing rotations."""
+        clim = coastal_climate()
+
+        async def fake(lat, lon, client=None, coastal=True):
+            return clim
+
+        with patch("app.api.rotation_routes.monthly_climate", fake), patch.object(E, "search", return_value=None):
+            r = self.client.post("/api/rotation/compare", json={
+                "zone": "huaral", "current": E.TEMPLATES["current"],
+                "current_source": "farmer_declared",
+            })
+        self.assertEqual(r.status_code, 200, r.text)
+        data = r.json()
+        self.assertEqual(data["status"], "partial")
+        self.assertEqual(len(data["strategies"]), 1)
+        self.assertEqual(data["strategies"][0]["origin"], "farmer_declared")
+
+    def test_demo_templates_are_explicitly_tagged(self):
+        clim = coastal_climate()
+
+        async def fake(lat, lon, client=None, coastal=True):
+            return clim
+
+        with patch("app.api.rotation_routes.monthly_climate", fake), patch.object(E, "search", return_value=None):
+            r = self.client.post("/api/rotation/compare", json={
+                "zone": "huaral", "current": E.TEMPLATES["current"],
+                "current_source": "team_demo",
+                "use_team_templates_as_fallback": True,
+            })
+        self.assertEqual(r.status_code, 200, r.text)
+        data = r.json()
+        self.assertEqual([s["origin"] for s in data["strategies"]],
+                         ["team_demo", "team_template", "team_template"])
+
+    def test_history_rejects_malformed_coordinates_as_422(self):
+        for value in ({"type": "Polygon", "coordinates": [[["bad", -11], [-77, -11], [-77, -12]]]},
+                      {"type": "Polygon", "coordinates": [[["NaN", -11], [-77, -11], [-77, -12]]]}):
+            with self.subTest(value=value):
+                r = self.client.post("/api/rotation/history", json={"polygon": value})
+                self.assertEqual(r.status_code, 422, r.text)
 
     def test_history_rejects_non_polygon_geojson(self):
         r = self.client.post("/api/rotation/history", json={"polygon": {"type": "Point", "coordinates": [0, 0]}})
