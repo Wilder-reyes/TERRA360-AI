@@ -56,3 +56,9 @@
 .satellite-scenes li{padding:9px 0;border-bottom:1px solid #d9e2dc;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .satellite-error{color:#b42318;font-weight:600}
 @media(max-width:620px){.satellite-panel-heading{flex-direction:column}.satellite-load{width:100%}.satellite-panel{padding:14px}}
+
+/* Huando pilot: hide optional coordinate entry until a farmer requests it. */
+.terra-farmer-advanced{margin:10px 0 6px;border:1px solid #d6e5d7;border-radius:12px;padding:8px 12px;background:#f7faf7}
+.terra-farmer-advanced summary{cursor:pointer;color:#265b42;font-weight:800;font-size:.87rem;min-height:34px;padding:5px 0}
+.terra-farmer-advanced .coordinate-row{margin-top:10px}
+.terra-farmer-advanced .coordinates-actions{margin:10px 0}
