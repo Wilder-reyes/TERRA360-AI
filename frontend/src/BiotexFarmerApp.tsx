@@ -171,7 +171,7 @@ function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Poi
   dblclick(e){if(enabled&&points.length>=3){e.originalEvent.preventDefault();onFinish()}}
  })
  if(!enabled)return null
- return <>{points.length>1&&<Polyline positions={points.map(p=>[p.lat,p.lng])} pathOptions={{color:'#F7C85C',weight:4}}/>}
+ return <>{points.length>1&&<Polyline positions={points.map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F7C85C',weight:4}}/>}
  {points.map((p,i)=><CircleMarker key={i} center={[p.lat,p.lng]} radius={i===0?9:6} pathOptions={{color:'#134638',weight:2,fillColor:i===0?'#F7C85C':'#fff',fillOpacity:1}} eventHandlers={i===0?{click:()=>{if(points.length>=3)onFinish()}}:undefined}/>)}</>
 }
 const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,2)
@@ -323,7 +323,9 @@ export default function BiotexFarmerApp(){
   <section><h3>{t.risks}</h3><ul>{s.sections.risks[lang].slice(0,3).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
   {technical(s)}
  </article>}
- function printable(){if(!result)return null;return <div className="b-print-report" aria-hidden={step!==3}>
+ function printable(){if(!result)return null;
+  const maxWater=Math.max(1,...result.strategies.map(x=>x.indicators.water_low_river_mm));
+  return <div className="b-print-report" aria-hidden={step!==3}>
   <div className="b-print-header"><div><strong className="b-print-logo">BIOTEX</strong><p>{t.printFooter}</p></div><div className="b-print-date">{simpleDate(lang)}</div></div>
   <h1>{t.planTitle}</h1><div className="b-print-meta"><span><b>{t.where}:</b> {place}</span><span><b>{t.areaPrint}:</b> {area.toFixed(2)} ha</span>
   <span><b>{t.when}:</b> {simpleDate(lang)}</span></div>
@@ -336,6 +338,11 @@ export default function BiotexFarmerApp(){
   </>:<h2>{t.noRecommend}</h2>}
   <h3>{t.compare}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Opción':'Option'}</th><th>{t.keyWater}</th><th>{t.keySoil}</th></tr></thead>
   <tbody>{result.strategies.map(s=><tr key={s.id}><td>{strategyName(s)}</td><td>{s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</td><td>{s.indicators.bare_months} / 24</td></tr>)}</tbody></table>
+  <section className="b-print-chart"><h3>{lang==='es'?'Agua que podrían necesitar los cultivos en meses secos (estimación)':'Estimated crop-water demand in dry months'}</h3>
+  {result.strategies.map(s=><div key={s.id} className="b-print-bar-row"><span>{strategyName(s)}</span><div className="b-print-bar-track"><div className="b-print-bar-fill" style={{width:(100*s.indicators.water_low_river_mm/maxWater).toFixed(1)+'%'}}/></div><strong>{Math.round(s.indicators.water_low_river_mm)} mm</strong></div>)}
+  <h3>{lang==='es'?'Tiempo sin cultivo durante 24 meses':'Months without crop during 24 months'}</h3>
+  {result.strategies.map(s=><div key={s.id} className="b-print-bar-row"><span>{strategyName(s)}</span><div className="b-print-bar-track"><div className="b-print-bar-fill" style={{width:(100*s.indicators.bare_months/24).toFixed(1)+'%'}}/></div><strong>{s.indicators.bare_months}/24</strong></div>)}
+  </section>
   <div className="b-print-small"><h3>{t.sources}</h3>
   <p>NASA POWER (2001–2025); NASA HLS v2.0 {source==='satellite_confirmed'?(lang==='es'?'(cultivo confirmado por el agricultor)':'(farmer-confirmed crop)'):''}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
   <p>{lang==='es'?'Solo se utiliza un calendario agrícola aproximado de Lima; no se conoce el análisis de suelo, turno real de riego o precio futuro. Los cálculos son comparaciones relativas, no recomendaciones garantizadas.':'Uses an approximate Lima sowing calendar. Soil test, actual irrigation allocation and future prices are not known. Results are relative comparisons, not guarantees.'}</p>
@@ -363,7 +370,7 @@ export default function BiotexFarmerApp(){
        <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
        <FlyTo point={centre} polygon={mapPolygon}/>
        <DrawLayer enabled={drawing} points={points} onPoint={p=>{setPoints(x=>[...x,p]);setFieldError('')}} onFinish={finish}/>
-       {field&&<Polygon positions={(mapPolygon||[]).map(p=>[p.lat,p.lng])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
+       {field&&<Polygon positions={(mapPolygon||[]).map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
       </MapContainer>
       <div className="b-map-actions">{drawing?<><button type="button" onClick={()=>setPoints(v=>v.slice(0,-1))} disabled={!points.length} className="b-btn b-btn-light"><Icon name="undo" size={16}/>{t.undo}</button>
        <button type="button" className="b-btn b-btn-solid" onClick={finish} disabled={points.length<3}>{t.finish}</button>
