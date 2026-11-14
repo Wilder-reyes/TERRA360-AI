@@ -201,7 +201,8 @@ def _archive_usage(fs, config: StorageConfig) -> tuple[int, int]:
     return count, total
 
 
-def upload_verified(product: str, target: date, path: Path, *, source_id: str,\n                    source_metadata: dict | None = None):
+def upload_verified(product: str, target: date, path: Path, *, source_id: str,
+                    source_metadata: dict | None = None):
     """Offline only; upload max one original NASA granule per product/date."""
     verify_name(product, target, path.name)
     size = path.stat().st_size
