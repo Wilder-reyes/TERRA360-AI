@@ -11,8 +11,8 @@ export function readableApiError(error: unknown, en: boolean): string {
  const msg=e?.message||''
  const network=(e instanceof TypeError || /failed to fetch|networkerror|network request failed|load failed|fetch failed|connection refused/i.test(msg))
  if(network)return en
-  ? 'Could not connect to TERRA360. Check your connection and try again; the server may be starting.'
-  : 'No se pudo conectar con TERRA360. Comprueba tu conexión e inténtalo de nuevo; el servidor podría estar iniciándose.'
+  ? 'Could not connect to BIOTEX. Check your connection and try again; the server may be starting.'
+  : 'No se pudo conectar con BIOTEX. Comprueba tu conexión e inténtalo de nuevo; el servidor podría estar iniciándose.'
  if(e?.name==='TimeoutError')return en
   ? 'The request took too long. Try again in a moment.'
   : 'La consulta tardó demasiado. Inténtalo nuevamente en un momento.'

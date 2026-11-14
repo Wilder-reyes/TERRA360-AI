@@ -36,7 +36,7 @@ test.beforeEach(async({page})=>{
 })
 
 test('farmer sees a simple Huando map, picks a location and gets a NASA-based dashboard',async({page})=>{
- await page.goto('/')
+ await page.goto('/?vista=clima')
  await expect(page.getByRole('heading',{name:'Tu terreno, más claro'})).toBeVisible()
  await expect(page.getByText('Piloto · Huando, Huaral, Perú')).toBeVisible()
  await expect(page.getByRole('heading',{name:'Ubica tu terreno en el mapa'})).toBeVisible()
@@ -57,7 +57,7 @@ test('farmer sees a simple Huando map, picks a location and gets a NASA-based da
 })
 
 test('one searched crop is enough, no fake suitability ranking or opaque scenarios',async({page})=>{
- await page.goto('/')
+ await page.goto('/?vista=clima')
  await page.getByRole('button',{name:'Consultar Huando'}).click()
  await page.getByRole('button',{name:'Cultivos para mi zona'}).click()
  await expect(page.getByRole('heading',{name:'Cultivos para mi zona'})).toBeVisible()
@@ -79,7 +79,7 @@ test('one searched crop is enough, no fake suitability ranking or opaque scenari
 
 test('report invokes native print dialog, from which PDF can be saved',async({page})=>{
  await page.addInitScript(()=>{(window as Window & {__printed?:number}).__printed=0;window.print=()=>{(window as Window & {__printed?:number}).__printed!++}})
- await page.goto('/')
+ await page.goto('/?vista=clima')
  await page.getByRole('button',{name:'Consultar Huando'}).click()
  await page.getByRole('button',{name:'Mi tablero',exact:true}).click()
  await page.getByRole('button',{name:'Imprimir o guardar en PDF'}).click()
@@ -89,7 +89,7 @@ test('report invokes native print dialog, from which PDF can be saved',async({pa
 
 test('mobile crop search works without photo or unvalidated artificial vision',async({page})=>{
  await page.setViewportSize({width:390,height:844})
- await page.goto('/')
+ await page.goto('/?vista=clima')
  await page.getByRole('button',{name:'Consultar Huando'}).click()
  await page.getByRole('button',{name:'Cultivos para mi zona'}).click()
  await expect(page.locator('#terra-photo-input')).toHaveCount(0)
@@ -107,7 +107,7 @@ test('missing NASA data never turns unknown rainfall into zero or invented plant
   ...guidance,status:'insufficient_data',climate:{status:'insufficient_data',complete_years:0,temperature_mean_c:null,annual_rain_mm:null,years:[]},
   candidates:candidates.map(item=>({...item,status:'insufficient_evidence',reason:'Aún faltan datos climáticos completos.'}))
  })}))
- await page.goto('/')
+ await page.goto('/?vista=clima')
  await page.getByRole('button',{name:'Consultar Huando'}).click()
  await page.getByRole('button',{name:'Mi tablero',exact:true}).click()
  await expect(page.getByText('—').first()).toBeVisible()
@@ -117,21 +117,21 @@ test('missing NASA data never turns unknown rainfall into zero or invented plant
  await expect(page.getByText(/No encontramos suficientes años completos/)).toBeVisible()
 })
 
-test('v0.18.1 release manifest and title identify the farmer Netlify build',async({page})=>{
- await page.goto('/')
- await expect(page).toHaveTitle('TERRA360 | Mi terreno · Cultivos para mi zona · Tablero')
- await expect(page.locator('meta[name="terra360-release"]')).toHaveAttribute('content','v0.19-nasa-map-huaral')
+test('BIOTEX release manifest identifies the updated farmer application',async({page})=>{
+ await page.goto('/?vista=clima')
+ await expect(page).toHaveTitle('BIOTEX | Tu chacra y tu plan de siembra')
+ await expect(page.locator('meta[name="biotex-release"]')).toHaveAttribute('content','v0.23-farmer-first')
  const release=await page.request.get('/release.json')
  expect(release.ok()).toBeTruthy()
  const payload=await release.json()
- expect(payload.release).toBe('v0.19-nasa-map-huaral')
+ expect(payload.release).toBe('v0.23-farmer-first-ux')
  expect(payload.computer_vision_enabled).toBe(false)
  await page.getByRole('button',{name:'Cultivos para mi zona'}).click()
  await expect(page.locator('#terra-photo-input')).toHaveCount(0)
 })
 
 test('NASA GIBS spatial layer and real NASA POWER readings are visible directly on the map',async({page})=>{
- await page.goto('/')
+ await page.goto('/?vista=clima')
  await expect(page.locator('.farmer-map .leaflet-pane').first()).toHaveCSS('position','absolute')
  await expect(page.getByRole('button',{name:'Lluvia',exact:true})).toHaveAttribute('aria-pressed','true')
  await expect(page.getByRole('button',{name:'Vegetación',exact:true})).toHaveCount(1)
@@ -150,7 +150,7 @@ test('NASA GIBS spatial layer and real NASA POWER readings are visible directly 
 })
 test('mobile map does not crowd the satellite view with confusing floating controls',async({page})=>{
  await page.setViewportSize({width:375,height:812})
- await page.goto('/')
+ await page.goto('/?vista=clima')
  await expect(page.locator('.farmer-map')).toBeVisible()
  await expect(page.locator('.leaflet-control-zoom')).toHaveCount(0)
  await expect(page.locator('.farmer-map-toolbar')).toHaveCount(0)

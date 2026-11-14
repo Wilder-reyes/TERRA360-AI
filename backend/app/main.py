@@ -13,9 +13,9 @@ from app.api.gaez_routes import router as gaez_router
 from app.api.rotation_routes import router as rotation_router
 
 app = FastAPI(
-    title="TERRA360 API",
+    title="BIOTEX API",
     description="Earth observation and agricultural decision support for user-selected coordinates worldwide.",
-    version="0.10.0",
+    version="0.23.0",
 )
 app.add_middleware(
     CORSMiddleware,
