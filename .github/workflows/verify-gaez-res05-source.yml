@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/verify_gaez_res05_official.py'
       - 'scripts/inspect_fao_gaez_raster.py'
+      - 'scripts/audit_fao_gaez_license.py'
       - 'tests/test_gaez_official_inventory.py'
       - '.github/workflows/verify-gaez-res05-source.yml'
 permissions:
@@ -28,9 +29,14 @@ jobs:
         run: |
           python scripts/inspect_fao_gaez_raster.py
           echo 'No raw suitability values are used in crop decisions.'
-      - name: Archive scientific raster metadata JSON, NOT the GeoTIFF
+      - name: Audit source FAO CKAN dataset license separately from asset usage
+        continue-on-error: true
+        run: python scripts/audit_fao_gaez_license.py
+      - name: Archive scientific metadata and FAO license audit, NOT the GeoTIFF
         uses: actions/upload-artifact@v4
         with:
           name: gaez-res05-scientific-metadata
-          path: fao-v5-res05-sample-inspection.json
+          path: |
+            fao-v5-res05-sample-inspection.json
+            fao-res05-dataset-license.json
           retention-days: 14
