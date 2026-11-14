@@ -72,6 +72,7 @@ def main() -> None:
         ("Production NASA GPM IMERG polygon data integrity", lambda: verify_gpm_polygon(BACKEND)),
         ("Production SMAP regional data integrity", lambda: verify_smap(BACKEND)),
         ("Production FAO GAEZ selected layer provenance", lambda: verify_gaez(BACKEND)),
+        ("Production original FAO GAEZ GeoTIFF raw cell", lambda: verify_gaez_raw(BACKEND)),
         ("Render ARIE decision", lambda: verify_decision(BACKEND)),
         ("Render real NASA POWER", lambda: verify_nasa(BACKEND)),
         ("anonymous Netlify home page", verify_html),
@@ -268,6 +269,34 @@ def verify_gaez(host: str = BACKEND):
     assert data.get("used_in_crop_decision") is False
     print("FAO GAEZ v5 selected:",data["variable_code"],
           data["crop_code"],data["status"])
+
+
+
+def verify_gaez_raw(host: str = BACKEND):
+    """Fetch true pinned FAO 5-arcminute raster; no decoded suitability claims."""
+    route="/api/environment/gaez-v5/selected-layer/raw-cell"
+    spec=json_from("/openapi.json",host=host)
+    assert route in spec.get("paths",{}), "Official FAO raw-cell endpoint missing"
+    parcel={"type":"Polygon","coordinates":[[
+        [-71.95720,-13.32270],[-71.95490,-13.32270],
+        [-71.95490,-13.32050],[-71.95720,-13.32050],
+        [-71.95720,-13.32270],
+    ]]}
+    sample=json_from(route,{"polygon":parcel},host=host)
+    assert sample["status"]=="raw_code_available",sample.get("status")
+    assert sample["original_cell_class_code"]==8, sample
+    assert sample["raster_sha256"]=="196c8d806e2fa2e6da4bc09fe30de2c6e40607ba2436d5b484d5957bb7c25156"
+    assert abs(sample["native_grid_resolution_degrees"]-(1/12))<1e-9
+    assert sample.get("suitability_index") is None
+    assert sample.get("region_suitability_evaluated") is False
+    assert sample.get("can_recommend_crop") is False
+    assert sample.get("used_in_crop_decision") is False
+    assert sample.get("interpretation_status")=="uninterpreted_original_class_code"
+    print("FAO original verified regional cell:",{
+        "raw_class_code_uninterpreted":sample["original_cell_class_code"],
+        "raster_sha256":sample["raster_sha256"][:12],
+        "resolution_deg":sample["native_grid_resolution_degrees"],
+    })
 
 
 def verify_decision(host: str = SITE):
