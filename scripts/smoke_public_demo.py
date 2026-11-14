@@ -68,6 +68,7 @@ def main() -> None:
         ("Render full FAO catalog search", lambda: verify_search(BACKEND)),
         ("Render SRTM terrain route contract", lambda: verify_terrain_contract(BACKEND)),
         ("Production Sentinel-2 real parcel NDVI", lambda: verify_ndvi(BACKEND)),
+        ("Production Sentinel-2 multi-date observations", lambda: verify_ndvi_series(BACKEND)),
         ("Render ARIE decision", lambda: verify_decision(BACKEND)),
         ("Render real NASA POWER", lambda: verify_nasa(BACKEND)),
         ("anonymous Netlify home page", verify_html),
@@ -137,6 +138,41 @@ def verify_ndvi(host: str = BACKEND):
           "pixels=",metrics["valid_pixels"],
           "mean_ndvi=",ndvi["mean"],
           "valid_percent=",metrics["valid_fraction_percent"])
+
+
+
+def verify_ndvi_series(host: str = BACKEND):
+    """Read actual multi-date COG windows from Render without relying on mock data."""
+    route = "/api/environment/sentinel-2/parcel-ndvi-series"
+    spec = json_from("/openapi.json", host=host)
+    assert route in spec.get("paths", {}), "Backend has not deployed Sentinel-2 multi-date route"
+    parcel = {"type":"Polygon","coordinates":[[
+        [-71.95720,-13.32270],[-71.95490,-13.32270],
+        [-71.95490,-13.32050],[-71.95720,-13.32050],
+        [-71.95720,-13.32270]
+    ]]}
+    result = json_from(route, {
+        "polygon": parcel, "days": 240,
+        "cloud_limit": 70, "max_observations": 3,
+    }, host=host)
+    if result.get("status") != "available":
+        raise AssertionError(f"Multi-date satellite observation inconclusive: status={result.get('status')}")
+    valid = [row for row in result.get("observations", [])
+             if row.get("status") == "available" and
+             (row.get("metrics") or {}).get("ndvi") is not None]
+    assert result.get("valid_observation_count") == len(valid)
+    assert len(valid) >= 2
+    assert len(set(row["date"] for row in valid)) == len(valid)
+    assert result.get("attempted_scenes", 1000) <= 8
+    assert all((row["metrics"]["valid_fraction_percent"] >= 60 and
+                row["metrics"]["valid_pixels"] >= 20 and
+                -1 <= row["metrics"]["ndvi"]["mean"] <= 1)
+               for row in valid)
+    assert result.get("can_infer_vegetation_trend") is False
+    assert result.get("used_in_crop_decision") is False
+    print("Sentinel-2 multi-date production:", [
+        {"date":v["date"],"ndvi":v["metrics"]["ndvi"]["mean"]} for v in valid
+    ])
 
 
 def verify_decision(host: str = SITE):
