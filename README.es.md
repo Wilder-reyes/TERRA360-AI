@@ -1,8 +1,14 @@
-# TERRA360 AI · NASA Space Apps Challenge 2026
+# BIOTEX · NSPACE BIOTEX · NASA Space Apps Challenge 2026 (repositorio TERRA360-AI)
 
 **Interfaz:** https://terra360-aix.netlify.app/  
 **API:** https://terra360-api.onrender.com/api/health  
 **Tipo:** prototipo de apoyo a decisiones agrícolas; **no** ofrece prescripciones de siembra validadas.
+
+## Versión vigente: BIOTEX v0.22 — rotaciones de cultivos
+
+La experiencia principal actual es la comparación de rotaciones de **Huaral y Barranca**, no el tablero de una sola especie descrito más abajo (conservado como documentación histórica). Se utiliza NASA HLS y POWER, catálogo agrícola y prioridades del agricultor para comparar la rotación actual S0 con dos opciones S1 (agua) y S2 (suelo).
+
+**Cambios importantes:** la selección de cultivo sugerido por satélite necesita confirmación explícita, se pueden añadir siembras manualmente cuando no hay datos suficientes, las parcelas ficticias y plantillas de demostración se identifican claramente y nunca se usan automáticamente para reemplazar una recomendación real. Si faltan datos o no existen alternativas factibles, la herramienta informa la limitación. El contexto GPM IMERG queda sin dato mientras falte su resumen precalculado. Las comparaciones no equivalen a asesoría agronómica validada. Para documentación técnica vigente consulta [README.md](README.md).
 
 ## Nueva dirección de producto (v0.17, en planificación)
 

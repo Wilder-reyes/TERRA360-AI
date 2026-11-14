@@ -1,16 +1,27 @@
-# TERRA360 · Rotation comparator for Peru's irrigated coast (NASA Space Apps 2026 · Field Shift)
+# BIOTEX · NSPACE BIOTEX — Field Shift crop-rotation decision support (repository: TERRA360-AI)
 
 **App:** https://terra360-ai.netlify.app/ (ES/EN selector in the header; `?lang=en` opens it in English)
 **API:** https://terra360-api.onrender.com/api/health · Spanish README: [README.es.md](README.es.md)
 
-TERRA360 helps family farmers in the irrigated coastal valleys of Lima, Peru (demo zones **Huaral** and **Barranca**) see how their crop rotation affects their **soil** and how exposed it is to **scarce dry-season irrigation water and heat**. It compares the farmer's current rotation with two alternatives:
+BIOTEX helps family farmers in the irrigated coastal valleys of Lima, Peru (demo zones **Huaral** and **Barranca**) see how their crop rotation affects their **soil** and how exposed it is to **scarce dry-season irrigation water and heat**. It compares the farmer's current rotation with two alternatives:
 
 1. **My field:** choose Huaral or Barranca, tap an example field, draw your own on the map or paste/upload a GeoJSON polygon.
-2. **My current rotation:** a monthly NDVI series (2021–today) from **NASA HLS** shows when the field was cropped and when it was bare. The farmer confirms or corrects which crop was grown in each detected season. This is labelled as a *satellite-estimated history*.
+2. **My current rotation:** a monthly NDVI series (2021–today) from **NASA HLS** shows when the field was cropped and when it was bare. The farmer **explicitly confirms** the crop in each detected season; candidates are never accepted automatically. Farmers can also enter their crop history manually if satellite data are missing. This is labelled as a *satellite-estimated history*.
 3. **What matters to you:** water, soil, income crop and pests (0–2), plus the irrigation turn from May to November.
 4. **Compare 3 rotations:** 24-month timelines for **S0 current**, **S1 "Water"** (less crop water when the river is low) and **S2 "Soil"** (soil always covered, legumes). Context bands show low-river months, the warmest months and reference water demand. Each strategy has a **"Why?"** card with five sections: why, evidence, benefits, gaps and risks. The comparison can be printed or saved as a PDF to take to a technician.
 
-All indicators are **relative to the current rotation**. They are not yield, profit or irrigation prescriptions. The app **abstains** when data is missing: no current rotation means no comparison, and months without a satellite image stay empty instead of being interpolated.
+All indicators are **relative to the current rotation**. They are not yield, profit or irrigation prescriptions. The app **abstains** when data is missing: no farmer-confirmed or farmer-declared current rotation means no comparison; if only one or two alternatives are feasible, the app returns a partial result, never an unlabeled demo template. Months without a satellite image stay empty instead of being interpolated.
+
+## v0.22 farmer workflow and scientific safeguards
+
+- **Actual team/product names:** NSPACE BIOTEX / BIOTEX. The GitHub repository and existing infrastructure continue to use `TERRA360-AI` identifiers to avoid breaking deployed URLs.
+- **Explicit confirmation:** a satellite-suggested crop is not automatically selected. The farmer must select a crop or say they do not remember.
+- **Manual history:** an optional form allows entering up to 10 plantings (crop + sowing month) over the 24-month comparison window. This is labeled as farmer-declared rather than satellite-detected.
+- **Demo provenance:** the sample maize rotation is labeled as fictitious, not a real farmer field. `current_source` reports `farmer_declared`, `satellite_confirmed` or `team_demo`.
+- **No synthetic results:** `use_team_templates_as_fallback` defaults to false. If the constrained optimizer cannot find S1 or S2, the UI reports a partial comparison rather than silently displaying a predefined plan.
+- **GeoJSON limits:** malformed/non-finite coordinates return HTTP 422; manual GeoJSON follows the same parcel area limits as drawn fields.
+- **NASA GPM IMERG basin climatology:** when `backend/app/data/imerg_basin_seed.json` is absent, the app displays an unavailable state rather than inventing precipitation. Basin precipitation is not river discharge or the farmer's irrigation entitlement.
+- **Validation status:** documented methods and automated tests are not field validation. Crop water is a relative Kc × ET0 estimate, not measured irrigation needs or yield.
 
 ## How it works
 
@@ -21,7 +32,7 @@ All indicators are **relative to the current rotation**. They are not yield, pro
 | Crop suggestion per season | Sowing month (about one month before green-up) plus cycle length, matched against the team catalogue. The farmer confirms or corrects it. | DRA Lima sowing calendar, FAO-56 cycle lengths |
 | Water demand | Σ Kc(day) × ET0(month) over a 730-day cycle. FAO-56 single-Kc curve. ET0 from **FAO-56 Penman-Monteith** using NASA POWER monthly climatology (2001–2025). The share falling in low-river months (May–Nov) is highlighted. | **NASA POWER** (T2M_MAX, T2M_MIN, RH2M, WS2M, ALLSKY_SFC_SW_DWN), FAO-56 Tables 11–12 |
 | Heat | A crop is flagged when most of its heat-sensitive window falls in the zone's three warmest POWER months (relative, no fixed threshold). | NASA POWER |
-| Alternatives S1/S2 | Exact dynamic programming over months. Sowing is allowed only in DRA Lima sowing months, crop cycles come from the catalogue, no crop follows itself, the farmer's income crop is kept, and weights come from the farmer's priorities. S1 may not leave the field bare longer than today. Perennial alfalfa is not proposed automatically. The team's S0/S1/S2 templates are test cases and a backup. | Team crop catalogue (13 crops) |
+| Alternatives S1/S2 | Exact dynamic programming over months. Sowing is allowed only in DRA Lima sowing months, crop cycles come from the catalogue, no crop follows itself, the farmer's income crop is kept, and weights come from the farmer's priorities. S1 may not leave the field bare longer than today. Perennial alfalfa is not proposed automatically. The team's S0/S1/S2 templates are **explicit demo/test cases only**. Real-field requests never silently fall back to them. | Team crop catalogue (13 crops) |
 
 **Scale honesty.** The NASA POWER grid cell (~0.5°) assigned to Huando sits at about 2,100 m in the Andes and shows almost no seasonal temperature cycle. In that case the API moves to the neighbouring coastal cell (224 m in Huaral, 83 m in Barranca) and says so in the response and in the UI. Coarse products such as SMAP and GAEZ stay in the technical view only.
 
@@ -56,7 +67,7 @@ Other views: `/?vista=clima` (previous farmer weather dashboard) and `/?vista=te
 | `GET /api/rotation/crops` | Team crop catalogue (13 crops) and coastal seasons |
 | `GET /api/rotation/climate?zone=huaral` | Monthly ET0, Tmax, solar radiation and warmest months from NASA POWER |
 | `POST /api/rotation/history` `{polygon, start_year}` | Monthly NDVI series and detected seasons. Returns `202 {"status":"processing"}` while a new field is computed; repeat the same POST. |
-| `POST /api/rotation/compare` | `{zone, current:[{crop_id, start_index}], priorities:{water,soil,income,pests}, water_turn, history}` → S0/S1/S2 with timelines, indicators, icons and 5 sections in ES/EN |
+| `POST /api/rotation/compare` | `{zone, current:[{crop_id,start_index}], priorities:{water,soil,income,pests}, water_turn, history, current_source, use_team_templates_as_fallback:false}` → real-field S0/S1/S2 (possibly partial), benefits, risks and uncertainties ES/EN |
 | `GET /api/rotation/upper-basin-rain?zone=huaral` | "Water to come": GPM IMERG monthly rain over the upper basin (climatology and recent seasons, % of normal). Precomputed with an Earthdata token; abstains if not available. |
 | `GET /api/rotation/templates` | Team S0/S1/S2 test rotations (`start_index` 0 = August of year 1) |
 

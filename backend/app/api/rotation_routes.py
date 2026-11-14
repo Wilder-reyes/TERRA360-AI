@@ -45,7 +45,16 @@ def polygon_from_geojson(value: Any) -> dict:
         raise HTTPException(422, "Se requiere un polígono GeoJSON (Polygon, Feature o FeatureCollection).")
     rings = value.get("coordinates")
     if isinstance(rings, list) and rings and isinstance(rings[0], list):
-        ring = [[float(x) for x in pt[:2]] for pt in rings[0] if isinstance(pt, list) and len(pt) >= 2]
+        # Invalid coordinates are user input errors, never unexpected 500 responses.
+        # Reject non-finite values before they reach rasterio or Shapely.
+        import math
+        try:
+            ring = [[float(x) for x in pt[:2]] for pt in rings[0]
+                    if isinstance(pt, list) and len(pt) >= 2]
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise HTTPException(422, "El polígono contiene coordenadas no numéricas.") from exc
+        if not ring or not all(math.isfinite(x) for pt in ring for x in pt):
+            raise HTTPException(422, "El polígono contiene coordenadas inválidas.")
         if len(ring) >= 3 and ring[0] != ring[-1]:
             ring.append(ring[0])
         return {"type": "Polygon", "coordinates": [ring]}
@@ -79,7 +88,8 @@ class CompareRequest(BaseModel):
     priorities: Priorities = Priorities()
     water_turn: Literal["normal", "escaso", "no_se"] = "normal"
     history: dict[str, Any] | None = Field(None, description="summary: sensor, start, end, months_with_data")
-    use_team_templates_as_fallback: bool = True
+    current_source: Literal["farmer_declared", "satellite_confirmed", "team_demo"] = "farmer_declared"
+    use_team_templates_as_fallback: bool = False
 
 
 @router.get("/zones")
@@ -181,7 +191,7 @@ async def compare(req: CompareRequest):
     try:
         result = engine.compare([p.model_dump() for p in req.current], clim,
                                 priorities=req.priorities.model_dump(), water_turn=req.water_turn,
-                                history=req.history,
+                                history=req.history, current_origin=req.current_source,
                                 fallback=engine.TEMPLATES if req.use_team_templates_as_fallback else None)
     except engine.RotationError as exc:
         raise HTTPException(422, str(exc)) from exc
