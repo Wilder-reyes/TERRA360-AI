@@ -49,3 +49,48 @@ test('mobile viewport preserves geospatial workspace and readable controls',asyn
  await expect(page.getByRole('button',{name:'Dibujar polígono'})).toBeVisible()
  await expect(page.locator('a[href$=".json"]')).toHaveCount(0)
 })
+
+test('Sentinel-2 parcel NDVI needs a drawn area and explains pixel quality',async({page})=>{
+ await page.route('**/api/environment/sentinel-2/parcel-ndvi',async route=>{
+  const payload=route.request().postDataJSON()
+  expect(payload.polygon.type).toBe('Polygon')
+  expect(payload.polygon.coordinates[0]).toHaveLength(5)
+  await route.fulfill({contentType:'application/json',body:JSON.stringify({
+   source:'ESA Sentinel-2 L2A via Microsoft Planetary Computer',
+   source_url:'https://planetarycomputer.microsoft.com/api/stac/v1',
+   product:'Sentinel-2 L2A BOA',
+   status:'available',
+   scene:{id:'scene-example',date:'2026-11-04',cloud_cover_percent_scene:30.52,
+          processing_baseline:'05.13',platform:'Sentinel-2C'},
+   parcel_area_ha_approx:1.25,
+   attempted_scenes:1,
+   metrics:{status:'available',parcel_pixels:596,valid_pixels:596,
+            valid_fraction_percent:98.3,scene_coverage_percent_approx:98.3,
+            scl_classes_within_parcel:{4:48,5:548},
+            ndvi:{mean:.1776,median:.1277,p10:.0128,p90:.4404,spatial_std:.1658,min:-.1082,max:.7905}},
+   uncertainty:[],
+   used_in_crop_decision:false
+  })})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:'NDVI Sentinel-2 de parcela'}).click()
+ await expect(page.getByText(/Primero delimita un rectángulo o polígono/)).toBeVisible()
+ await expect(page.getByRole('button',{name:'Calcular NDVI del terreno'})).toHaveCount(0)
+ await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
+ await page.getByRole('button',{name:'Buscar',exact:true}).click()
+ await page.getByRole('button',{name:/Calca.*Cusco.*Perú/}).click()
+ for(let i=0;i<6;i++)await page.locator('.leaflet-control-zoom-in').click()
+ const map=page.locator('.terra-geo-map')
+ const rect=await map.boundingBox()
+ expect(rect).not.toBeNull()
+ await page.getByRole('button',{name:'Delimitar área aproximada'}).click()
+ await map.click({position:{x:Math.round(rect!.width/2-45),y:Math.round(rect!.height/2-40)}})
+ await map.click({position:{x:Math.round(rect!.width/2+45),y:Math.round(rect!.height/2+40)}})
+ await expect(page.getByText(/Área dibujada:/)).toBeVisible()
+ await page.getByRole('button',{name:'Calcular NDVI del terreno'}).click()
+ await expect(page.getByText('NDVI promedio (sin unidades)')).toBeVisible()
+ await expect(page.getByText('0.178')).toBeVisible()
+ await expect(page.getByText(/Cobertura utilizable aproximada/)).toBeVisible()
+ await expect(page.getByText(/NO precisión ni intervalo de confianza/)).toBeVisible()
+ await expect(page.getByText(/No se utiliza para recomendar cultivos/)).toBeVisible()
+})
