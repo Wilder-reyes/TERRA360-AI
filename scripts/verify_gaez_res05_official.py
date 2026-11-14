@@ -70,8 +70,8 @@ def read_catalog(workbook: bytes) -> pd.DataFrame:
         raise VerificationError("Official FAO inventory lacks its required headers")
     names = [str(value).strip().upper().replace(" ", "_")
              for value in raw.iloc[header].tolist()]
-    if len(set(names)) != len(names):
-        raise VerificationError("Official FAO inventory has duplicate columns")
+    if any(names.count(name) > 1 for name in COLUMNS):
+        raise VerificationError("Official FAO inventory has duplicate scientific columns")
     data = raw.iloc[header + 1:].copy()
     data.columns = names
     if any(name not in data.columns for name in COLUMNS):
