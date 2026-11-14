@@ -45,8 +45,8 @@ test('Barranca-focused farmer landing starts in ordinary Spanish and moves throu
 })
 
 test('Location search lets farmers jump to another town without coordinates or code',async({page})=>{
- await page.route('https://nominatim.openstreetmap.org/search**',route=>route.fulfill({
-  status:200,contentType:'application/json',body:JSON.stringify([
+ await page.route(/nominatim\\.openstreetmap\\.org\\/search/,route=>route.fulfill({
+  status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify([
    {display_name:'Huacho, Huaura, Lima, Perú',lat:'-11.120',lon:'-77.604'}
   ])}))
  await page.goto('/')
@@ -74,7 +74,7 @@ test('Recommendation is presented as a clear plan and A4 print report, not S1/S2
  await page.getByRole('button',{name:/Usar menos agua/}).click()
  await page.getByRole('button',{name:'Ver mi plan'}).click()
  await expect(page.getByRole('heading',{name:'Tu plan de siembra'})).toBeVisible()
- await expect(page.getByText('Opción destacada para tu chacra')).toBeVisible()
+ await expect(page.getByText('Opción destacada para tu chacra',{exact:true})).toBeVisible()
  await expect(page.getByText(/Se estima menos demanda de agua/).first()).toBeVisible()
  await expect(page.getByRole('button',{name:'Imprimir o guardar PDF'})).toBeVisible()
  await page.emulateMedia({media:'print'})
