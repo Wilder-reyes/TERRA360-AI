@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react'
 import type {Position} from './domain'
 import './parcel-ndvi.css'
+import {SentinelSeries} from './SentinelSeries'
 
 type Stats={mean:number;median:number;p10:number;p90:number;spatial_std:number;min:number;max:number}
 type Metrics={
@@ -69,5 +70,6 @@ export function ParcelNDVI({vertices,api,en}:{vertices:Position[]|null;api:strin
    <p className="fineprint">{en?'The range describes spatial variation, NOT a measurement accuracy or confidence interval. The boundary is not surveyed and local field validation is required.':'El rango describe variación espacial, NO precisión ni intervalo de confianza. El contorno no está levantado catastralmente; hace falta validación en campo.'}</p>
    <p className="fineprint">{en?'Source':'Fuente'}: <a href={result.source_url} target="_blank" rel="noreferrer">Sentinel-2 L2A · Microsoft Planetary Computer</a>. {en?'Not used to recommend crops.':'No se utiliza para recomendar cultivos.'}</p>
   </div>}
+  <SentinelSeries vertices={vertices} api={api} en={en}/>
  </div>
 }

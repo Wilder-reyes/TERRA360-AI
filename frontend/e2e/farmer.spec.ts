@@ -94,3 +94,52 @@ test('Sentinel-2 parcel NDVI needs a drawn area and explains pixel quality',asyn
  await expect(page.getByText(/NO precisión ni intervalo de confianza/)).toBeVisible()
  await expect(page.getByText(/No se utiliza para recomendar cultivos/)).toBeVisible()
 })
+
+test('multiple Sentinel-2 dates expose quality gaps without declaring crop trends',async({page})=>{
+ await page.route('**/api/environment/sentinel-2/parcel-ndvi-series',async route=>{
+  const payload=route.request().postDataJSON()
+  expect(payload.polygon.type).toBe('Polygon')
+  expect(payload.max_observations).toBe(4)
+  expect(payload.days).toBe(180)
+  await route.fulfill({contentType:'application/json',body:JSON.stringify({
+   status:'available',source:'ESA/Copernicus Sentinel-2 L2A',
+   source_url:'https://planetarycomputer.microsoft.com/api/stac/v1',
+   period:{start:'2026-05-18',end:'2026-11-14'},
+   attempted_scenes:3,valid_observation_count:2,parcel_area_ha_approx:1.2,
+   can_infer_vegetation_trend:false,used_in_crop_decision:false,
+   observations:[
+    {date:'2026-09-01',scene_id:'a',satellite:'Sentinel-2C',scene_cloud_percent:22,
+     processing_baseline:'05.13',status:'available',
+     metrics:{valid_pixels:600,valid_fraction_percent:91.2,
+              ndvi:{mean:.2071,median:.2,p10:.1,p90:.4}}},
+    {date:'2026-10-01',scene_id:'b',satellite:'Sentinel-2C',scene_cloud_percent:54,
+     processing_baseline:'05.13',status:'insufficient_clear_pixels',
+     metrics:{valid_pixels:11,valid_fraction_percent:3.2,ndvi:null}},
+    {date:'2026-11-04',scene_id:'c',satellite:'Sentinel-2C',scene_cloud_percent:30,
+     processing_baseline:'05.13',status:'available',
+     metrics:{valid_pixels:596,valid_fraction_percent:98.3,
+              ndvi:{mean:.1776,median:.1277,p10:.0128,p90:.44}}}
+   ],limitations:[]
+  })})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:'NDVI Sentinel-2 de parcela'}).click()
+ await expect(page.getByRole('button',{name:'Ver observaciones por fecha'})).toBeDisabled()
+ await page.getByLabel('Busca una localidad en el mapa').fill('Calca')
+ await page.getByRole('button',{name:'Buscar',exact:true}).click()
+ await page.getByRole('button',{name:/Calca.*Cusco.*Perú/}).click()
+ for(let i=0;i<6;i++)await page.locator('.leaflet-control-zoom-in').click()
+ const map=page.locator('.terra-geo-map')
+ const rect=await map.boundingBox()
+ expect(rect).not.toBeNull()
+ await page.getByRole('button',{name:'Delimitar área aproximada'}).click()
+ await map.click({position:{x:Math.round(rect!.width/2-45),y:Math.round(rect!.height/2-40)}})
+ await map.click({position:{x:Math.round(rect!.width/2+45),y:Math.round(rect!.height/2+40)}})
+ await page.getByRole('button',{name:'Ver observaciones por fecha'}).click()
+ await expect(page.getByText('Fechas utilizables:')).toBeVisible()
+ await expect(page.getByRole('row',{name:/2026-10-01/})).toContainText('—')
+ await expect(page.getByRole('row',{name:/2026-09-01/})).toContainText('0.207')
+ await expect(page.getByRole('row',{name:/2026-11-04/})).toContainText('0.178')
+ await expect(page.getByText(/NO demuestran una tendencia/)).toBeVisible()
+ await expect(page.getByText(/No usado por ARIE/)).toBeVisible()
+})

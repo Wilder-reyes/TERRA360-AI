@@ -1,0 +1,17 @@
+.terra-ndvi-series{margin-top:18px;padding-top:18px;border-top:1px solid #d9e7da}
+.terra-ndvi-series h4{font-size:.92rem;margin:0 0 8px;color:#244b35}
+.terra-ndvi-series p{font-size:.83rem;color:#516e59}
+.terra-ndvi-series .terra-geo-fetch{margin-top:6px}
+.terra-ndvi-series-result{margin-top:15px}
+.terra-ndvi-series-summary{font-variant-numeric:tabular-nums}
+.terra-ndvi-series-warning{padding:9px 11px;border-radius:8px;background:#fff5e6;color:#805c26!important}
+.terra-ndvi-table-scroll{max-width:100%;overflow-x:auto}
+.terra-ndvi-series-table{border-collapse:collapse;width:100%;font-size:.76rem;font-variant-numeric:tabular-nums}
+.terra-ndvi-series-table caption{font-size:.72rem;text-align:left;color:#647b68;padding:5px 0}
+.terra-ndvi-series-table th,.terra-ndvi-series-table td{padding:8px 5px;border-bottom:1px solid #dce8dc;text-align:left;vertical-align:middle}
+.terra-ndvi-series-table thead th{font-weight:800;color:#476450;background:#f5f9f5}
+.terra-ndvi-series-table tbody th{font-weight:750;white-space:nowrap}
+.terra-ndvi-table-number{font-weight:800}
+.terra-ndvi-quality-pass{color:#286842}
+.terra-ndvi-quality-missing{color:#9c6034}
+.terra-ndvi-series-result .fineprint{line-height:1.5;margin-top:8px}
