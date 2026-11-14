@@ -199,7 +199,15 @@ async def compare(req: CompareRequest):
         raise HTTPException(422, str(exc)) from exc
     result["zone"] = req.zone
     # P1 «agua que viene»: IMERG rain in the upper basin (context only; abstains if not computed).
-    basin = basin_context(req.zone)
+    if req.zone in ("huaral", "barranca"):
+        basin = basin_context(req.zone)
+    else:
+        basin = {
+            "status": "unavailable",
+            "message_es": "No contamos con datos de lluvia de la cuenca para este lugar.",
+            "message_en": "Upper-basin rainfall has not been calculated for this location.",
+            "climatology_mm_month": {},
+        }
     result["upper_basin_rain"] = basin
     if basin["status"] == "available":
         for month in result["window"]["context"]:
