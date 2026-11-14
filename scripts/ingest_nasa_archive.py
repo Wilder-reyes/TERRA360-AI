@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Bounded offline NASA Earthdata -> private S3/R2 ingestion (never an API route).
+"""Bounded, authenticated NASA GPM originals and SMAP Calca-native-cell archive.
 
-Example (credentials via environment secrets, not CLI flags):
-  PYTHONPATH=backend python scripts/ingest_nasa_archive.py --product gpm --lag-days 7
-  PYTHONPATH=backend python scripts/ingest_nasa_archive.py --product smap --lag-days 7
+NASA SMAP V006 is far larger than the per-object R2 budget. An original
+is verified in a temporary GitHub Actions directory, its original SHA
+recorded, and only a native-grid AM regional HDF5 extract stored privately.
+GPM remains an unchanged verified original NetCDF.
 """
 from __future__ import annotations
+
 import argparse
 from datetime import date, timedelta
 from pathlib import Path
@@ -13,14 +15,49 @@ import os
 import tempfile
 
 import earthaccess
+
+from app.services.smap_subset import create_calca_native_subset
 from app.services.verified_archive import (
-    ArchiveError, MAX_GRANULE_BYTES, PRODUCTS, object_keys, settings,
+    ArchiveError, MAX_GRANULE_BYTES, MAX_SMAP_SOURCE_BYTES, PRODUCTS, settings,
     client, _read_manifest, upload_verified, verify_name,
 )
 
 
+def _declared_smap_bytes(granule: dict, candidate_names: list[str]) -> int | None:
+    """Read per-file NASA CMR UMM-G size, when available (never an estimate)."""
+    umm = granule.get("umm") or {}
+    info = (umm.get("DataGranule") or {}).get("ArchiveAndDistributionInformation") or []
+    for item in info:
+        if not isinstance(item, dict):
+            continue
+        name = Path(str(item.get("Name") or "")).name
+        if name not in candidate_names or not name.endswith(".h5"):
+            continue
+        try:
+            if item.get("SizeInBytes") is not None:
+                size = int(item["SizeInBytes"])
+            else:
+                unit = str(item.get("SizeUnit") or "").upper()
+                unit_multiplier = {"KB": 1000, "MB": 1000 ** 2, "GB": 1000 ** 3}
+                if unit not in unit_multiplier:
+                    continue
+                size = int(float(item["Size"]) * unit_multiplier[unit])
+            return size if size > 0 else None
+        except (ValueError, TypeError, KeyError):
+            continue
+    return None
+
+
+def _valid_name(product: str, target: date, value: str) -> bool:
+    try:
+        verify_name(product, target, value)
+        return True
+    except ArchiveError:
+        return False
+
+
 def ingest_one(product: str, target: date) -> dict:
-    """At most ONE product/day and max 65 MiB. Never retries until upload succeeds."""
+    """Ingest at most one granule per product/date, within strict cloud quotas."""
     if product not in PRODUCTS:
         raise ValueError("Unrecognized NASA product")
     if target >= date.today() - timedelta(days=1) or target < date.today() - timedelta(days=365):
@@ -47,62 +84,71 @@ def ingest_one(product: str, target: date) -> dict:
                 "date": target.isoformat()}
     with tempfile.TemporaryDirectory(prefix="terra-nasa-ingest-") as directory:
         for granule in granules[:3]:
-            # CMR metadata names differ by DAAC: never trust without filename check.
             links = granule.get("umm", {}).get("RelatedUrls", [])
-            names = [Path(str(x.get("URL","")).split("?",1)[0]).name for x in links
-                     if x.get("Type") == "GET DATA"]
-            if not any(_valid_name(product, target, name) for name in names):
+            names = [Path(str(item.get("URL", "")).split("?", 1)[0]).name
+                     for item in links if item.get("Type") == "GET DATA"]
+            matching_names = [name for name in names if _valid_name(product, target, name)]
+            if not matching_names:
                 continue
-            downloaded = earthaccess.download([granule], local_path=directory, show_progress=False)
+            if product == "smap":
+                declared_size = _declared_smap_bytes(granule, matching_names)
+                if declared_size is not None and declared_size > MAX_SMAP_SOURCE_BYTES:
+                    return {"status": "source_exceeds_temporary_limit",
+                            "product": product, "date": target.isoformat(),
+                            "declared_bytes": declared_size,
+                            "max_temporary_bytes": MAX_SMAP_SOURCE_BYTES}
+            downloaded = earthaccess.download(
+                [granule], local_path=directory, show_progress=False,
+            )
             for filename in downloaded or []:
-                path = Path(filename).resolve()
-                if path.parent != Path(directory).resolve():
+                original = Path(filename).resolve()
+                if original.parent != Path(directory).resolve():
                     raise ArchiveError("NASA downloader returned a path outside staging dir.")
-                if not _valid_name(product, target, path.name):
+                if not _valid_name(product, target, original.name):
                     continue
-                if path.stat().st_size > MAX_GRANULE_BYTES:
-                    raise ArchiveError("NASA download exceeds 65 MiB limit.")
-                # Minimal scientific structural check before publishing an original NASA file.
-                if product == "gpm":
-                    import xarray as xr
-                    with xr.open_dataset(path, engine="h5netcdf") as ds:
-                        if "precipitation" not in ds or not {"time","lon","lat"}.issubset(ds.dims):
-                            raise ArchiveError("NASA GPM missing original science variable.")
-                else:
-                    import h5py
-                    with h5py.File(path, "r") as h5:
-                        g=h5.get("Soil_Moisture_Retrieval_Data_AM")
-                        if g is None or any(key not in g for key in (
-                            "latitude","longitude","soil_moisture_dca","retrieval_qual_flag_dca"
-                        )):
-                            raise ArchiveError("NASA SMAP missing original AM DCA measurements.")
+                source_size = original.stat().st_size
+                source_cap = MAX_SMAP_SOURCE_BYTES if product == "smap" else MAX_GRANULE_BYTES
+                if not 1 <= source_size <= source_cap:
+                    return {"status": "source_exceeds_temporary_limit",
+                            "product": product, "date": target.isoformat(),
+                            "downloaded_bytes": source_size,
+                            "max_temporary_bytes": source_cap}
                 granule_id = (granule.get("meta") or {}).get("concept-id")
                 if not isinstance(granule_id, str) or not granule_id.startswith("G"):
                     raise ArchiveError("El granule no tiene identificador oficial NASA CMR.")
-                return {"status": "ingested", **upload_verified(
-                    product, target, path, source_id=granule_id
-                )}
+                if product == "gpm":
+                    import xarray as xr
+                    with xr.open_dataset(original, engine="h5netcdf") as ds:
+                        if "precipitation" not in ds or not {"time", "lon", "lat"}.issubset(ds.dims):
+                            raise ArchiveError("NASA GPM missing original science variable.")
+                    return {"status": "ingested", **upload_verified(
+                        product, target, original, source_id=granule_id,
+                    )}
+                derived = Path(directory) / "calca-native-grid" / original.name
+                source_metadata = create_calca_native_subset(original, derived)
+                if source_metadata is None:
+                    return {"status": "no_local_am_coverage", "product": product,
+                            "date": target.isoformat(),
+                            "representation": "native_9km_SMAP_AM_grid_no_observation"}
+                result = upload_verified(
+                    product, target, derived, source_id=granule_id,
+                    source_metadata=source_metadata,
+                )
+                return {"status": "ingested", "representation": "regional_native_grid_subset",
+                        "original_size_bytes": source_size, **result}
         return {"status": "no_matching_granule", "product": product,
                 "date": target.isoformat()}
 
 
-def _valid_name(product: str, target: date, value: str) -> bool:
-    try:
-        verify_name(product, target, value)
-        return True
-    except ArchiveError:
-        return False
-
-
 def main():
-    parser = argparse.ArgumentParser(description="Private NASA Earthdata ingest, bounded to one date")
+    parser = argparse.ArgumentParser(description="Private NASA Earthdata ingest for Calca")
     parser.add_argument("--product", choices=("gpm", "smap"), required=True)
     parser.add_argument("--lag-days", type=int, default=7)
     args = parser.parse_args()
     if not 2 <= args.lag_days <= 30:
         parser.error("lag-days must be between 2 and 30")
     target = date.today() - timedelta(days=args.lag_days)
-    # Output contains no secret, S3 key, download link or signed NASA URL.
+    # No secrets, object URLs, object keys or signed NASA links in output.
     import json
     print(json.dumps(ingest_one(args.product, target), ensure_ascii=False))
 
