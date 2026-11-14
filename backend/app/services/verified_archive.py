@@ -20,7 +20,10 @@ import s3fs
 
 PREFIX = "terra360-nasa-v1"
 PRODUCTS = {"gpm": "GPM_3IMERGDL", "smap": "SPL3SMP_E"}
-MAX_GRANULE_BYTES = 65 * 1024 * 1024
+MAX_GRANULE_BYTES = 65 * 1024 * 1024  # Original GPM NetCDF cap
+MAX_SMAP_SOURCE_BYTES = 768 * 1024 * 1024  # Temporary NASA download, never uploaded
+MAX_SMAP_SUBSET_BYTES = 5 * 1024 * 1024  # Derived native-grid region stored in R2
+SMAP_CALCA_BOUNDS = (-72.65, -14.0, -71.2, -12.75)  # W, S, E, N
 MAX_FILES = 32
 MAX_ARCHIVE_BYTES = 1024 * 1024 * 1024
 FILENAME = {
@@ -83,16 +86,33 @@ def verify_name(product: str, target: date, name: str):
     return name
 
 
+def max_archived_file_bytes(product: str) -> int:
+    if product not in PRODUCTS:
+        raise ValueError("Producto NASA no permitido.")
+    return MAX_SMAP_SUBSET_BYTES if product == "smap" else MAX_GRANULE_BYTES
+
+
 def validate_manifest(product: str, target: date, manifest: dict):
     if (manifest.get("product") != PRODUCTS[product] or
         manifest.get("date") != target.isoformat() or
         not isinstance(manifest.get("sha256"), str) or
         not re.fullmatch(r"[a-f0-9]{64}", manifest["sha256"]) or
         type(manifest.get("size_bytes")) is not int or
-        not 1 <= manifest["size_bytes"] <= MAX_GRANULE_BYTES or
-        manifest.get("verified_format") != "NASA-original-granule"):
+        not 1 <= manifest["size_bytes"] <= max_archived_file_bytes(product)):
         raise ArchiveError("Manifiesto privado sin integridad.")
     verify_name(product, target, manifest.get("filename"))
+    if product == "gpm":
+        if manifest.get("verified_format") != "NASA-original-granule":
+            raise ArchiveError("GPM debe conservar el archivo científico original.")
+    else:
+        if (manifest.get("verified_format") != "NASA-native-grid-regional-subset" or
+            not isinstance(manifest.get("source_original_sha256"), str) or
+            not re.fullmatch(r"[a-f0-9]{64}", manifest["source_original_sha256"]) or
+            type(manifest.get("source_original_size_bytes")) is not int or
+            not 1 <= manifest["source_original_size_bytes"] <= MAX_SMAP_SOURCE_BYTES or
+            manifest.get("subset_bounds") != list(SMAP_CALCA_BOUNDS) or
+            manifest.get("subset_method") != "unmodified_native_grid_AM_window_v1"):
+            raise ArchiveError("Manifiesto del subconjunto SMAP sin procedencia NASA.")
 
 
 def _uri(config: StorageConfig, key: str) -> str:
@@ -156,8 +176,8 @@ def staged_granule(product: str, target: date) -> Iterator[Path | None]:
                     if not chunk:
                         break
                     size += len(chunk)
-                    if size > MAX_GRANULE_BYTES:
-                        raise ArchiveError("Granule excede tamaño autorizado.")
+                    if size > max_archived_file_bytes(product):
+                        raise ArchiveError("Archivo NASA excede tamaño autorizado.")
                     checksum.update(chunk)
                     dest.write(chunk)
         except OSError as exc:
@@ -181,12 +201,17 @@ def _archive_usage(fs, config: StorageConfig) -> tuple[int, int]:
     return count, total
 
 
-def upload_verified(product: str, target: date, path: Path, *, source_id: str):
+def upload_verified(product: str, target: date, path: Path, *, source_id: str,
+                    source_metadata: dict | None = None):
     """Offline only; upload max one original NASA granule per product/date."""
     verify_name(product, target, path.name)
     size = path.stat().st_size
-    if not 1 <= size <= MAX_GRANULE_BYTES:
-        raise ArchiveError("Granule excede 65 MiB o está vacío.")
+    if not 1 <= size <= max_archived_file_bytes(product):
+        raise ArchiveError("Archivo NASA excede el tamaño permitido o está vacío.")
+    if product == "smap" and not isinstance(source_metadata, dict):
+        raise ArchiveError("SMAP requiere procedencia original y subconjunto nativo.")
+    if product == "gpm" and source_metadata is not None:
+        raise ArchiveError("GPM debe conservar el archivo original sin transformación.")
     if not source_id or len(source_id) > 250 or any(x in source_id for x in "\r\n"):
         raise ArchiveError("Procedencia NASA inválida.")
     config = settings()
@@ -206,9 +231,13 @@ def upload_verified(product: str, target: date, path: Path, *, source_id: str):
         "product": PRODUCTS[product], "date": target.isoformat(),
         "filename": path.name, "size_bytes": size,
         "sha256": checksum.hexdigest(), "source_id": source_id,
-        "verified_format": "NASA-original-granule",
+        "verified_format": ("NASA-native-grid-regional-subset" if product == "smap"
+                            else "NASA-original-granule"),
         "ingested_at": datetime.now(timezone.utc).isoformat(),
     }
+    if source_metadata:
+        manifest.update(source_metadata)
+    validate_manifest(product, target, manifest)
     data_key, manifest_key = object_keys(product, target)
     fs.put_file(str(path), _uri(config, data_key))
     fs.pipe_file(_uri(config, manifest_key),
