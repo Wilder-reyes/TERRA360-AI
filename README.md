@@ -67,4 +67,4 @@ Validation with Barranca's irrigation users' board and INIA, soil tests and real
 
 ## License
 
-[MIT](LICENSE) © 2026 CHAKRA X team. Third-party data keep their own terms (NASA open data, FAO, MIDAGRI).
+[MIT](LICENSE) © 2026 CHAKRA X team. Third-party data (NASA, ESA, MIDAGRI, FAO) keep their own terms.

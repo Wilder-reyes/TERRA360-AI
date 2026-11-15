@@ -481,6 +481,15 @@ class TeamSowingRuleTests(unittest.TestCase):
         self.assertTrue(s1["relative_to_current"]["improves_low_river_water"])
 
 
+class MaizeFindingTests(unittest.TestCase):
+    def test_compare_exposes_maize_share_by_sowing_month(self):
+        r = E.compare([{"crop_id": "maiz_amarillo_duro", "start_index": 18}], coastal_climate())
+        share = r["maize_low_river_share"]
+        self.assertEqual(len(share["by_sow_month"]), 12)
+        self.assertEqual(share["current_sow_months"], [2])
+        self.assertLess(share["by_sow_month"]["1"], share["by_sow_month"]["3"])  # Jan sowing avoids the dry season more than Mar
+
+
 class EnglishTextTests(unittest.TestCase):
     def test_english_sections_have_no_spanish_crop_names(self):
         import re
