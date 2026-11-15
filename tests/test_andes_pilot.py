@@ -34,4 +34,17 @@ class AndeanPilotTest(unittest.TestCase):
         self.assertEqual(r["rainfall_sum_mm"],365)
         self.assertEqual(len(r["months"]),12)
 
+
+    def test_validated_subplots_and_overlaps(self):
+        from app.api.andes_routes import verified_subplots, Subplot
+        outer={"type":"Polygon","coordinates":[[[-75.37,-12.05],[-75.36,-12.05],[-75.36,-12.04],[-75.37,-12.04],[-75.37,-12.05]]]}
+        west={"type":"Polygon","coordinates":[[[-75.37,-12.05],[-75.365,-12.05],[-75.365,-12.04],[-75.37,-12.04],[-75.37,-12.05]]]}
+        east={"type":"Polygon","coordinates":[[[-75.365,-12.05],[-75.36,-12.05],[-75.36,-12.04],[-75.365,-12.04],[-75.365,-12.05]]]}
+        result=verified_subplots(outer,[Subplot(id="A",polygon=west),Subplot(id="B",polygon=east)])
+        self.assertEqual(len(result["subplots"]),2)
+        self.assertAlmostEqual(sum(x["percent_of_field"] for x in result["subplots"]),100,places=1)
+        with self.assertRaises(ValueError):
+            verified_subplots(outer,[Subplot(id="A",polygon=west),Subplot(id="B",polygon=west)])
+
 if __name__=="__main__":unittest.main()
+
