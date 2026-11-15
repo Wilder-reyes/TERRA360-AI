@@ -828,9 +828,9 @@ export default function BiotexFarmerApp(){
       {drawingSubplot?<><span>{lang==='es'?'Toca las esquinas de la zona.':'Tap area corners.'}</span>
        <button className="b-btn b-btn-light" type="button" disabled={!points.length} onClick={()=>setPoints(v=>v.slice(0,-1))}>{t.undo}</button>
        <button className="b-btn b-btn-primary" type="button" disabled={points.length<3} onClick={finish}>{lang==='es'?'Guardar zona':'Save zone'}</button>
-       <button className="b-btn b-btn-light" type="button" onClick={()=>{setDrawingSubplot(false);setPoints([])}}>{t.cancel}</button></>:
+       <button className="b-btn b-btn-light" type="button" onClick={()=>{setDrawingSubplot(false);setPoints([])}}>{t.cancel}</button></>:<>
        {selectedZone!=='rest'&&<button className="b-btn b-btn-light" type="button" onClick={()=>deleteSubplot(selectedZone)}>{lang==='es'?'Quitar zona elegida':'Remove selected area'}</button>}
-       <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={()=>{setDrawingSubplot(true);setPoints([]);setFieldError('')}}>{lang==='es'?'+ Dividir el terreno en zonas':'+ Divide field into areas'}</button>}
+       <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={()=>{setDrawingSubplot(true);setPoints([]);setFieldError('')}}>{lang==='es'?'+ Dividir el terreno en zonas':'+ Divide field into areas'}</button></>}
      </div>
      <p className="chakra-zone-map-note">{lang==='es'?'Toca la zona donde sembraste el cultivo elegido.':'Tap the area where you planted your selected crop.'}</p>
     </div>
