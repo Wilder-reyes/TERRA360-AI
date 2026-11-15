@@ -80,10 +80,18 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
   return Math.max(0,first)
  })
  const months=planMonths(plan)
+ const sharePdf=()=>{
+  const picker=document.createElement('input');picker.type='file';picker.accept='application/pdf';picker.setAttribute('aria-label',es?'Selecciona el PDF guardado':'Choose saved PDF')
+  picker.onchange=async()=>{const file=picker.files?.[0];if(!file)return
+   const nav=navigator as Navigator & {canShare?:(data:{files:File[]})=>boolean;share?:(data:{files:File[];title:string;text:string})=>Promise<void>}
+   if(nav.canShare?.({files:[file]})&&nav.share){try{await nav.share({files:[file],title:'CHAKRA X',text:es?'Mi plan de siembra CHAKRA X':'My CHAKRA X planting plan'});return}catch{return}}
+   window.open('https://wa.me/?text='+encodeURIComponent(es?'Te comparto mi plan CHAKRA X. Adjuntaré el PDF guardado.':'Here is my CHAKRA X plan. I will attach the saved PDF.'),'_blank','noopener,noreferrer')
+  };picker.click()
+ }
  return <section className="chakra-zone-result" data-bio-target="bio-result" aria-label={es?'Plan agrícola por zonas':'Zone planting plan'}>
   <div className="chakra-result-heading"><span className="b-eyebrow">{es?'PASO 3 DE 3 · TU PLAN':'STEP 3 OF 3 · YOUR PLAN'}</span>
    <h1>{es?'Mi plan de cultivos':'My crop plan'}</h1>
-   <p>{es?'Mira qué sembraste antes y cómo podrías organizar tus próximas siembras, zona por zona.':'See what you planted before and how you could organize your next crops by area.'}</p>
+   <p>{es?'Visualiza cada polígono, los cultivos actuales y la siguiente siembra recomendada. Los meses sin campaña programada se muestran expresamente.':'View your polygons, current crops and suggested next planting. Months without a scheduled crop are explicitly marked.'}</p>
   </div>
   <div className="chakra-plan-highlight">
    <span>{es?'MI TERRENO':'MY FIELD'}</span>
@@ -99,7 +107,8 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
    <p>{!es&&row.why_en?row.why_en:row.why_es}</p>
    <details open><summary>{es?'🌱 Cómo prepararlo, paso a paso':'How to prepare the planting'}</summary><ol>{(!es&&row.how_en?row.how_en:row.how_es).map((line,j)=><li key={j}>{line}</li>)}</ol></details>
   </article>)}</div>
-  <div className="chakra-result-actions"><button type="button" className="b-btn b-btn-primary" onClick={onPrint}>{es?'Guardar mi plan':'Save my plan'}</button>
+  <div className="chakra-result-actions"><button type="button" className="b-btn b-btn-primary" onClick={onPrint}>{es?'🖨️ Guardar como PDF':'🖨️ Save as PDF'}</button>
+   <button type="button" className="b-btn b-btn-light" onClick={sharePdf}>{es?'📲 Compartir PDF por WhatsApp':'📲 Share PDF on WhatsApp'}</button>
    <button type="button" className="b-btn b-btn-light" onClick={onEdit}>{es?'Editar mis cultivos':'Edit my crops'}</button></div>
  </section>
 }
