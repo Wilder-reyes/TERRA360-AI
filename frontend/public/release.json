@@ -1,22 +1,24 @@
 {
   "application": "BIOTEX · NSPACE BIOTEX",
-  "release": "v0.25-evidence-first-ux",
+  "release": "v0.26-hls-trained-ai-barranca",
   "pilot": "Barranca · Pativilca / Supe",
   "features": [
-    "Vista del agricultor enfocada en qué sembrar, cuándo y qué confirmar",
-    "Comparaciones de rotación basadas en NASA POWER y calendario costero de Lima",
-    "Checklist simple del suelo, agua de riego y avisos oficiales SENAMHI",
-    "Consulta opcional de fuentes oficiales ANA/MIDAGRI/SENAMHI con estado de disponibilidad",
-    "Referencia hidrológica histórica ANA Pativilca/Supe sin confundirla con agua disponible",
-    "Cálculo opcional de ingresos menos costos por hectárea usando solo datos del agricultor",
-    "Rangos de suelo aplicables solo con análisis y reglas firmadas por expertos",
-    "Entrenador ML candidato bloqueado hasta obtener 200 campañas verificadas y 30 parcelas",
-    "Cloudflare R2 privado con guardia de 8GB a nivel de cuenta y apagado por defecto",
-    "Informe A4, mapa NASA, guardado local y compartir por WhatsApp"
+    "One Barranca study parcel with NASA imagery and historical vegetation readings",
+    "Trained and reproducible NASA HLS seasonal low-vegetation machine learning model",
+    "Chronological 33 train/11 test evaluation, frozen coefficients and source SHA verification",
+    "NASA HLS model influences crop-cover timing in rotation ranking while respecting farmer water constraints",
+    "NASA POWER + FAO-56 crop-water estimates and Lima crop catalogue",
+    "Farmer-first result: crop order, sowing month, risks and visible AI evidence",
+    "Optional science, soil and economic data behind expandable sections",
+    "Printable A4 with model provenance, mobile map and saved farm data"
   ],
   "computer_vision_enabled": false,
   "environment": "production",
   "source_branch": "main",
   "primary_url": "https://terra360-ai-xi.vercel.app/",
-  "notes": "No hay flujo ANA vigente validado ni asignación de riego parcelaria; los datos de ANA son referencias históricas. No existe un modelo ML agrícola entrenado ni pruebas de campo reales. La climatología GPM IMERG de cuenca y claves R2 requieren accesos privados, ingestión y revisión. No confundir datos faltantes con cero ni prometer rentabilidad."
+  "notes": "44 true NASA HLS monthly observations on one study polygon. The HLS model predicts a low-vegetation proxy, not crop identity or yield. It is only used for that exact demo polygon. GPM IMERG upper-basin historical archive, farm irrigation and agronomic field validation remain separate evidence gates.",
+  "ai_model": "trained_nasa_hls_44_observations_barranca_1",
+  "ai_model_status": "trained_chronological_holdout_11_observations",
+  "ai_model_source": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
+  "ai_model_training": "33 chronological HLS observations for holdout evaluation; production fit on all 44"
 }
