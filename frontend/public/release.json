@@ -1,22 +1,28 @@
 {
   "application": "BIOTEX · NSPACE BIOTEX",
-  "release": "v0.25-evidence-first-ux",
+  "release": "v0.26-nasa-ai-reproducible",
   "pilot": "Barranca · Pativilca / Supe",
   "features": [
-    "Vista del agricultor enfocada en qué sembrar, cuándo y qué confirmar",
-    "Comparaciones de rotación basadas en NASA POWER y calendario costero de Lima",
-    "Checklist simple del suelo, agua de riego y avisos oficiales SENAMHI",
-    "Consulta opcional de fuentes oficiales ANA/MIDAGRI/SENAMHI con estado de disponibilidad",
-    "Referencia hidrológica histórica ANA Pativilca/Supe sin confundirla con agua disponible",
-    "Cálculo opcional de ingresos menos costos por hectárea usando solo datos del agricultor",
-    "Rangos de suelo aplicables solo con análisis y reglas firmadas por expertos",
-    "Entrenador ML candidato bloqueado hasta obtener 200 campañas verificadas y 30 parcelas",
-    "Cloudflare R2 privado con guardia de 8GB a nivel de cuenta y apagado por defecto",
-    "Informe A4, mapa NASA, guardado local y compartir por WhatsApp"
+    "Modelo IA realmente entrenado con series NASA HLS de Barranca (158 observaciones; prueba 2026: 41)",
+    "La evidencia aprendida participa en la selección de la rotación, con barreras de escasez hídrica",
+    "Resultado para agricultores con cultivos, fechas, agua y cobertura; análisis científico opcional",
+    "Mapa del terreno con imágenes NASA y evidencia georreferenciada",
+    "Modelo auditable y entrenamiento reproducible sin credenciales Earthdata",
+    "Comparación interna S0/S1/S2 con NASA POWER + FAO56",
+    "Fuentes ANA, SENAMHI, costos opcionales, informe A4 y guardado de chacra"
   ],
   "computer_vision_enabled": false,
   "environment": "production",
   "source_branch": "main",
   "primary_url": "https://terra360-ai-xi.vercel.app/",
-  "notes": "No hay flujo ANA vigente validado ni asignación de riego parcelaria; los datos de ANA son referencias históricas. No existe un modelo ML agrícola entrenado ni pruebas de campo reales. La climatología GPM IMERG de cuenca y claves R2 requieren accesos privados, ingestión y revisión. No confundir datos faltantes con cero ni prometer rentabilidad."
+  "notes": "El modelo HLS agrupa estados de vegetación sin etiquetas de cultivos; su validación 2026 es reconstructiva, no predicción de rendimiento ni validación con productores. Los requisitos de suelo/agua reales siguen condicionados a registros locales.",
+  "model": "biotex-hls-regimes-v1",
+  "ai_training": {
+    "status": "trained_unsupervised_nasa_hls",
+    "nasa_hls_train_observations": 158,
+    "holdout_2026_observations": 41,
+    "observed_field_count": 4,
+    "holdout_reconstruction_improvement_percent": 86.784,
+    "not_crop_prediction": true
+  }
 }
