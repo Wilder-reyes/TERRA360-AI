@@ -16,7 +16,7 @@ export type ChakraSpatialPlan={
 }
 export type ChakraParcel={id:string;polygon:GeoPolygon}
 const SHADES=['#A3D99D','#E9B56D','#8CB9E1','#D0A4E8','#B9D76F','#E4A0A0','#94C4B6']
-const label=(id:string,es:boolean)=>id==='rest'?(es?'Resto del terreno':'Remaining area'):id
+const label=(id:string,es:boolean)=>id==='rest'?(es?'Resto del terreno':'Remaining area'):(!es&&/^Subparcela (\d+)$/.test(id)?id.replace('Subparcela','Area'):id)
 const shade=(index:number)=>SHADES[index%SHADES.length]
 const localizedCrop=(name:string,nameEn:string|undefined,es:boolean)=>!es&&nameEn?nameEn:name
 const localizedDate=(row:ChakraZoneAdvice,es:boolean)=>!es&&row.sow_label_en?row.sow_label_en:row.sow_label_es
