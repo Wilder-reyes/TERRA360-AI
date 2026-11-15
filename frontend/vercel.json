@@ -30,6 +30,14 @@
     {
       "source": "/api/:path*",
       "destination": "https://terra360-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/como-funciona",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/fuentes",
+      "destination": "/index.html"
     }
   ]
 }

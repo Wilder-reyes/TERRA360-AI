@@ -1,6 +1,8 @@
 // AI-assisted: written with Claude Code (Anthropic) and reviewed by the CHAKRA X team.
 import {expect,test} from '@playwright/test'
 
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v3','hide'))})
+
 test('dark is the default theme',async({page})=>{
  await page.goto('/?lang=en')
  await expect(page.locator('html')).toHaveAttribute('data-theme','dark')

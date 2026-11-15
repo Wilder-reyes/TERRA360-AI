@@ -1,14 +1,12 @@
-import {useEffect,useState} from 'react'
+import {useEffect,useMemo,useState} from 'react'
 import './bio-tour.css'
 
 type Lang='es'|'en'
 type Step=0|1|2
-const KEY='chakra-bio-guided-v2'
-const GUIDANCE=[
- {title:{es:'¡Hola! Soy BIO',en:'Hi! I’m BIO'},body:{es:'Vamos a comenzar con tu tierra. Marca sus esquinas en el mapa y confirma la parcela.',en:'Let’s start with your land. Mark the corners on the map and confirm your field.'},target:'bio-map'},
- {title:{es:'Recordemos lo que sembraste',en:'Let’s record your crops'},body:{es:'Elige un cultivo y toca la zona donde lo sembraste. En computadora también puedes llevar su tarjeta al mapa.',en:'Choose a crop and tap the area where it grew. On desktop, you can also drag its card onto the map.'},target:'bio-crops'},
- {title:{es:'Prepararemos tu plan',en:'Let’s prepare your plan'},body:{es:'Elige cuántos meses quieres organizar. Después verás un mapa que cambia con el tiempo y un calendario para cada zona.',en:'Choose how many months to plan. You’ll then see a changing field map and a calendar for every area.'},target:'bio-plan'}
-] as const
+type Rect={top:number;left:number;right:number;bottom:number}
+const KEY='chakra-bio-guided-v3'
+const OLD_KEY='chakra-bio-guided-v2'
+function safeHidden(){try{return localStorage.getItem(KEY)==='hide'||localStorage.getItem(OLD_KEY)==='hide'}catch{return false}}
 function BioMascot(){return <svg className="bio-mascot" viewBox="0 0 112 154" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
  <g className="bio-body"><path d="M39 116Q12 116 6 82Q24 91 40 93Z" fill="#2b8555"/><path d="M74 115Q101 109 108 80Q88 92 74 94Z" fill="#57ac70"/>
  <path d="M51 124Q49 143 38 145" fill="none" stroke="#236447" strokeWidth="5" strokeLinecap="round"/><path d="M64 124Q66 142 77 145" fill="none" stroke="#236447" strokeWidth="5" strokeLinecap="round"/>
@@ -21,33 +19,67 @@ function BioMascot(){return <svg className="bio-mascot" viewBox="0 0 112 154" ar
  <path className="bio-arm bio-arm-left" d="M32 97Q13 89 10 72" stroke="#327955" strokeWidth="5" strokeLinecap="round" fill="none"/>
  <path className="bio-arm bio-arm-right" d="M81 96Q98 88 101 71" stroke="#327955" strokeWidth="5" strokeLinecap="round" fill="none"/>
  </svg>}
-export default function BioTour({lang='es',step=0,assigned=0}:{lang?:Lang;step?:Step;assigned?:number}){
- const [dismissed,setDismissed]=useState(()=>{try{return localStorage.getItem(KEY)==='hide'}catch{return false}})
- const [open,setOpen]=useState(!dismissed)
- useEffect(()=>{if(!dismissed)setOpen(true)},[step,dismissed])
- const item=GUIDANCE[step]
+export default function BioTour({lang='es',step=0,assigned=0,zoneCount=1,landing=false,fieldReady=true,cropPending=false,planReady=false,error=''}:{
+ lang?:Lang;step?:Step;assigned?:number;zoneCount?:number;landing?:boolean;fieldReady?:boolean;cropPending?:boolean;planReady?:boolean;error?:string
+}){
+ const [hidden,setHidden]=useState(safeHidden)
+ const [open,setOpen]=useState(!safeHidden())
+ const [bounds,setBounds]=useState<Rect|null>(null)
+ const phase=step===0?(landing?'start':fieldReady?'next':'map'):step===1?(assigned>=zoneCount?'next':cropPending?'zone':'crops'):(planReady?'result':'plan')
+ const target=phase==='start'?'bio-start':phase==='next'?'bio-next':phase==='map'?'bio-map':phase==='zone'?'bio-zone-map':phase==='crops'?'bio-crops':phase==='result'?'bio-result':'bio-plan'
+ const guide=useMemo(()=>{
+  const es=lang==='es'
+  const messages:Record<string,[string,string]>={
+   start:es?['¡Hola! Soy BIO','Comencemos juntos. Pulsa «Explorar parcela de Barranca» para ver cómo funciona tu terreno.']:['Hi! I’m BIO','Let’s begin. Tap “Explore the Barranca example” to see the field.'],
+   map:es?['Marca tu terreno','Toca las esquinas de tu parcela en el mapa y confirma el contorno.']:['Outline your land','Tap the field corners on the map and confirm the outline.'],
+   next:step===0?(es?['¡Terreno listo!','Ahora pulsa «Registrar cultivos» para indicarme qué sembraste.']:['Your field is ready!','Tap “Record crops” and show what you planted.']):(es?['¡Muy bien!','Ya registraste tus zonas. Pulsa «Continuar a mi plan».']:['Well done!','Your areas are recorded. Tap “Continue to my plan”.']),
+   crops:es?['¿Qué sembraste antes?','Elige el mes y toca el dibujo de un cultivo. Luego selecciona en el mapa la zona donde creció.']:['What did you grow before?','Choose a planting month and a crop card. Then tap the area on the map where it grew.'],
+   zone:es?['¡Ahora el mapa!','Toca la zona de la parcela donde sembraste ese cultivo. El color cambiará al guardarlo.']:['Now the map!','Tap the area where you planted that crop. Its color will change when saved.'],
+   plan:es?['Organiza tus próximas siembras','Selecciona cuántos meses quieres preparar y pulsa «Crear mi calendario».']:['Plan your next plantings','Choose how many months ahead to plan and tap “Create my calendar”.'],
+   result:es?['¡Este es tu plan!','Explora los años para ver qué podrías sembrar en cada zona. Revisa las fechas antes de decidir.']:['Here is your plan!','Explore the years to see what you could plant in each area. Check dates before deciding.']
+  }
+  return messages[phase]
+ },[phase,step,lang])
+ useEffect(()=>{if(!hidden)setOpen(true)},[phase,hidden])
  useEffect(()=>{
   if(!open)return
-  const target=document.querySelector('[data-bio-target="'+item.target+'"]')
-  if(target){target.classList.add('bio-spotlight')}
-  return()=>{target?.classList.remove('bio-spotlight')}
- },[open,item.target])
- useEffect(()=>{
-  if(!open)return
-  const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)}
-  document.addEventListener('keydown',onKey)
-  return()=>document.removeEventListener('keydown',onKey)
- },[open])
- const description=step===1&&assigned>0?(lang==='es'?'¡Muy bien! Ya registraste '+assigned+' zona(s).':'Great! You have recorded '+assigned+' area(s).'):item.body[lang]
- const hide=()=>{setOpen(false);setDismissed(true);try{localStorage.setItem(KEY,'hide')}catch{/* privacy mode */}}
+  let raf=0
+  let obs:ResizeObserver|null=null
+  const element=document.querySelector('[data-bio-target="'+target+'"]')
+  if(!element){setBounds(null);return}
+  const update=()=>{
+   const r=element.getBoundingClientRect(),pad=7
+   setBounds({top:Math.max(0,r.top-pad),left:Math.max(0,r.left-pad),right:Math.min(window.innerWidth,r.right+pad),bottom:Math.min(window.innerHeight,r.bottom+pad)})
+  }
+  const r=element.getBoundingClientRect()
+  if(r.bottom>window.innerHeight-120||r.top<90){element.scrollIntoView({behavior:'smooth',block:'center'})}
+  raf=window.requestAnimationFrame(update)
+  obs=new ResizeObserver(update);obs.observe(element)
+  window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update)
+  return()=>{cancelAnimationFrame(raf);obs?.disconnect();window.removeEventListener('scroll',update);window.removeEventListener('resize',update)}
+ },[open,target])
+ useEffect(()=>{if(!open||!error)return;setBounds(null)},[error,open])
+ const close=(remember:boolean)=>{
+  setOpen(false);setBounds(null)
+  if(remember){setHidden(true);try{localStorage.setItem(KEY,'hide')}catch{/* private browsing */}}
+ }
+ const highlight=bounds&&bounds.bottom>bounds.top&&bounds.right>bounds.left
+ const overlays=highlight?[
+  {top:0,left:0,width:'100vw',height:bounds.top},
+  {top:bounds.top,left:0,width:bounds.left,height:bounds.bottom-bounds.top},
+  {top:bounds.top,left:bounds.right,width:Math.max(0,window.innerWidth-bounds.right),height:bounds.bottom-bounds.top},
+  {top:bounds.bottom,left:0,width:'100vw',height:Math.max(0,window.innerHeight-bounds.bottom)}
+ ]:[]
  return <div className="bio-guide-root">
-  {!open?<button type="button" className="bio-repeat" onClick={()=>setOpen(true)} aria-label={lang==='es'?'Abrir guía de BIO':'Open BIO guide'}><BioMascot/><span>{lang==='es'?'Ayuda de BIO':'BIO guide'}</span></button>:
-  <section className="bio-tour" role="region" aria-live="polite" aria-label={lang==='es'?'BIO, tu guía':'BIO, your guide'}>
-   <div className="bio-tour-top"><BioMascot/><div><span className="bio-kicker">{lang==='es'?'BIO TE ACOMPAÑA':'BIO GUIDES YOU'} · {step+1}/3</span>
-    <strong>{item.title[lang]}</strong><p>{description}</p></div></div>
-   <div className="bio-dots">{GUIDANCE.map((_,i)=><span key={i} className={i<=step?'active':''}/>)}</div>
-   <div className="bio-actions"><button type="button" className="bio-skip" onClick={hide}>{lang==='es'?'No mostrar más':'Don’t show again'}</button>
-    <button type="button" className="bio-forward" onClick={()=>setOpen(false)}>{lang==='es'?'¡Entendido!':'Got it!'}</button></div>
-  </section>}
+  {!open?<button type="button" className="bio-repeat" onClick={()=>{setOpen(true);setHidden(false)}} aria-label={lang==='es'?'Abrir guía de BIO':'Open BIO guide'}><BioMascot/><span>{lang==='es'?'Ayuda de BIO':'BIO guide'}</span></button>:
+  <>
+   {highlight&&<div className="bio-shades" aria-hidden="true">{overlays.map((piece,i)=><div key={i} className="bio-shade" style={piece}/>)}</div>}
+   <section className={'bio-tour bio-guided-card'+(bounds&&bounds.top>window.innerHeight*.57?' bio-guided-top':'')} role="region" aria-live="polite" aria-label={lang==='es'?'BIO, tu guía':'BIO, your guide'}>
+    <div className="bio-tour-top"><BioMascot/><div><span className="bio-kicker">{lang==='es'?'BIO TE ACOMPAÑA':'BIO GUIDES YOU'} · {step+1}/3</span>
+     <strong>{guide[0]}</strong><p>{error?(lang==='es'?'Revisa esto: ':'Please check: ')+error:guide[1]}</p></div></div>
+    <div className="bio-actions"><button type="button" className="bio-skip" onClick={()=>close(true)}>{lang==='es'?'Salir del tutorial':'Exit tutorial'}</button>
+     <button type="button" className="bio-forward" onClick={()=>close(false)}>{lang==='es'?'Entendido':'Got it'}</button></div>
+   </section>
+  </>}
  </div>
 }

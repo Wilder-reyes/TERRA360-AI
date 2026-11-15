@@ -1,6 +1,6 @@
 /** Clear, print-safe spatial planting recommendations; do not mistake colors for satellite evidence. */
 import {useState,type ReactNode} from 'react'
-import ChakraRotationTimeline,{planMonths,campaignAt,displayMonth} from './ChakraRotationTimeline'
+import ChakraRotationTimeline,{planMonths,campaignAt,displayMonth,quarterMonths,quarterCrops,quarterName,zoneLabel} from './ChakraRotationTimeline'
 import {cropVisual} from './chakraCropVisuals'
 import type {GeoPolygon} from './rotationZones'
 import {printableGeometry} from './campaignPlan'
@@ -20,7 +20,7 @@ export type ChakraSpatialPlan={
 }
 export type ChakraParcel={id:string;polygon:GeoPolygon}
 const SHADES=['#A3D99D','#E9B56D','#8CB9E1','#D0A4E8','#B9D76F','#E4A0A0','#94C4B6']
-const label=(id:string,es:boolean)=>id==='rest'?(es?'Resto del terreno':'Remaining area'):(!es&&/^Subparcela (\d+)$/.test(id)?id.replace('Subparcela','Area'):id)
+const label=(id:string,es:boolean)=>id==='rest'?(es?'Zona A':'Area A'):(!es&&/^Subparcela (\d+)$/.test(id)?id.replace('Subparcela','Area'):id)
 const shade=(index:number)=>SHADES[index%SHADES.length]
 const localizedCrop=(name:string,nameEn:string|undefined,es:boolean)=>!es&&nameEn?nameEn:name
 const localizedDate=(row:ChakraZoneAdvice,es:boolean)=>!es&&row.sow_label_en?row.sow_label_en:row.sow_label_es
@@ -34,7 +34,7 @@ function sketchCenter(points:string):{x:number;y:number}{
 function suggestedFor(row:ChakraZoneAdvice,month?:string){
  if(!month)return {cropId:row.suggested_crop_id,nameEs:row.suggested_crop,nameEn:row.suggested_crop_en}
  const active=campaignAt(row,month)
- return {cropId:active?.crop_id,nameEs:active?.crop_es||'Sin siembra',nameEn:active?.crop_en||'No crop'}
+ return {cropId:active?.crop_id||row.current_crop_id,nameEs:active?.crop_es||'Último cultivo: '+row.current_crop,nameEn:active?.crop_en||'Last grown: '+(row.current_crop_en||row.current_crop)}
 }
 export function ChakraZoneSketch({field,subplots,plan,lang,month}:{field:GeoPolygon;subplots:ChakraParcel[];plan:ChakraSpatialPlan;lang:'es'|'en';month?:string}){
  const es=lang==='es',geometry=printableGeometry(field,subplots)
@@ -72,17 +72,21 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
  onPrint:()=>void;onEdit:()=>void
 }){
  const es=lang==='es',referenceOnly=plan.scope==='exploratory_reference'
- const [monthIndex,setMonthIndex]=useState(0)
+ const [monthIndex,setMonthIndex]=useState(()=>{
+  const months=planMonths(plan)
+  const first=months.findIndex(m=>plan.zone_plans.some(row=>row.campaigns?.some(c=>c.sow_month===m)))
+  return Math.max(0,first)
+ })
  const months=planMonths(plan)
- return <section className="chakra-zone-result" aria-label={es?'Plan agrícola por zonas':'Zone planting plan'}>
+ return <section className="chakra-zone-result" data-bio-target="bio-result" aria-label={es?'Plan agrícola por zonas':'Zone planting plan'}>
   <div className="chakra-result-heading"><span className="b-eyebrow">{es?'PASO 3 DE 3 · TU PLAN':'STEP 3 OF 3 · YOUR PLAN'}</span>
-   <h1>{es?'Tu próxima siembra, zona por zona.':'Your next planting, zone by zone.'}</h1>
-   <p>{es?'Conoce dónde, cuándo y cómo preparar cada cultivo.':'See where, when and how to plan each crop.'}</p>
+   <h1>{es?'Mi plan de cultivos':'My crop plan'}</h1>
+   <p>{es?'Mira qué sembraste antes y cómo podrías organizar tus próximas siembras, zona por zona.':'See what you planted before and how you could organize your next crops by area.'}</p>
   </div>
   <div className="chakra-plan-highlight">
-   <span>{es?'TERRENO DELIMITADO':'SELECTED FIELD'}</span>
+   <span>{es?'MI TERRENO':'MY FIELD'}</span>
    <strong>{plan.parcel_area_ha.toLocaleString(es?'es-PE':'en-US',{maximumFractionDigits:2})} ha</strong>
-   <span>{plan.zone_plans.length} {es?'zonas con cultivos registrados':'zones with crop history'}</span>
+   <span>{plan.zone_plans.length} {es?'zonas registradas':'areas recorded'}</span>
   </div>
   <ChakraZoneSketch field={field} subplots={subplots} plan={plan} lang={lang} month={months[Math.min(monthIndex,months.length-1)]}/>
   <ChakraRotationTimeline plan={plan} lang={lang} monthIndex={monthIndex} onMonth={setMonthIndex}/>
@@ -100,7 +104,7 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
     <p>{es?'Referencias':'References'}: {(!es&&plan.sources_en?plan.sources_en:plan.sources).join(' · ')}</p>
    </details>
   </div>
-  <div className="chakra-result-actions"><button type="button" className="b-btn b-btn-primary" onClick={onPrint}>{es?'Imprimir mapa y plan PDF':'Print map and PDF plan'}</button>
+  <div className="chakra-result-actions"><button type="button" className="b-btn b-btn-primary" onClick={onPrint}>{es?'Guardar mi plan':'Save my plan'}</button>
    <button type="button" className="b-btn b-btn-light" onClick={onEdit}>{es?'Editar mis cultivos':'Edit my crops'}</button></div>
  </section>
 }
@@ -112,7 +116,7 @@ export function ChakraZonePrint({plan,field,subplots,lang,place,extra}:{
  const es=lang==='es'
  return <article className="chakra-spatial-print">
   <header><strong>chakra</strong><span>{es?'Plan agrícola por zonas · NASA Space Apps 2026':'Zone planting plan · NASA Space Apps 2026'}</span></header>
-  <h1>{es?'Dónde, cuándo y cómo sembrar':'Where, when and how to plant'}</h1>
+  <h1>{es?'Mi plan de siembra':'My planting plan'}</h1>
   <p>{place} · {es?'Área aproximada':'Approximate area'}: {plan.parcel_area_ha.toFixed(2)} ha · {new Date().toLocaleDateString(es?'es-PE':'en-US')}</p>
   <ChakraZoneSketch field={field} subplots={subplots} plan={plan} lang={lang}/>
   {plan.zone_plans.map((row,i)=><section className="chakra-print-zone" key={row.zone_id}>
@@ -127,12 +131,14 @@ export function ChakraZonePrint({plan,field,subplots,lang,place,extra}:{
    const slots=planMonths(plan).filter(m=>m.startsWith(year))
    return <section className="chakra-print-year" key={year}>
     <h2>{es?'Calendario de rotación':'Rotation calendar'} · {year}</h2>
-    <table><thead><tr><th>{es?'Zona':'Area'}</th>{slots.map(m=><th key={m}>{displayMonth(m,lang)}</th>)}</tr></thead>
-    <tbody>{plan.zone_plans.map(row=><tr key={row.zone_id}>
-     <th>{label(row.zone_id,es)}</th>
-     {slots.map(m=>{const c=campaignAt(row,m),visual=cropVisual(c?.crop_id)
-      return <td key={m}>{c?<span style={{background:visual.color}}>{c.sow_month===m?visual.icon+' ':''}{es?c.crop_es:c.crop_en}</span>:'—'}</td>})}
-    </tr>)}</tbody></table>
+    <table><thead><tr><th>{es?'Zona':'Area'}</th>{[0,1,2,3].map(q=><th key={q}>{quarterName(q,lang)}</th>)}</tr></thead>
+     <tbody>{plan.zone_plans.map((row,i)=><tr key={row.zone_id}>
+      <th>{zoneLabel(row.zone_id,es,i)}<small>{es?'Antes: ':'Previously: '}{es?row.current_crop:row.current_crop_en||row.current_crop}</small></th>
+      {[0,1,2,3].map(q=>{
+       const cells=quarterCrops(row,quarterMonths(slots,q))
+       return <td key={q}>{cells.length?cells.map(c=>{const v=cropVisual(c.crop_id);return <span key={c.when} style={{background:v.color}}>{es?c.label:c.label_en} · {displayMonth(c.when,lang)}</span>}):'—'}</td>
+      })}
+     </tr>)}</tbody></table>
    </section>
   })}
   {extra}

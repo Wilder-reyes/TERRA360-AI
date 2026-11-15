@@ -4,7 +4,7 @@ import {prepared,preparedZone,savedField,testField,testSubplot} from './chakra-f
 test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
 
 test('map-first CHAKRA landing keeps the journey short and science optional',async({page})=>{
- await page.goto('/')
+ await page.goto('/?research=1')
  await expect(page.getByRole('heading',{name:/Conoce tu terreno/})).toBeVisible()
  await expect(page.locator('.b-map')).toBeVisible()
  await expect(page.locator('.b-progress button')).toHaveCount(3)
@@ -18,7 +18,7 @@ test('a location search can move from Barranca to any requested location',async(
  await page.route('https://nominatim.openstreetmap.org/search**',route=>route.fulfill({
   contentType:'application/json',body:JSON.stringify([{display_name:'Huacho, Huaura, Lima, Perú',lat:'-11.107',lon:'-77.610'}])
  }))
- await page.goto('/')
+ await page.goto('/?research=1')
  await page.getByRole('textbox',{name:'¿Dónde está tu chacra?'}).fill('Huacho')
  await page.getByRole('button',{name:'Buscar lugar'}).click()
  await page.getByRole('button',{name:/Huacho, Huaura, Lima, Perú/}).click()
@@ -27,7 +27,7 @@ test('a location search can move from Barranca to any requested location',async(
 })
 
 test('any imported polygon can be assigned a crop without losing its geometry',async({page})=>{
- await page.goto('/')
+ await page.goto('/?research=1')
  await page.getByText('Importar contorno GeoJSON (opcional)',{exact:true}).click()
  await page.getByLabel('Contorno GeoJSON',{exact:true}).fill(JSON.stringify({
   type:'Polygon',coordinates:[[[-71.995,-13.517],[-71.992,-13.517],[-71.992,-13.514],[-71.995,-13.514],[-71.995,-13.517]]]
@@ -45,10 +45,10 @@ test('per-zone PDF includes map, acreage, crop, date and four preparation action
   payload=route.request().postDataJSON()
   await route.fulfill({contentType:'application/json',body:JSON.stringify(prepared)})
  })
- await page.goto('/')
+ await page.goto('/?research=1')
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
- await page.getByRole('button',{name:'Guardar cultivo de esta zona'}).click()
+ await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await expect(page.getByText('enero de 2027',{exact:true})).toBeVisible()
@@ -57,7 +57,7 @@ test('per-zone PDF includes map, acreage, crop, date and four preparation action
  const report=page.locator('.chakra-spatial-print')
  await expect(report).toBeVisible()
  await expect(report.locator('svg')).toHaveCount(1)
- await expect(report).toContainText('Dónde, cuándo y cómo sembrar')
+ await expect(report).toContainText('Mi plan de siembra')
  await expect(report).toContainText('Vainita')
  await expect(report).toContainText('Comprobar agua')
  await expect(report).toContainText('enero de 2027')
@@ -79,13 +79,13 @@ test('subdivided fields preserve individual zones and crops',async({page})=>{
   payload=route.request().postDataJSON()
   return route.fulfill({contentType:'application/json',body:JSON.stringify({...prepared,zone_plans:[preparedZone,zone2]})})
  })
- await page.goto('/')
+ await page.goto('/?research=1')
  await page.getByRole('button',{name:'Recuperar mi chacra guardada'}).click()
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await expect(page.locator('.chakra-zone-choice')).toHaveCount(2)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
- await expect(page.getByRole('heading',{name:/Tu próxima siembra/})).toBeVisible()
+ await expect(page.getByRole('heading',{name:/Mi plan de cultivos/})).toBeVisible()
  expect(payload?.zones).toHaveLength(2)
  expect(payload?.zones).toEqual(expect.arrayContaining([
   expect.objectContaining({id:'rest',crop_id:'maiz_amarillo_duro'}),
@@ -95,10 +95,10 @@ test('subdivided fields preserve individual zones and crops',async({page})=>{
 })
 
 test('saved zone decisions can be recovered after a reload',async({page})=>{
- await page.goto('/')
+ await page.goto('/?research=1')
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
- await page.getByRole('button',{name:'Guardar cultivo de esta zona'}).click()
+ await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
  await page.getByRole('button',{name:'Guardar avance'}).click()
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('biotex-farm-v1')||'{}').zoneCrops.rest.crop_id)).toBe('camote')
  await page.reload()
@@ -108,7 +108,7 @@ test('saved zone decisions can be recovered after a reload',async({page})=>{
 })
 
 test('regional GIBS rain keeps its real source and an optional provider legend',async({page})=>{
- await page.goto('/')
+ await page.goto('/?research=1')
  await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()
  const panel=page.getByRole('region',{name:'Procedencia de la capa NASA'})
  await expect(panel).toContainText('La leyenda muestra intensidad de lluvia regional')
@@ -119,7 +119,7 @@ test('regional GIBS rain keeps its real source and an optional provider legend',
 })
 
 test('main actions and map remain usable on narrow mobile screens',async({page})=>{
- await page.setViewportSize({width:375,height:812});await page.goto('/')
+ await page.setViewportSize({width:375,height:812});await page.goto('/?research=1')
  await expect(page.locator('.b-map')).toBeVisible()
  await expect(page.getByRole('button',{name:'Registrar cultivos por zona'})).toBeVisible()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(376)
@@ -129,7 +129,7 @@ test('main actions and map remain usable on narrow mobile screens',async({page})
 })
 
 test('the published release retains the local CHAKRA brand and scientific provenance',async({page})=>{
- await page.goto('/')
+ await page.goto('/?research=1')
  await expect(page).toHaveTitle('CHAKRA | Tu tierra. Tu próxima siembra.')
  await expect(page.locator('.b-brand b')).toHaveText('chakra')
  const response=await page.request.get('/release.json')
