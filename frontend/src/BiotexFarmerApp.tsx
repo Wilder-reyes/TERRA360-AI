@@ -303,34 +303,51 @@ export default function BiotexFarmerApp(){
  const original=result?.strategies.find(s=>s.id==='S0')||null
  const other=result?.strategies.filter(s=>s.id!=='S0'&&s.id!==preferred?.id)||[]
  function goPrint(){window.print()}
- function strategyName(s:Strategy){if(s.id==='S0')return t.current;return s.key==='water'?(lang==='es'?'Opción para ahorrar agua':'Water-saving option'):(lang==='es'?'Opción para cuidar el suelo':'Soil-care option')}
+ function strategyName(s:Strategy){
+  if(s.id==='S0')return t.current
+  if(s.key==='water'){
+   const change=s.relative_to_current?.water_low_river_change_percent
+   if(change==null||change>=0)return lang==='es'?'Cambiar las fechas de siembra':'Change sowing dates'
+   if(change>-5)return lang==='es'?'Otra forma de sembrar':'Another planting sequence'
+   return lang==='es'?'Opción para usar menos agua':'Option to use less water'
+  }
+  return lang==='es'?'Opción para cuidar la tierra':'Option to care for soil'
+ }
  function schedule(s:Strategy){return [...s.plantings].sort((a,b)=>a.start_index-b.start_index)}
  function showPct(v:number|null|undefined){if(v==null)return '—';return (v>0?'+':'')+Math.round(v)+'%'}
  function consequences(s:Strategy){const r=s.relative_to_current;return r?[
   {title:t.keyWater,value:showPct(r.water_low_river_change_percent),bad:(r.water_low_river_change_percent??0)>0,good:(r.water_low_river_change_percent??0)<0},
   {title:t.keySoil,value:Math.abs(r.bare_months_change)+' '+(r.bare_months_change>0?t.more:r.bare_months_change<0?t.fewer:'='),bad:r.bare_months_change>0,good:r.bare_months_change<0},
-  {title:lang==='es'?'Nuevas siembras de legumbres':'Additional legume crops',value:String(Math.max(0,r.legume_plantings_change)),bad:false,good:r.legume_plantings_change>0}
+  {title:lang==='es'?'Cambios en siembras de legumbres':'Change in legume plantings',value:(r.legume_plantings_change>0?'+':'')+String(r.legume_plantings_change),bad:r.legume_plantings_change<0,good:r.legume_plantings_change>0}
  ]:[]}
  function cropsLine(s:Strategy){return schedule(s).map(p=>labelCrop(p.crop_id,lang)).join(' · ')}
  function technical(s:Strategy){return <details className="b-technical"><summary>{t.details}</summary>
   <div className="b-technical-inner"><h4>{t.evidence}</h4><ul>{s.sections.evidence[lang].map((a,i)=><li key={i}>{a}</li>)}</ul>
    <h4>{t.verify}</h4><ul>{s.sections.gaps[lang].map((a,i)=><li key={i}>{a}</li>)}</ul></div>
  </details>}
- function strip(s:Strategy){return <div className="b-crop-calendar" aria-label={t.planSchedule}>{[0,1].map(year=><div className="b-year" key={year}>
-  <strong>{year===0?t.year1:t.year2}</strong>
-  <div className="b-month-grid">{Array.from({length:12},(_,j)=>{const i=year*12+j;const cell=s.timeline[i];const id=cell?.crop_id;return <div key={i} className={'b-month '+(id?'filled':'empty')} title={id?labelCrop(id,lang):t.noCrop}>
-   <span>{mon(i,lang).slice(0,3)}</span><b>{id?labelCrop(id,lang):'—'}</b>
-  </div>})}</div>
- </div>)}</div>}
- function mainCard(s:Strategy){return <article className="b-recommend">
-  <div className="b-recommend-top"><span className="b-eyebrow">{t.recommended}</span><h2>{strategyName(s)}</h2>
-  <p>{result?.[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']||t.planLead}</p></div>
-  <div className="b-keyfigures">{consequences(s).map((k,i)=><div key={i} className={'b-kpi '+(k.bad?'risk':k.good?'positive':'neutral')}><span>{k.title}</span><strong>{k.value}</strong></div>)}</div>
-  <h3>{t.planSchedule}</h3>{strip(s)}
-  <div className="b-benefits-grid"><section><h3>{t.benefits}</h3><ul>{s.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section>
-  <section><h3>{t.risks}</h3><ul>{s.sections.risks[lang].slice(0,3).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
-  {technical(s)}
- </article>}
+ function strip(s:Strategy){const crops=schedule(s)
+  return <div className="b-sequence" aria-label={t.planSchedule}>{crops.length?crops.map((p,i)=><div className="b-sequence-step" key={p.start_index+'-'+p.crop_id}>
+   <span className="b-sequence-num">{i+1}</span>
+   <div><strong>{labelCrop(p.crop_id,lang)}</strong><span>{lang==='es'?'Sembrar desde':'Sow from'} {planMonth(p.start_index,lang,planStartYear)} · {p.months} {lang==='es'?'meses aprox.':'months approx.'}</span></div>
+  </div>):<p>{t.noCrop}</p>}
+   <p className="b-sequence-foot">{lang==='es'?'El orden se basa en un ciclo de dos años que empieza en agosto. Los meses sin cultivo no son instrucciones de dejar el terreno abandonado.':'Order follows a two-year cycle starting in August. Gaps are not instructions to neglect the field.'}</p>
+  </div>
+ }
+ function mainCard(s:Strategy){
+  const relative=s.relative_to_current
+  const negligible=relative?.water_low_river_change_percent!=null&&Math.abs(relative.water_low_river_change_percent)<5
+  return <article className="b-recommend">
+   <div className="b-recommend-top"><span className="b-eyebrow">{t.recommended}</span><h2>{strategyName(s)}</h2>
+    <p>{result?.[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']||t.planLead}</p>
+    {negligible&&<p className="b-small-change">{lang==='es'?'La diferencia de agua es pequeña: no la tomes como un ahorro comprobado.':'Water difference is small and should not be considered verified savings.'}</p>}
+   </div>
+   <div className="b-keyfigures">{consequences(s).map((k,i)=><div key={i} className={'b-kpi '+(k.bad?'risk':k.good?'positive':'neutral')}><span>{k.title}</span><strong>{k.value}</strong></div>)}</div>
+   <h3>{t.planSchedule}</h3>{strip(s)}
+   <div className="b-benefits-grid"><section><h3>{t.benefits}</h3><ul>{s.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section>
+    <section><h3>{t.risks}</h3><ul>{s.sections.risks[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
+   {technical(s)}
+  </article>
+ }
  function printable(){if(!result)return null;
   const maxWater=Math.max(1,...result.strategies.map(x=>x.indicators.water_low_river_mm));
   return <div className="b-print-report" aria-hidden={step!==3}>
@@ -340,8 +357,8 @@ export default function BiotexFarmerApp(){
   <p className="b-print-intro">{t.warning} {sampleNote?t.exampleNote:''}</p>
   {preferred?<><h2>{t.recommended}: {strategyName(preferred)}</h2><p>{result[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']}</p>
    <div className="b-print-kpis">{consequences(preferred).map((x,i)=><div key={i}><span>{x.title}</span><b>{x.value}</b></div>)}</div>
-   <h3>{t.planSchedule}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Año':'Year'}</th><th>{t.sowing}</th><th>{t.crop}</th><th>{lang==='es'?'Duración':'Duration'}</th></tr></thead>
-    <tbody>{schedule(preferred).map((p,i)=><tr key={i}><td>{p.start_index<12?'1':'2'}</td><td>{planMonth(p.start_index,lang)}</td><td>{labelCrop(p.crop_id,lang)}</td><td>{p.months} {lang==='es'?'meses':'months'}</td></tr>)}</tbody></table>
+   <h3>{t.planSchedule} · {lang==='es'?'inicio: agosto':'start: August'} {planStartYear}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Año':'Year'}</th><th>{t.sowing}</th><th>{t.crop}</th><th>{lang==='es'?'Duración':'Duration'}</th></tr></thead>
+    <tbody>{schedule(preferred).map((p,i)=><tr key={i}><td>{p.start_index<12?'1':'2'}</td><td>{planMonth(p.start_index,lang,planStartYear)}</td><td>{labelCrop(p.crop_id,lang)}</td><td>{p.months} {lang==='es'?'meses':'months'}</td></tr>)}</tbody></table>
    <div className="b-print-grid"><section><h3>{t.benefits}</h3><ul>{preferred.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section><section><h3>{t.risks}</h3><ul>{preferred.sections.risks[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
   </>:<h2>{t.noRecommend}</h2>}
   <h3>{t.compare}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Opción':'Option'}</th><th>{t.keyWater}</th><th>{t.keySoil}</th></tr></thead>
@@ -354,7 +371,7 @@ export default function BiotexFarmerApp(){
   <div className="b-print-small"><h3>{t.sources}</h3>
   <p>NASA POWER (2001–2025); {history?(lang==='es'?'NASA HLS v2.0 (imágenes consultadas; cultivos confirmados por una persona)':'NASA HLS v2.0 (images consulted; crops confirmed by a person)'):(lang==='es'?'historial de cultivos declarado por la persona (sin análisis HLS)':'farmer-declared crop history (no HLS analysis)')}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
   <p>{lang==='es'?'Solo se utiliza un calendario agrícola aproximado de Lima; no se conoce el análisis de suelo, turno real de riego o precio futuro. Los cálculos son comparaciones relativas, no recomendaciones garantizadas.':'Uses an approximate Lima sowing calendar. Soil test, actual irrigation allocation and future prices are not known. Results are relative comparisons, not guarantees.'}</p>
-  <p>{sampleNote?t.exampleNote:''}</p></div></div>}
+  <p>{sampleNote?(lang==='es'?'Terreno mostrado para la demostración. Los cultivos registrados se proporcionaron durante esta sesión.':'Demonstration field. The recorded crops were provided during this session.'):''}</p></div></div>}
  return <div className="b-app">
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
   <header className="b-header"><div className="b-header-inner"><div className="b-brand"><span className="b-brand-mark"><Icon name="leaf" size={25}/></span><div><b>BIOTEX</b><small>NSPACE BIOTEX</small></div></div>
@@ -443,6 +460,9 @@ export default function BiotexFarmerApp(){
      <span className="b-radio" aria-hidden="true"/></button>)}</div>
      <div className="b-input-row b-input-soft"><label>{t.income}<select value={confirmedOptions.includes(incomeCrop)?incomeCrop:''} onChange={e=>{setIncomeCrop(e.target.value);setResult(null)}}><option value="">{t.incomeAuto}</option>{confirmedOptions.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
       <fieldset><legend>{t.scarcity}</legend><div className="b-choice-row">{(['escaso','normal','no_se'] as const).map(id=><button key={id} type="button" aria-pressed={scarcity===id} className={scarcity===id?'chosen':''} onClick={()=>{setScarcity(id);setResult(null)}}>{id==='escaso'?t.yes:id==='normal'?t.no:t.unknown}</button>)}</div></fieldset></div>
+     <div className="b-year-control"><label>{lang==='es'?'¿En qué año empezarías el plan?':'Which year would you begin?'}
+      <select value={planStartYear} onChange={e=>setPlanStartYear(Number(e.target.value))}>{[0,1,2].map(offset=><option key={offset} value={new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}>{lang==='es'?'Agosto':'August'} {new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}</option>)}</select>
+      </label><small>{lang==='es'?'El modelo empieza su ciclo en agosto; las fechas son aproximadas.':'The model cycle starts in August; dates are approximate.'}</small></div>
     </section>
     {planError&&<p className="b-error" role="alert">{planError}</p>}
     {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
@@ -451,13 +471,14 @@ export default function BiotexFarmerApp(){
    </section>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro"><span className="b-eyebrow">04 / 04</span><h1>{t.planTitle}</h1><p>{t.planLead}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
-    {sampleNote&&<p className="b-note"><Icon name="info" size={18}/>{t.exampleNote}</p>}
+    {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
     {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
     {preferred?mainCard(preferred):<div className="b-card b-no-recommend"><Icon name="info"/><h2>{t.noRecommend}</h2><p>{t.unavailable}</p></div>}
     <div className="b-caution"><Icon name="alert" size={21}/><p>{t.warning}</p></div>
+    {other.some(x=>(x.relative_to_current?.water_low_river_change_percent??0)>25)&&<p className="b-water-caution">{lang==='es'?'Hay otra opción que necesita bastante más agua en meses secos. Revisa esta diferencia antes de considerarla.':'Another option needs considerably more crop water in dry months. Review this difference before considering it.'}</p>}
     {other.length>0||original?<section className="b-compare-wrap"><button type="button" className="b-compare-trigger" aria-expanded={otherOpen} onClick={()=>setOtherOpen(v=>!v)}><span>{t.other}</span><span>{otherOpen?'−':'+'}</span></button>
       {otherOpen&&<div className="b-other-cards">{[...other,...(original?[original]:[])].map(s=><article className="b-card b-other" key={s.id}>
-       <h3>{strategyName(s)}</h3><p>{cropsLine(s)}</p><div className="b-mini-kpis"><span>{t.keyWater}: {s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</span><span>{t.keySoil}: {s.indicators.bare_months}/24</span></div>
+       <h3>{strategyName(s)}</h3><p>{cropsLine(s)}</p><div className="b-mini-kpis"><span className={(s.relative_to_current?.water_low_river_change_percent??0)>25?'b-water-high':''}>{t.keyWater}: {s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</span><span>{t.keySoil}: {s.indicators.bare_months}/24</span></div>
        {s.plantings.length>0&&<details><summary>{t.planSchedule}</summary>{strip(s)}</details>}{technical(s)}
       </article>)}</div>}</section>:null}
     <div className="b-report-actions"><button type="button" onClick={goPrint} className="b-btn b-btn-primary"><Icon name="print"/>{t.report}</button>
