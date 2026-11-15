@@ -74,5 +74,47 @@ class SpatialPlanTests(unittest.TestCase):
             ])
 
 
+class SpatialEndpointTests(unittest.TestCase):
+    """Verify the actual FastAPI contract independently of external NASA network."""
+
+    def test_post_plan_returns_zones_for_off_site_field(self):
+        from unittest.mock import patch, AsyncMock
+        from fastapi.testclient import TestClient
+        from app.main import app
+
+        outline = polygon(-71.993, -13.517, -71.991, -13.515)
+        payload = {
+            "polygon": outline,
+            "zones": [{"id": "rest", "crop_id": "camote",
+                       "planted_month": "2026-06"}],
+        }
+        with patch("app.api.rotation_routes.monthly_climate",
+                   new_callable=AsyncMock, return_value={
+                       "months": [{"month": m, "et0_mm_day": 5}
+                                  for m in range(1, 13)]
+                   }):
+            response = TestClient(app).post("/api/rotation/spatial-plan", json=payload)
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertEqual(body["status"], "prepared")
+        self.assertEqual(body["scope"], "exploratory_reference")
+        self.assertEqual(body["ai_status"], "agronomic_rule_engine")
+        self.assertEqual(body["zone_plans"][0]["current_crop"], "Camote")
+        self.assertTrue(body["zone_plans"][0]["how_es"])
+
+    def test_rejects_unknown_crop_cleanly(self):
+        from fastapi.testclient import TestClient
+        from unittest.mock import patch, AsyncMock
+        from app.main import app
+        with patch("app.api.rotation_routes.monthly_climate",
+                   new_callable=AsyncMock, return_value={"months": []}):
+            response = TestClient(app).post("/api/rotation/spatial-plan", json={
+                "polygon": polygon(-71.993, -13.517, -71.991, -13.515),
+                "zones": [{"id": "rest", "crop_id": "imaginary",
+                           "planted_month": "2026-06"}],
+            })
+        self.assertEqual(response.status_code, 422)
+
+
 if __name__ == "__main__":
     unittest.main()
