@@ -331,3 +331,14 @@
 .b-report-map-outline{float:right;width:95px;height:78px;margin:0 0 6px 10px;stroke:#1c6645;fill:#e0efe6}
 .b-print-crop-note{font-size:8.5pt;color:#496555}
 @media(max-width:620px){.b-farm-fields{grid-template-columns:1fr}}
+
+/* A4 print map outline: SVG uses the farmer-selected polygon, not an invented raster. */
+@media print{
+ .b-print-sketch{float:right;width:35mm;margin:0 0 4mm 5mm;break-inside:avoid}
+ .b-print-sketch svg{display:block;width:100%;height:27mm}
+ .b-print-sketch figcaption{font-size:7pt;color:#455a4c;margin:1mm 0 0}
+ .b-print-report{font-size:9.5pt}
+ .b-print-intro{clear:both}
+ .b-print-sketch,.b-print-kpis,.b-print-chart,.b-print-grid{break-inside:avoid;page-break-inside:avoid}
+ .b-print-table{font-variant-numeric:tabular-nums}
+}
