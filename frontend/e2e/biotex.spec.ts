@@ -134,7 +134,7 @@ test('Farmers can save and restore their marked field without an account',async(
  await page.reload()
  await page.getByRole('button',{name:'Recuperar mi chacra guardada'}).click()
  await expect(page.getByText('Tu terreno está marcado')).toBeVisible()
- await expect(page.getByText('Recuperamos tu chacra. Revisa los cultivos antes de continuar.')).toBeVisible()
+ await expect(page.getByText(/Recuperamos tu chacra\. Verifica las fechas/)).toBeVisible()
 })
 
 test('Farmer reads a short decision checklist, optional economics are hidden until requested',async({page})=>{

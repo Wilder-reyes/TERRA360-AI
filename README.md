@@ -12,6 +12,15 @@ BIOTEX compara la rotación de cultivos actual con opciones que priorizan agua y
 
 La interfaz se rediseñó para que el agricultor entienda el resultado antes de leer índices: **parcela → cultivos → prioridades → propuesta**, con ejemplo listo de Barranca, móvil accesible, comparación de agua/cobertura y advertencias antes de sembrar. Los cálculos y el modelo científico siguen siendo **v0.26**. Consulta [el diseño y la investigación UX](docs/BIOTEX_UX_v027_diseno_agricultor.md) para principios, fuentes y límites de validación.
 
+
+### Piloto exploratorio Chalhuas (Junín) · desarrollo v0.28
+
+**Vista aislada para pruebas:** [/?pilot=chalhuas](https://terra360-ai-eta.vercel.app/?pilot=chalhuas). El ejemplo de parcela es deliberadamente **sintético**. Incluye: catálogo de cultivos, comparación de cuatro campañas sin prescrición, mapa con capas NASA GIBS y subparcelas propuestas, relieve SRTM desde el conector existente, reanálisis histórico ERA5-Land vía Open-Meteo cuando responda, y guía de introducción **BIO**.
+
+**Lo que NO significa:** no se ha entrenado una IA con una parcela de Chalhuas, no se han validado los calendarios de siembra, la propiedad de los terrenos ni la disponibilidad de agua. ECOSTRESS queda pendiente de escenas con QA. El modelo reproducible de Barranca v0.26 sigue siendo independiente.
+
+**Criterio de publicación final:** datos de parcela georreferenciados/validados, modelo entrenado y probado, agronomía local revisada, usabilidad con agricultores y cobertura de capas verificadas. Hasta entonces el piloto es una experiencia de investigación y Barranca conserva la ruta pública estable.
+
 ## IA real y evidencia
 
 - **NASA HLS v2.0:** 44 meses con NDVI válido entre 2021 y noviembre de 2026; 27 meses sin observación válida, nunca inventados.
