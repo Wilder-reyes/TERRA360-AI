@@ -387,12 +387,12 @@ export default function BiotexFarmerApp(){
   const relative=s.relative_to_current
   const negligible=relative?.water_low_river_change_percent!=null&&Math.abs(relative.water_low_river_change_percent)<5
   return <article className="b-recommend">
-   <div className="b-recommend-top"><span className="b-eyebrow">{t.recommended}</span><h2>{strategyName(s)}</h2>
+   <div className="b-recommend-top"><div className="b-recommend-topline"><span className="b-eyebrow">{t.recommended}</span><span className="b-decision-label">{lang==='es'?'Estimación para revisar':'Estimate to review'}</span></div><h2>{strategyName(s)}</h2>
     <p>{result?.[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']||t.planLead}</p>
     {negligible&&<p className="b-small-change">{lang==='es'?'La diferencia de agua es pequeña: no la tomes como un ahorro comprobado.':'Water difference is small and should not be considered verified savings.'}</p>}
    </div>
    <div className="b-keyfigures">{consequences(s).map((k,i)=><div key={i} className={'b-kpi '+(k.bad?'risk':k.good?'positive':'neutral')}><span>{k.title}</span><strong>{k.value}</strong></div>)}</div>
-   <h3>{t.planSchedule}</h3>{strip(s)}
+   <div className="b-plan-heading"><span className="b-section-kicker">{lang==='es'?'PASO A PASO':'STEP BY STEP'}</span><h3>{t.planSchedule}</h3><p>{lang==='es'?'Fechas aproximadas para organizar tus próximas campañas.':'Approximate dates to organize your next growing seasons.'}</p></div>{strip(s)}
    <div className="b-benefits-grid"><section><h3>{t.benefits}</h3><ul>{s.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section>
     <section><h3>{t.risks}</h3><ul>{s.sections.risks[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
    {technical(s)}
@@ -514,12 +514,13 @@ export default function BiotexFarmerApp(){
     <div className="b-next b-next-emphasized"><p className="b-next-context">{field?(lang==='es'?'Terreno seleccionado. Sigue para registrar tus cultivos.':'Field selected. Continue to record your crops.'):(lang==='es'?'Elige el ejemplo o marca un terreno para continuar.':'Choose the example or mark a field to continue.')}</p><button type="button" className="b-btn b-btn-light" disabled={!field} onClick={saveFarm}>{lang==='es'?'Guardar mi chacra':'Save my field'}</button><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
    </section>}
    {step===1&&<section className="b-form-page"><div className="b-intro"><span className="b-eyebrow">02 / 04</span><h1>{t.historyTitle}</h1><p>{t.historyLead}</p></div>
-    <div className="b-entry-grid"><section className="b-card"><h2>{t.add}</h2>
+    <div className="b-field-mini"><Icon name="pin" size={18}/><span>{fieldLabel||place}</span><strong>{area.toFixed(2)} ha</strong></div><div className="b-entry-grid"><section className="b-card"><span className="b-section-kicker">{lang==='es'?'LO QUE RECUERDAS':'WHAT YOU REMEMBER'}</span><h2>{t.add}</h2>
+<p className="b-form-hint">{lang==='es'?'No hace falta recordar todo. Añade al menos un cultivo y el mes aproximado.':'You do not need a complete history. Add at least one crop and an approximate month.'}</p>
      <div className="b-input-row"><label>{t.crop}<select value={crop} onChange={e=>setCrop(e.target.value)}>{CROPS.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
      <label>{t.month}<select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{Array.from({length:24},(_,i)=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label></div>
      <button type="button" className="b-btn b-btn-solid b-add" onClick={addCrop}>{t.add}</button>
      {entryError&&<p className="b-error" role="alert">{entryError}</p>}
-    </section><section className="b-card"><h2>{t.saved} <span className="b-count">{plantings.length}</span></h2>
+    </section><section className="b-card"><span className="b-section-kicker">{lang==='es'?'TU HISTORIAL':'YOUR HISTORY'}</span><h2>{t.saved} <span className="b-count">{plantings.length}</span></h2>
       {plantings.length===0?<p className="b-empty">{t.nothing}</p>:<ul className="b-planting-list">{current.map((p,i)=><li key={p.start_index}><span><strong>{labelCrop(p.crop_id,lang)}</strong><small>{monthYear(p.start_index,baseYear,lang)}</small></span><button type="button" aria-label={t.remove+' '+labelCrop(p.crop_id,lang)} onClick={()=>{setPlantings(removePlantingFromRotation(current,i));setResult(null)}}>{t.remove}</button></li>)}</ul>}
     </section></div>
     <details className="b-satellite"><summary><Icon name="info" size={20}/><span>{t.helpMe}</span><strong>{t.satellite}</strong></summary>
@@ -544,10 +545,11 @@ export default function BiotexFarmerApp(){
      <button type="button" className="b-btn b-btn-primary" disabled={!current.length} onClick={()=>navigate(2)}>{t.next}<Icon name="right"/></button></div>
    </section>}
    {step===2&&<section className="b-form-page b-goal-page"><div className="b-intro"><span className="b-eyebrow">03 / 04</span><h1>{t.priorityTitle}</h1><p>{t.priorityLead}</p></div>
-    <section className="b-card"><div className="b-goal-options" role="group" aria-label={t.priorityTitle}>{(['water','soil','both'] as const).map(id=><button type="button" key={id} aria-pressed={goal===id} className={'b-goal '+(goal===id?'chosen':'')} onClick={()=>{setGoal(id);setResult(null)}}>
+    <section className="b-card"><span className="b-section-kicker">{lang==='es'?'ELIGE LO QUE MÁS TE IMPORTA':'CHOOSE WHAT MATTERS MOST'}</span><div className="b-goal-options" role="group" aria-label={t.priorityTitle}>{(['water','soil','both'] as const).map(id=><button type="button" key={id} aria-pressed={goal===id} className={'b-goal '+(goal===id?'chosen':'')} onClick={()=>{setGoal(id);setResult(null)}}>
      <span className="b-goal-icon"><Icon name={id==='soil'?'leaf':id==='water'?'water':'check'} size={28}/></span>
      <strong>{id==='water'?t.priorityWater:id==='soil'?t.prioritySoil:t.priorityBoth}</strong>
-     <span className="b-radio" aria-hidden="true"/></button>)}</div>
+<small className="b-goal-description">{id==='water'?(lang==='es'?'Dar prioridad a opciones que podrían necesitar menos agua en meses secos.':'Favor options that may need less water in dry months.'):id==='soil'?(lang==='es'?'Buscar menos meses sin cultivo y una cobertura más continua.':'Look for fewer months without crops and more continuous cover.'):(lang==='es'?'Equilibrar las dos necesidades en la comparación.':'Balance both needs in the comparison.')}</small>
+<span className="b-radio" aria-hidden="true"/></button>)}</div>
      <div className="b-input-row b-input-soft"><label>{t.income}<select value={confirmedOptions.includes(incomeCrop)?incomeCrop:''} onChange={e=>{setIncomeCrop(e.target.value);setResult(null)}}><option value="">{t.incomeAuto}</option>{confirmedOptions.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
       <fieldset><legend>{t.scarcity}</legend><div className="b-choice-row">{(['escaso','normal','no_se'] as const).map(id=><button key={id} type="button" aria-pressed={scarcity===id} className={scarcity===id?'chosen':''} onClick={()=>{setScarcity(id);setResult(null)}}>{id==='escaso'?t.yes:id==='normal'?t.no:t.unknown}</button>)}</div></fieldset></div>
      <div className="b-year-control"><label>{lang==='es'?'¿En qué año empezarías el plan?':'Which year would you begin?'}
@@ -586,17 +588,18 @@ export default function BiotexFarmerApp(){
     <div className="b-next between"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(1)}><Icon name="left"/>{t.back}</button>
      <button type="button" className="b-btn b-btn-primary" disabled={!current.length||!supported||planBusy} onClick={showPlan}>{planBusy?<><span className="b-spinner"/>{t.working}</>:<>{t.action}<Icon name="right"/></>}</button></div>
    </section>}
-   {step===3&&result&&<section className="b-result-page"><div className="b-intro"><span className="b-eyebrow">04 / 04</span><h1>{t.planTitle}</h1><p>{t.planLead}</p></div>
+   {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
     {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
-    {preferred?mainCard(preferred):<div className="b-card b-no-recommend"><Icon name="info"/><h2>{t.noRecommend}</h2><p>{t.unavailable}</p></div>}
-    <FarmerAIEvidence ai={result.ai_analysis} lang={lang}/>
+    <div className="b-result-reading-order" aria-label={lang==='es'?'Cómo leer tu propuesta':'How to read your plan'}><span><b>1</b>{lang==='es'?'Qué sembrar y cuándo':'What and when to plant'}</span><span><b>2</b>{lang==='es'?'Qué debes comprobar':'What to check'}</span><span><b>3</b>{lang==='es'?'Evidencia y otras opciones':'Evidence and alternatives'}</span></div>
+{preferred?mainCard(preferred):<div className="b-card b-no-recommend"><Icon name="info"/><h2>{t.noRecommend}</h2><p>{t.unavailable}</p></div>}
     <FarmDecisionEvidence lang={lang} strategies={result.strategies} names={NAMES}
       context={result.official_evidence} soil={result.soil_assessment}
       irrigationKnown={waterAllowance.trim().length>0}
       report={economicReport} onBudget={setEconomicReport}/>
-    <div className="b-caution"><Icon name="alert" size={21}/><p>{t.warning}</p></div>
+<FarmerAIEvidence ai={result.ai_analysis} lang={lang}/>
+<div className="b-caution"><Icon name="alert" size={21}/><p>{t.warning}</p></div>
     {other.some(x=>(x.relative_to_current?.water_low_river_change_percent??0)>25)&&<p className="b-water-caution">{lang==='es'?'Hay otra opción que necesita bastante más agua en meses secos. Revisa esta diferencia antes de considerarla.':'Another option needs considerably more crop water in dry months. Review this difference before considering it.'}</p>}
     {other.length>0||original?<section className="b-compare-wrap"><button type="button" className="b-compare-trigger" aria-expanded={otherOpen} onClick={()=>setOtherOpen(v=>!v)}><span>{t.other}</span><span>{otherOpen?'−':'+'}</span></button>
       {otherOpen&&<div className="b-other-cards">{[...other,...(original?[original]:[])].map(s=><article className="b-card b-other" key={s.id}>
@@ -610,7 +613,7 @@ export default function BiotexFarmerApp(){
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
   </main>
-  <footer className="b-footer"><span>BIOTEX · NSPACE BIOTEX</span><span>NASA Space Apps Challenge 2026 · Field Shift</span></footer>
+  <footer className="b-footer"><div><strong>BIOTEX</strong><span>{lang==='es'?'Información para decidir, no promesas de cosecha.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/BIOTEX_v026_IA_reproducible.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
   {printable()}
  </div>
 }

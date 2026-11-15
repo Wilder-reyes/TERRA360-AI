@@ -23,13 +23,13 @@ export default function FarmerAIEvidence({ai,lang}:{ai?:AIEvidence;lang:'es'|'en
   <div className="b-ai-farmer-heading">
    <span className="b-ai-mark" aria-hidden="true">✳</span>
    <div><h3>{es?'¿Qué aprendió BIOTEX de esta chacra?':'What did BIOTEX learn from this field?'}</h3>
-    <p>{es?'Analizó imágenes NASA de años anteriores para detectar épocas con poca vegetación.':'It studied past NASA images to identify periods of low vegetation.'}</p>
+    <p>{es?'Revisamos la vegetación de esta parcela en imágenes anteriores de NASA para encontrar temporadas que conviene vigilar.':'We reviewed NASA imagery of this field to find seasons worth watching closely.'}</p>
    </div>
   </div>
-  <p className="b-ai-farmer-finding">{es?'Meses que el modelo señala para observar de cerca: ':'Months the model flags for closer attention: '}
+  <p className="b-ai-farmer-finding">{es?'Temporadas para prestar atención a la cobertura: ':'Seasons to watch for low vegetation: '}
    <strong>{top.map(x=>months[x.month-1]).join(' · ')}</strong>.
   </p>
-  <p className="b-ai-farmer-context">{es?'Esta información ayuda a comparar cuándo podrían quedar meses sin cultivo en cada propuesta. No indica qué especie había sembrada.':'This helps compare when each plan might leave the soil without a crop. It does not identify which species was planted.'}</p>
+  <p className="b-ai-farmer-context">{es?'Es una señal histórica de vegetación baja desde el espacio; no confirma suelo desnudo, cultivos específicos ni rendimientos.':'This is a historical low-vegetation signal from space; it does not confirm bare soil, specific crops or yields.'}</p>
   <details className="b-ai-details">
    <summary>{es?'Ver cómo se entrenó la IA con NASA':'How was the NASA model trained?'}</summary>
    <div className="b-ai-details-content">
