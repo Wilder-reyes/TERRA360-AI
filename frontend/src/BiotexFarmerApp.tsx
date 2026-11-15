@@ -387,7 +387,7 @@ export default function BiotexFarmerApp(){
    const next={id:'Subparcela '+(1+Math.max(0,...subplots.map(v=>Number(v.id.split(' ')[1])||0))),polygon:toGeo(points)}
    const result=validateSubplotLayout(fromGeo(field),[...subplots,next].map(v=>({id:v.id,points:fromGeo(v.polygon)})))
    if(!result.valid){setFieldError(lang==='es'?'La subparcela debe quedar dentro del terreno, sin solaparse con otras.':'The subplot must remain inside the field without overlapping others.');return}
-   setSubplots(v=>[...v,next]);setSpatialPlan(null);setDrawingSubplot(false);setPoints([]);setFieldError('');return
+   setSubplots(v=>[...v,next]);setActiveZone(next.id);setSpatialPlan(null);setDrawingSubplot(false);setPoints([]);setFieldError('');return
   }
   setSubplots([]);setField(toGeo(points));setFieldLabel(lang==='es'?'Chacra marcada por ti':'Field marked by you');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
  function addCrop(){const x=addPlantingToRotation(plantings,crop,cropMonth)
