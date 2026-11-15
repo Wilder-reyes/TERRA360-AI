@@ -16,7 +16,7 @@ export default function BarrancaLegend({month,onMonth,lang}:{month:string;onMont
   <div className="chakra-legend-scale" aria-label={es?'Escala de cobertura vegetal':'Vegetation coverage scale'}>
    {[{v:.1,title:es?'Baja':'Low'},{v:.3,title:es?'Intermedia':'Medium'},{v:.6,title:es?'Alta':'High'}].map(row=><span key={row.v}><i style={{background:vegetationBand(row.v).color}}/>{row.title}</span>)}
   </div>
-  <p className="chakra-legend-meaning">{es?'Más verde indica más vegetación observada. Una zona con poca vegetación podría estar recién cosechada o preparada para sembrar.':'Greener means more observed vegetation. A low-vegetation field may have been harvested or prepared for planting.'}</p>
+  <p className="chakra-legend-meaning">{es?'Más verde = más vegetación observada, no necesariamente un cultivo más sano. Una zona con poca vegetación podría estar recién cosechada o preparada para sembrar.':'Greener = more vegetation observed, not necessarily a healthier crop. A low-vegetation field may have been harvested or prepared for planting.'}</p>
   <details className="chakra-legend-method"><summary>{es?'Cómo se obtuvo esta lectura':'How this observation was derived'}</summary>
    <p>{es?'Índice NDVI de la parcela':'Field NDVI index'}: <strong>{ndvi===null?'—':ndvi.toFixed(3)}</strong> · NASA HLS v2.0 · 30 m</p>
    <p>{es?'Escena seleccionada':'Selected scene'}: {scene?.date??'—'} · {es?'Píxeles válidos':'Valid pixels'}: {scene?.valid_pixels??'—'}</p>

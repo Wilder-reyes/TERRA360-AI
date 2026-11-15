@@ -1,28 +1,38 @@
 {
   "application": "CHAKRA",
-  "release": "chakra-barranca-premium",
-  "pilot": "Barranca · Pativilca / Supe",
-  "features": [
-    "Barranca-only four-step farmer workflow",
-    "Same-origin /api proxy to verified Render backend",
-    "Authentic HLS monthly observations and interpreted map legend",
-    "Historical NASA HLS model scoped to exact Barranca study parcel"
-  ],
-  "computer_vision_enabled": false,
-  "environment": "github_candidate_no_deployment",
+  "team": "CHAKRA X",
+  "challenge": "NASA Space Apps Challenge 2026 · Field Shift: Adapting Farms with NASA Data",
+  "release": "chakra-1.0.0-nasa-space-apps-2026",
+  "environment": "production",
   "source_branch": "main",
-  "notes": "No production deployment verified. Geographic scope is explicit; only Barranca validated HLS model is trained. Chalhuas has no locally evaluated AI, no guaranteed yields, water savings, soil fertility or identified crops.",
+  "production": {
+    "frontend": "https://biotex-eta.vercel.app/",
+    "frontend_host": "Vercel (static React/Vite, deployed automatically from main)",
+    "api": "https://terra360-api.onrender.com/api/health",
+    "api_host": "Render (FastAPI, deployed automatically from main)",
+    "api_proxy": "Vercel rewrites /api/* to the Render API"
+  },
+  "pilot": "Barranca · Pativilca / Supe (Lima, Peru)",
+  "features": [
+    "Three steps: outline a field, record crops by zone, get a zone plan",
+    "Comparison of 3 rotation strategies (S0 current, S1 Water, S2 Soil) with why, evidence, benefits, gaps and risks",
+    "Printable A4 plan: zone sketch with areas, zone advice and the 3-strategy comparison",
+    "NASA HLS monthly vegetation history of the Barranca study field (observed, months without data are not filled)",
+    "Crop water from FAO-56 Kc x NASA POWER ET0 (calculated, relative)",
+    "Small reproducible seasonal model (44 NASA HLS observations, one study field) — proof of concept"
+  ],
+  "evidence_types": {
+    "observed": "NASA HLS v2.0 satellite NDVI (30 m), GPM IMERG upper-basin rain",
+    "declared": "crops and sowing months entered by the farmer",
+    "calculated": "FAO-56 crop water with NASA POWER ET0; areas with Shapely/pyproj",
+    "agronomic_rules": "DRA Lima / MIDAGRI sowing calendar, crop families, legumes",
+    "model_inference": "seasonal low-vegetation probability, only for the exact Barranca study polygon"
+  },
+  "computer_vision_enabled": false,
   "ai_model": "trained_nasa_hls_44_observations_barranca_1",
-  "ai_model_status": "barranca_hls_chronological_holdout_11_only",
+  "ai_model_label": "Small reproducible seasonal model (44 NASA HLS observations, one study field) — proof of concept",
   "ai_model_source": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
   "ai_model_training": "33 chronological HLS observations for holdout evaluation; production fit on all 44",
-  "ui_release": "chakra-glass-lime",
-  "design_system": "Agricultural Dark Mode",
-  "regional_profiles": {
-    "barranca": "single_public_pilot_exact_parcel_hls_ai"
-  },
-  "deployment_ready": false,
-  "deployment_readiness_reason": "Production deployment is not authorized. Configure a new backend HTTPS origin and verify live scientific sources before production.",
   "ai_barranca_holdout": {
     "test_observations": 11,
     "accuracy_percent": 63.6364,
@@ -31,9 +41,7 @@
     "f1_percent": 71.4286,
     "brier_model": 0.2340806663
   },
-  "planned_new_repository": "not_applicable_to_current_preview",
-  "backend_required": true,
-  "target_repository": "Wilder-reyes/TERRA360-AI",
-  "latest_remote_main_reviewed": "28359f896e305e1656884e99cef664b92a775b3b",
-  "remote_seed_to_preserve": "backend/app/data/imerg_basin_seed.json"
+  "ui_release": "chakra-glass-lime",
+  "notes": "Relative comparisons for discussion with a technician. No yields, profits, water savings or field validation are claimed. Fields outside Barranca receive guidance from general rules only.",
+  "target_repository": "Wilder-reyes/TERRA360-AI"
 }

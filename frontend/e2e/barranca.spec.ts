@@ -18,7 +18,7 @@ test('NASA HLS uses the archived observations and explains low vegetation in pla
  const legend=page.getByRole('region',{name:'Vegetación observada en Barranca'})
  await expect(legend).toBeVisible()
  await expect(legend).toContainText('¿Qué muestra el satélite?')
- await expect(legend).toContainText('Más verde indica más vegetación observada')
+ await expect(legend).toContainText('Más verde = más vegetación observada, no necesariamente un cultivo más sano')
  const latest=[...BARRANCA_HISTORY.months].reverse().find(row=>row.ndvi!==null)!
  const selected=legend.getByRole('combobox',{name:'Elegir mes de observación'})
  await selected.selectOption(latest.month)

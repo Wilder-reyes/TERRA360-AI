@@ -1,4 +1,4 @@
-/** Explain a REAL trained HLS vegetation model without forcing farmers to read metrics. */
+/** Explain the small reproducible seasonal HLS model (proof of concept) without forcing farmers to read metrics. */
 export type AIEvidence={
  status:string;used_for_decision?:boolean;influenced_recommendation?:boolean;
  model_id?:string;source_sensor?:string;
@@ -22,10 +22,10 @@ export default function FarmerAIEvidence({ai,lang}:{ai?:AIEvidence;lang:'es'|'en
  const risks=Array.from({length:12},(_,i)=>({month:i+1,prob:ai.seasonal_bare_probability?.[String(i+1)]||0}))
  const top=risks.slice().sort((a,b)=>b.prob-a.prob).slice(0,3).sort((a,b)=>a.month-b.month)
  const tested=ai.holdout?.brier_model!=null&&ai.holdout.brier_train_prevalence_baseline!=null
- return <section className="b-ai-farmer" aria-label={es?'Análisis de inteligencia artificial del terreno':'Artificial intelligence field analysis'}>
+ return <section className="b-ai-farmer" aria-label={es?'Modelo estacional NASA HLS (prueba de concepto)':'Seasonal NASA HLS model (proof of concept)'}>
   <div className="b-ai-farmer-heading">
    <span className="b-ai-mark" aria-hidden="true">✳</span>
-   <div><h3>{es?'¿Qué aprendió CHAKRA de esta chacra?':'What did CHAKRA learn from this field?'}</h3>
+   <div><h3>{es?'Modelo estacional pequeño y reproducible (44 observaciones NASA HLS, una parcela de estudio) — prueba de concepto':'Small reproducible seasonal model (44 NASA HLS observations, one study field) — proof of concept'}</h3>
     <p>{es?'Revisamos la vegetación de esta parcela en imágenes anteriores de NASA para encontrar temporadas que conviene vigilar.':'We reviewed NASA imagery of this field to find seasons worth watching closely.'}</p>
    </div>
   </div>
@@ -34,7 +34,7 @@ export default function FarmerAIEvidence({ai,lang}:{ai?:AIEvidence;lang:'es'|'en
   </p>
   <p className="b-ai-farmer-context">{es?'Es una señal histórica de vegetación baja desde el espacio; no confirma suelo desnudo, cultivos específicos ni rendimientos.':'This is a historical low-vegetation signal from space; it does not confirm bare soil, specific crops or yields.'}</p>
   <details className="b-ai-details">
-   <summary>{es?'Ver cómo se entrenó la IA con NASA':'How was the NASA model trained?'}</summary>
+   <summary>{es?'Ver cómo se ajustó el modelo con NASA HLS':'How was the model fitted with NASA HLS?'}</summary>
    <div className="b-ai-details-content">
     <p>{es?'Datos reales de NASA HLS: ':'Real NASA HLS data: '}<strong>{ai.observed_months}</strong> {es?'meses con imágenes útiles':'months with usable images'}{ai.missing_months!=null?', '+ai.missing_months+' '+(es?'meses sin lectura':'months missing'):''}.
      {' '}{es?'Entrenamiento inicial: 33 observaciones; prueba posterior: 11.':'Initial training: 33 observations; later holdout: 11.'}</p>
