@@ -1,4 +1,4 @@
-/** Editable field zones: simple rectangles with movable centre and resizable corners.
+/** Editable field zones: editable polygons with movable centre and draggable vertices.
  * These are farmer-drawn geometry, not cadastral surveys. Reject invalid
  * shapes rather than silently changing or cropping their boundaries.
  */
@@ -32,17 +32,15 @@ export function moveZone(field:GeoPolygon,all:EditableZone[],id:string,to:Point)
 export function resizeZone(field:GeoPolygon,all:EditableZone[],id:string,corner:number,to:Point):GeoPolygon|null{
  const old=all.find(z=>z.id===id);if(!old)return null
  const ps=pts(old.polygon)
- if(ps.length!==4||corner<0||corner>3)return null
- const fixed=ps[(corner+2)%4]
- const dx=Math.abs(to.lng-fixed.lng),dy=Math.abs(to.lat-fixed.lat)
- if(dx<0.0000006||dy<0.0000006)return null
- const candidate=rect(Math.min(to.lng,fixed.lng),Math.min(to.lat,fixed.lat),Math.max(to.lng,fixed.lng),Math.max(to.lat,fixed.lat))
+ if(ps.length<3||corner<0||corner>=ps.length)return null
+ const edited=ps.map((p,i)=>i===corner?to:p)
+ const candidate=poly(edited)
  return safeRectangleMove(field,all,id,candidate)?candidate:null
 }
 /** Find two non-overlapping editable rectangles inside a selected polygon.
  * For very thin/concave fields, gracefully return fewer zones, not invalid data.
  */
-export function suggestedZones(field:GeoPolygon,existing:EditableZone[],count=2):EditableZone[]{
+export function suggestedZones(field:GeoPolygon,existing:EditableZone[],count=3):EditableZone[]{
  const area=bounds(pts(field)),w=area.maxLng-area.minLng,h=area.maxLat-area.minLat
  if(w<=0||h<=0)return []
  const result=[...existing],added:EditableZone[]=[]
@@ -60,7 +58,7 @@ export function suggestedZones(field:GeoPolygon,existing:EditableZone[],count=2)
  }
  return added
 }
-export function rectangleCorners(z:GeoPolygon):Point[]{return pts(z)}
+export function polygonCorners(z:GeoPolygon):Point[]{return pts(z)}
 const handleIcon=(main:boolean)=>L.divIcon({className:main?'chakra-zone-move-icon':'chakra-zone-resize-icon',
  html:main?'<span aria-hidden="true">✥</span>':'<span aria-hidden="true"></span>',
  iconSize:main?[44,44]:[36,36],iconAnchor:main?[22,22]:[18,18]})
@@ -81,7 +79,7 @@ export function ChakraZoneHandles({field,zones,selected,onMove,onInvalid}:{
  return <>
   <Marker key={selected+'-move-'+JSON.stringify(center)} position={[center.lat,center.lng]} draggable icon={handleIcon(true)}
    eventHandlers={{dragend:end('move',0)}} title="Mover zona"/>
-  {corners.length===4&&corners.map((p,i)=><Marker key={selected+'-corner-'+i+'-'+p.lat+'-'+p.lng}
+  {corners.length>=3&&corners.map((p,i)=><Marker key={selected+'-corner-'+i+'-'+p.lat+'-'+p.lng}
    position={[p.lat,p.lng]} draggable icon={handleIcon(false)} eventHandlers={{dragend:end('resize',i)}}
    title={'Ajustar esquina '+(i+1)}/>)}
  </>
