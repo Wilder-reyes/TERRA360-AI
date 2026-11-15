@@ -845,18 +845,33 @@ export default function BiotexFarmerApp(){
     <div className="b-next between">
      <button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}>{t.back}</button>
      <button type="button" className="b-btn b-btn-light" onClick={saveFarm}>{lang==='es'?'Guardar avance':'Save progress'}</button>
-     <button type="button" className="b-btn b-btn-primary" disabled={spatialBusy||!availableZones.length} onClick={()=>void buildSpatialPlan()}>{spatialBusy?(lang==='es'?'Preparando…':'Preparing…'):(lang==='es'?'Preparar mi plan':'Prepare my plan')}</button></div>
+     <button type="button" className="b-btn b-btn-primary" disabled={!availableZones.length} onClick={()=>{if(availableZones.some(z=>!zoneCrops[z.id])){setSpatialError(lang==='es'?'Registra un cultivo en cada zona antes de continuar.':'Record a crop for every area before continuing.');return}setSpatialError('');navigate(2)}}>{lang==='es'?'Continuar a mi plan':'Continue to my plan'}<Icon name="right"/></button></div>
     {spatialBusy&&slowServer&&<p role="status" className="chakra-strategy-status">{lang==='es'?'Despertando el servidor, ~30 s…':'Waking up the server, ~30 s…'}</p>}
     {spatialError&&<p className="b-error" role="alert">{spatialError}</p>}
     {savedNotice&&<p role="status">{savedNotice}</p>}
    </section>}
+   {step===2&&!spatialPlan&&<section className="chakra-horizon" data-bio-target="bio-plan">
+    <span className="b-eyebrow">{lang==='es'?'PASO 3 DE 3 · MI PLAN':'STEP 3 OF 3 · MY PLAN'}</span>
+    <h1>{lang==='es'?'¿Para cuántos meses quieres preparar tu tierra?':'How many months ahead do you want to plan?'}</h1>
+    <p>{lang==='es'?'Elige el tiempo para organizar las próximas siembras. Puedes cambiarlo sin volver a registrar tu terreno.':'Choose how long to organize your next plantings. You can change it without entering your field again.'}</p>
+    <div className="chakra-horizon-buttons" role="group" aria-label={lang==='es'?'Duración del plan':'Planning period'}>
+     {[6,12,24,36].map(value=><button type="button" key={value} aria-pressed={planningMonths===value} onClick={()=>setPlanningMonths(value)}>{value} {lang==='es'?'meses':'months'}</button>)}
+    </div>
+    <div className="chakra-horizon-range"><label htmlFor="chakra-months">{lang==='es'?'Personaliza la duración':'Customize the duration'}</label><strong>{planningMonths} {lang==='es'?'meses':'months'}</strong>
+     <input id="chakra-months" type="range" min="3" max="60" step="1" value={planningMonths} onChange={e=>setPlanningMonths(Number(e.target.value))}/>
+    </div>
+    {spatialError&&<p role="alert" className="b-error">{spatialError}</p>}
+    {spatialBusy&&<p role="status">{lang==='es'?'Preparando el plan con los datos disponibles…':'Preparing your plan using the available data…'}</p>}
+    <div className="chakra-horizon-actions"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(1)}>{lang==='es'?'Volver a mis cultivos':'Back to my crops'}</button>
+     <button type="button" className="b-btn b-btn-primary" disabled={spatialBusy} onClick={()=>void buildSpatialPlan()}>{lang==='es'?'Crear mi calendario':'Create my calendar'}<Icon name="right"/></button></div>
+   </section>}
    {step===2&&spatialPlan&&field&&<ChakraZonePlan plan={spatialPlan} field={field} subplots={subplots}
     lang={lang} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
    {step===2&&precomputedAt&&<p role="note" className="chakra-strategy-scope">{lang==='es'?'Resultado precalculado del ejemplo de Barranca ('+precomputedAt.slice(0,10)+'): el servidor no respondió a tiempo. Son los mismos cálculos del motor CHAKRA.':'Precomputed result for the Barranca example ('+precomputedAt.slice(0,10)+'): the server did not answer in time. Same CHAKRA engine calculations.'}</p>}
-   {step===2&&spatialPlan&&field&&<StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}
+   {step===2&&spatialPlan&&field&&<details className="chakra-more-science"><summary>{lang==='es'?'Compara otras maneras de cuidar el agua y la tierra':'Compare alternatives for water and soil'}</summary><StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}
     crop={id=>labelCrop(id,lang)} busy={compareBusy} error={compareError} outOfScope={!province} onRetry={()=>void compareZones()}
-    maize={(result as unknown as {maize_low_river_share?:MaizeShare}|null)?.maize_low_river_share||null} upperBasin={result?.upper_basin_rain||null}/>}
-   {step===2&&spatialPlan&&result?.ai_analysis&&<FarmerAIEvidence ai={result.ai_analysis} lang={lang}/>}
+    maize={(result as unknown as {maize_low_river_share?:MaizeShare}|null)?.maize_low_river_share||null} upperBasin={result?.upper_basin_rain||null}/></details>}
+   {step===2&&spatialPlan&&result?.ai_analysis&&<details className="chakra-more-science"><summary>{lang==='es'?'¿Qué observó la NASA en la parcela de estudio?':'What did NASA observe in our study field?'}</summary><FarmerAIEvidence ai={result.ai_analysis} lang={lang}/></details>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
@@ -882,7 +897,8 @@ export default function BiotexFarmerApp(){
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
   </main>
-  <footer className="b-footer"><div><strong>CHAKRA · CHAKRA X</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span><BioTour lang={lang}/></div></footer>
+  <BioTour lang={lang} step={step===3?2:step} assigned={assignedCount}/>
+  <footer className="b-footer"><div><strong>CHAKRA · CHAKRA X</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
   {printable()}
   {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}
    extra={result?.strategies?.length?<StrategyComparePrint strategies={result.strategies as CompareStrategy[]} lang={lang}/>:null}/>}
