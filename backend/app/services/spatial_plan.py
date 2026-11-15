@@ -199,6 +199,19 @@ def build_spatial_plan(polygon: dict, zones: list[dict],
             reason += " El mes propuesto utiliza el calendario regional de Lima como referencia."
         else:
             reason += " La fecha es orientativa y debe confirmarse con el calendario agrícola local."
+        en_date = f"{calendar.month_name[sow.month]} {sow.year}"
+        reason_en = (f"After {engine.name_en(current['id'])}, consider {engine.name_en(candidate['id'])} "
+                     "to alternate crop families.")
+        if local:
+            reason_en += " The planting month uses the regional Lima calendar as a reference."
+        else:
+            reason_en += " The planting date is a preliminary reference; verify the local season."
+        how_en = [
+            f"Before {en_date}, check available irrigation water, drainage, and soil conditions.",
+            f"Choose a locally adapted {engine.name_en(candidate['id'])} variety with agricultural guidance.",
+            "Prepare rows or beds for the soil and variety; confirm seed, depth and spacing in a crop guide.",
+            "Schedule irrigation and pest monitoring for growth stages, checking your actual water allocation.",
+        ]
         how = [
             f"Antes de {es_date}, comprueba agua disponible, drenaje y estado del suelo de esta zona.",
             f"Selecciona una variedad de {candidate['name_es']} adecuada a la zona con asesoría agraria local.",
@@ -210,14 +223,19 @@ def build_spatial_plan(polygon: dict, zones: list[dict],
             "area_ha": round(subarea, 3),
             "current_crop_id": current["id"],
             "current_crop": current["name_es"],
+            "current_crop_en": engine.name_en(current["id"]),
             "last_planting_month": record["planted_month"],
             "suggested_crop_id": candidate["id"],
             "suggested_crop": candidate["name_es"],
+            "suggested_crop_en": engine.name_en(candidate["id"]),
             "sow_month": f"{sow.year:04d}-{sow.month:02d}",
             "sow_label_es": es_date,
+            "sow_label_en": en_date,
             "estimated_cycle_days": int(candidate["cycle_days"]),
             "why_es": reason,
+            "why_en": reason_en,
             "how_es": how,
+            "how_en": how_en,
             "reference_water_mm": water,
             "sowing_window_scope": "lima_reference" if local else "farmer_check",
             "source_tags": ["FAO-56", "DRA Lima / MIDAGRI"] if local else ["FAO-56", "historial declarado"],
@@ -233,6 +251,9 @@ def build_spatial_plan(polygon: dict, zones: list[dict],
         "disclaimer_es": ("Plan orientativo basado en tus cultivos y referencias FAO."
                           " Confirma agua, suelo, variedad y fechas antes de sembrar."
                           " La IA histórica HLS se aplica solo a la parcela de estudio de Barranca."),
+        "disclaimer_en": ("Reference plan based on your crop records and FAO sources."
+                          " Verify water supply, soil, varieties and dates before planting."
+                          " The historical HLS AI only applies to the Barranca study field."),
         "sources": ["FAO Irrigation and Drainage Paper 56",
                     "NASA POWER (solo cuando se carga su climatología)",
                     "DRA Lima / MIDAGRI (solo para Barranca)",
