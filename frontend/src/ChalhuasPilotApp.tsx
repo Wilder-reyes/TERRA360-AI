@@ -3,7 +3,7 @@
  * All map polygons are either farmer-drawn or explicitly synthetic examples.
  */
 import {useEffect,useMemo,useState} from 'react'
-import {MapContainer,Polygon,Polyline,TileLayer,WMSTileLayer,useMap,useMapEvents,Tooltip} from 'react-leaflet'
+import {MapContainer,Polygon,Polyline,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {API,httpErrorMessage} from './network'
 import {approximatePolygonHectares,validatePolygon,type GeoPoint} from './geometry'
 import BioTour from './BioTour'
@@ -94,7 +94,6 @@ function FieldMap({field,subplots,drawing,vertices,onPoint,layer,lowData,layerDa
     return <Polygon key={parcel.id} positions={points(parcel.polygon).map(p=>[p.lat,p.lng] as [number,number])}
       pathOptions={{color:cid?'#fff2d5':'#ecf3e0',weight:3,fillColor:cid?NAMES[cid].color:'#7cba9a',fillOpacity:cid?0.52:0.22}}
       eventHandlers={{click:()=>onSelectParcel(parcel.id)}}>
-      <Tooltip direction="top" opacity={1}>{parcel.id}{cid?' · '+NAMES[cid].es:''}</Tooltip>
     </Polygon>
    })}
    {vertices.length>=2&&<Polyline positions={vertices.map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#ffcd54',weight:4,dashArray:'6 6'}}/>}
