@@ -80,6 +80,16 @@ class Priorities(BaseModel):
     pests: int = Field(1, ge=0, le=2)
 
 
+class FieldSoil(BaseModel):
+    # Optional, farmer-declared observations, never inferred from GPM / SMAP.
+    texture: Literal["arenosa", "franca", "arcillosa"] | None = None
+    ph: float | None = Field(None, ge=0, le=14)
+    salinity_ds_m: float | None = Field(None, ge=0, le=100)
+    organic_matter_percent: float | None = Field(None, ge=0, le=100)
+    drainage: Literal["bueno", "regular", "malo"] | None = None
+    source: Literal["farmer_reported", "lab_report"] = "farmer_reported"
+
+
 class CompareRequest(BaseModel):
     zone: Literal["huaral", "barranca"] | None = None
     latitude: float | None = Field(None, ge=-60, le=60)
@@ -90,6 +100,9 @@ class CompareRequest(BaseModel):
     history: dict[str, Any] | None = Field(None, description="summary: sensor, start, end, months_with_data")
     current_source: Literal["farmer_declared", "satellite_confirmed", "team_demo"] = "farmer_declared"
     income_crop_id: str | None = None
+    soil: FieldSoil | None = None
+    irrigation_source: Literal["farmer_reported", "water_users_board"] | None = None
+    irrigation_allowance_m3_ha_season: float | None = Field(None, ge=0, le=1000000)
     use_team_templates_as_fallback: bool = False
 
 
@@ -210,6 +223,14 @@ async def compare(req: CompareRequest):
             "message_en": "Upper-basin rainfall has not been calculated for this location.",
             "climatology_mm_month": {},
         }
+    result["farm_inputs"] = {
+        "soil": req.soil.model_dump(exclude_none=True) if req.soil else None,
+        "irrigation_allowance_m3_ha_season": req.irrigation_allowance_m3_ha_season,
+        "irrigation_source": req.irrigation_source,
+        "status": "provided_by_user_not_used_to_rank",
+        "note_es": "Datos anotados para revisar. Falta validar reglas locales antes de usarlos para recomendar o descartar cultivos.",
+        "note_en": "Recorded for review. Local validation is required before these values can rank or exclude crops.",
+    }
     result["upper_basin_rain"] = basin
     if basin["status"] == "available":
         for month in result["window"]["context"]:

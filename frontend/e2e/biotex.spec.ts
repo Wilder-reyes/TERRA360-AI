@@ -34,9 +34,9 @@ const comparison={
 test('Barranca-focused farmer landing starts in ordinary Spanish and moves through crops',async({page})=>{
  await page.goto('/')
  await expect(page.getByRole('heading',{name:'Cultiva mejor, cuidando tu agua y tu tierra.'})).toBeVisible()
- await expect(page.getByRole('button',{name:/Terreno de ejemplo 1/})).toBeVisible()
+ await expect(page.getByRole('button',{name:/Explorar parcela de Barranca/})).toBeVisible()
  await expect(page.getByText('Pegar o subir GeoJSON')).toHaveCount(0)
- await page.getByRole('button',{name:/Terreno de ejemplo 1/}).click()
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
  await expect(page.getByText('Tu terreno está marcado')).toBeVisible()
  await page.getByRole('button',{name:'Continuar'}).click()
  await expect(page.getByRole('heading',{name:'¿Qué cultivos sembraste?'})).toBeVisible()
@@ -66,15 +66,15 @@ test('Recommendation is presented as a clear plan and A4 print report, not S1/S2
   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(comparison)})
  })
  await page.goto('/')
- await page.getByRole('button',{name:/Terreno de ejemplo 1/}).click()
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
  await page.getByRole('button',{name:'Continuar'}).click()
  await page.getByRole('button',{name:'Agregar cultivo'}).click()
  await page.getByRole('button',{name:'Continuar'}).click()
  await expect(page.getByRole('heading',{name:'¿Qué quieres mejorar primero?'})).toBeVisible()
  await page.getByRole('button',{name:/Usar menos agua/}).click()
  await page.getByRole('button',{name:'Ver mi plan'}).click()
- await expect(page.getByRole('heading',{name:'Tu plan de siembra'})).toBeVisible()
- await expect(page.getByText('Opción destacada para tu chacra',{exact:true})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'Tu propuesta para sembrar'})).toBeVisible()
+ await expect(page.getByText('Rotación para revisar',{exact:true})).toBeVisible()
  await expect(page.getByText(/Se estima menos demanda de agua/).first()).toBeVisible()
  await expect(page.getByRole('button',{name:'Imprimir o guardar PDF'})).toBeVisible()
  await page.emulateMedia({media:'print'})
@@ -92,4 +92,47 @@ test('Mobile farmer flow keeps controls and map inside the viewport',async({page
  await expect(page.getByRole('button',{name:'Buscar lugar'})).toBeVisible()
  const width=await page.evaluate(()=>document.documentElement.scrollWidth)
  expect(width).toBeLessThanOrEqual(392)
+})
+
+test('Only one Barranca sample is visible and satellite imagery is accessible',async({page})=>{
+ await page.goto('/')
+ await expect(page.getByRole('button',{name:/Explorar parcela de Barranca/})).toHaveCount(1)
+ await expect(page.getByText('Estos terrenos son ejemplos para probar BIOTEX.')).toHaveCount(0)
+ await expect(page.getByText('Ejemplo disponible: Barranca')).toHaveCount(0)
+ await expect(page.getByRole('button',{name:'Vegetación NASA'})).toBeVisible()
+ await page.getByRole('button',{name:'Vegetación NASA'}).click()
+ await expect(page.getByText(/Vegetación regional NASA MODIS/)).toBeVisible()
+ await page.getByRole('button',{name:'Lluvia NASA'}).click()
+ await expect(page.getByText(/Lluvia regional NASA GPM/)).toBeVisible()
+})
+
+test('Satellite clues display acquisition dates, mapped NASA imagery and original HLS scene link',async({page})=>{
+ await page.route('**/api/rotation/history',route=>route.fulfill({
+  status:200,contentType:'application/json',body:JSON.stringify({
+   status:'available',sensor:'NASA HLS v2.0 (30 m)',period:{start:'2021-01-01',end:'2026-11-14'},
+   months_with_data:48,months_total:70,detection:{campaigns:[]},
+   months:[{month:'2026-08',ndvi:0.62,best_scene:{date:'2026-08-16',collection:'hls2-l30',scene_id:'HLS.L30.T18LYL.2026228T153532.v2.0',valid_pixels:35}}]
+  })
+ }))
+ await page.goto('/')
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await page.getByText('¿No recuerdas alguna siembra?').click()
+ await page.getByRole('button',{name:'Buscar pistas con imágenes del terreno'}).click()
+ await expect(page.getByText('Así se veía la zona desde el espacio')).toBeVisible()
+ await expect(page.locator('.b-satellite-gallery select')).toHaveValue('2026-08')
+ await expect(page.getByRole('link',{name:'Consultar la imagen HLS utilizada'})).toHaveAttribute('href',/planetarycomputer\.microsoft\.com/)
+ await expect(page.getByText('0.62')).toBeVisible()
+})
+
+test('Farmers can save and restore their marked field without an account',async({page})=>{
+ await page.goto('/')
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await expect(page.getByText('Tu terreno está marcado')).toBeVisible()
+ await page.getByRole('button',{name:'Guardar mi chacra'}).click()
+ await expect(page.getByText('Tus datos se guardaron en este dispositivo.')).toBeVisible()
+ await page.reload()
+ await page.getByRole('button',{name:'Recuperar mi chacra guardada'}).click()
+ await expect(page.getByText('Tu terreno está marcado')).toBeVisible()
+ await expect(page.getByText('Recuperamos tu chacra. Revisa los cultivos antes de continuar.')).toBeVisible()
 })

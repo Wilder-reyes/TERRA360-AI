@@ -7,7 +7,7 @@ commit that file. Reads only the basin window of each monthly IMERG granule
 backend/app/data/imerg_basin_seed.json, which the API serves without a token.
 
 Usage (from the repo root):
-    backend/.venv/Scripts/python.exe scripts/precompute_imerg_basins.py [--start 2001]
+    backend/.venv/Scripts/python.exe scripts/precompute_imerg_basins.py --start 2015 --zone barranca --max-granules 160
 """
 from __future__ import annotations
 
@@ -26,21 +26,37 @@ from app.services.imerg_basin import PRODUCT, SEED_PATH, VERSION, iter_granule_v
 from app.services.rotation_zones import ZONES  # noqa: E402
 
 
-def main(start_year: int) -> None:
+def main(start_year: int, zone: str = 'barranca', max_granules: int = 160, dry_run: bool = False) -> None:
     import earthaccess
     from dotenv import load_dotenv
     load_dotenv(ROOT / "backend" / ".env")
-    if not os.getenv("EARTHDATA_TOKEN"):
-        sys.exit("EARTHDATA_TOKEN missing in backend/.env (create it at https://urs.earthdata.nasa.gov).")
-    earthaccess.login(strategy="environment")
+    if zone not in ZONES:
+        sys.exit(f"Unknown zone {zone!r}.")
+    if not 2001 <= start_year <= datetime.now(timezone.utc).year:
+        sys.exit("start year must be 2001 through current year.")
+    if not 12 <= max_granules <= 240:
+        sys.exit("max granules must be between 12 and 240; stay within the selected quota.")
+    if not dry_run:
+        if not os.getenv("EARTHDATA_TOKEN"):
+            sys.exit("EARTHDATA_TOKEN missing. Set the token privately in the environment.")
+        earthaccess.login(strategy="environment")
     end = datetime.now(timezone.utc)
     out = {"product": PRODUCT, "version": VERSION, "computed_at": end.isoformat(timespec="seconds"), "zones": {}}
     for zid, z in ZONES.items():
+        if zid != zone:
+            continue
         bbox = z["upper_basin"]["bbox"]
         results = earthaccess.search_data(short_name=PRODUCT, version=VERSION,
                                           temporal=(f"{start_year}-01-01", end.strftime("%Y-%m-%d")),
                                           bounding_box=tuple(bbox))
-        print(f"{zid}: {len(results)} monthly granules")
+        print(f"{zid}: {len(results)} monthly granules", flush=True)
+        if not results:
+            sys.exit("No matching NASA IMERG Final Run monthly granules. Verify product, version, dates and basin bounding box.")
+        if len(results) > max_granules:
+            sys.exit(f"Safety limit: {len(results)} granules exceeds --max-granules={max_granules}. Choose a later start year or review quota.")
+        if dry_run:
+            print("DRY RUN: discovered granules only; no download or output written.")
+            continue
         probe = earthaccess.get_requests_https_session().get(results[0].data_links()[0], headers={"Range": "bytes=0-15"}, timeout=60)
         if probe.status_code == 403 and "EULA" in probe.text:
             sys.exit("NASA GES DISC: this Earthdata account has not accepted the GES DISC EULA. Approve it at "
@@ -75,11 +91,23 @@ def main(start_year: int) -> None:
                              "bbox": bbox, "monthly_mm": dict(sorted(series.items())), **summary}
         print(f"  climatology: {summary['climatology_mm_month']}")
         print(f"  seasons: {summary['seasons']}")
-    SEED_PATH.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"written {SEED_PATH}")
+    if not dry_run:
+        out["verification"] = {
+            "status": "requires_manual_review",
+            "start_year": start_year,
+            "zone": zone,
+            "max_granules_allowed": max_granules,
+            "note": "Review months, bbox, source granules and season coverage before publishing."
+        }
+        SEED_PATH.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"written {SEED_PATH}")
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--start", type=int, default=2001)
-    main(p.parse_args().start)
+    p.add_argument("--start", type=int, default=2015)
+    p.add_argument("--zone", choices=sorted(ZONES), default="barranca")
+    p.add_argument("--max-granules", type=int, default=160)
+    p.add_argument("--dry-run", action="store_true")
+    args = p.parse_args()
+    main(args.start, args.zone, args.max_granules, args.dry_run)

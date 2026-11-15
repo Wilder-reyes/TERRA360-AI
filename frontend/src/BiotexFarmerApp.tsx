@@ -1,10 +1,11 @@
 // AI-assisted: farmer-first BIOTEX interface. Scientific calculations remain on the server.
 import {useEffect,useMemo,useRef,useState,type ReactNode,type FormEvent} from 'react'
-import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,useMap,useMapEvents} from 'react-leaflet'
+import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {API,httpErrorMessage,readableApiError} from './network'
 import {approximatePolygonHectares,validatePolygon} from './geometry'
 import {TEAM_FIELDS,ZONES,type GeoPolygon} from './rotationZones'
 import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
+import SatelliteEvidence from './SatelliteEvidence'
 import './biotex-farmer.css'
 
 type Lang='es'|'en'
@@ -13,7 +14,7 @@ type Point={lat:number;lng:number}
 type Planting={crop_id:string;start_index:number}
 type Suggestion={crop_id:string;name_es:string}
 type Campaign={start:string;end:string;candidates:Suggestion[]}
-type History={sensor:string;period:{start:string;end:string};months_with_data:number;months_total:number;months:{month:string;ndvi:number|null}[];detection:{campaigns:Campaign[]}}
+type History={sensor:string;period:{start:string;end:string};months_with_data:number;months_total:number;months:{month:string;ndvi:number|null;best_scene?:{date:string;scene_id?:string;collection?:string;platform?:string;valid_pixels?:number}|null}[];detection:{campaigns:Campaign[]}}
 type OneCrop={crop_id:string;name_es:string;start_index:number;months:number;approximate:boolean}
 type Strategy={
  id:string;key:string;title_es:string;title_en:string;origin:string;
@@ -22,7 +23,8 @@ type Strategy={
  relative_to_current:{water_low_river_change_percent:number|null;water_total_change_percent:number|null;bare_months_change:number;legume_plantings_change:number}|null;
  sections:{why:{es:string[];en:string[]};benefits:{es:string[];en:string[]};gaps:{es:string[];en:string[]};risks:{es:string[];en:string[]};evidence:{es:string[];en:string[]}}
 }
-type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;
+type FieldSoil={texture?:'arenosa'|'franca'|'arcillosa';ph?:number;salinity_ds_m?:number;organic_matter_percent?:number;drainage?:'bueno'|'regular'|'malo'}
+type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};upper_basin_rain?:{status:string;last_season?:{season:string;percent_of_normal:number};note_es?:string;note_en?:string};
  recommendation_reason_es?:string;recommendation_reason_en?:string;
  climate?:{period:string;annual_et0_mm:number;cell_adjustment?:{reason_es:string;reason_en:string}|null};
  income_crop?:string;disclaimer_es?:string;disclaimer_en?:string;method?:Record<string,unknown>}
@@ -42,12 +44,12 @@ const LABELS={
  steps:['Mi chacra','Mis cultivos','Mis prioridades','Mi plan'],
  title:'Cultiva mejor, cuidando tu agua y tu tierra.',
  subtitle:'Marca tu chacra, cuéntanos qué sembraste y descubre opciones para tus próximas campañas.',
- pilot:'Ejemplo disponible: Barranca · Pativilca / Supe',region:'Empezamos por Barranca',
+ pilot:'',region:'Barranca · Pativilca y Supe',
  search:'¿Dónde está tu chacra?',searchHint:'Escribe el nombre de tu localidad o distrito',find:'Buscar lugar',
  waitSearch:'Buscando lugares…',notFound:'No encontramos ese lugar. Prueba con el distrito o provincia.',
  mapHint:'Acerca el mapa y marca las esquinas de tu chacra.',draw:'Marcar mi chacra',finish:'Terminar terreno',
  undo:'Deshacer esquina',cancel:'Cancelar',area:'Área aproximada',changeField:'Cambiar terreno',
- examples:'¿Quieres conocer cómo funciona?',exampleNote:'Estos terrenos son ejemplos para probar BIOTEX. No representan cultivos confirmados por sus dueños.',
+ examples:'Conoce BIOTEX en Barranca',exampleNote:'Parcela seleccionada para mostrar cómo se analizan imágenes de satélite.',
  pick:'Usar este ejemplo',fieldReady:'Tu terreno está marcado',fieldMissing:'Primero marca un terreno en el mapa.',
  locationUnavailable:'No pudimos buscar lugares. Intenta de nuevo.',invalidArea:'Marca entre 0,1 y 500 hectáreas.',
  invalidShape:'Revisa las esquinas: el terreno no debe cruzarse ni repetirse.',
@@ -68,14 +70,14 @@ const LABELS={
  income:'¿Qué cultivo quieres seguir sembrando?',incomeAuto:'El cultivo que más siembro',
  scarcity:'¿Entre mayo y noviembre te suele faltar agua?',yes:'Sí',no:'No',unknown:'No estoy seguro',
  action:'Ver mi plan',working:'Estamos preparando tu plan para esta chacra…',
- planTitle:'Tu plan de siembra',planLead:'Estas opciones se calcularon con los datos que nos diste y referencias agrícolas de Lima.',
- recommended:'Opción destacada para tu chacra',noRecommend:'Aún no encontramos una opción claramente mejor.',
+ planTitle:'Tu propuesta para sembrar',planLead:'Revisa el orden de los cultivos, las fechas y los cambios que podría tener tu chacra.',
+ recommended:'Rotación para revisar',noRecommend:'Todavía no encontramos una rotación claramente mejor.',
  current:'Tu forma de sembrar',alternative:'Otra opción para revisar',other:'Ver otras opciones',keyWater:'Agua en meses secos',keySoil:'Meses sin cultivo',fewer:'menos',more:'más',
- waterTrade:'Consumo de agua estimado respecto a lo que haces hoy',coverage:'meses de 24 con la tierra descubierta',
- where:'Chacra',when:'Fecha',areaPrint:'Superficie aproximada',planSchedule:'Ejemplo de rotación para 24 meses',
+ waterTrade:'Agua que podrían necesitar los cultivos',coverage:'meses sin sembrar en el ciclo de 24 meses',
+ where:'Chacra',when:'Fecha',areaPrint:'Área aproximada',planSchedule:'Orden propuesto de siembra',
  year1:'Primer año',year2:'Segundo año',noCrop:'Sin cultivo previsto',sowing:'Siembra',
  benefits:'Qué puede mejorar',risks:'Qué debes tener en cuenta',verify:'Por confirmar en tu chacra',
- compare:'Comparación de opciones',details:'Cómo hicimos el análisis',warning:'Estos cálculos son orientativos: antes de cambiar tu siembra, revísalos con un técnico agrícola.',
+ compare:'Comparación de opciones',details:'Cómo hicimos el análisis',warning:'Antes de empezar, comprueba el agua disponible y las condiciones de tu suelo.',
  report:'Imprimir o guardar PDF',startOver:'Revisar mis respuestas',sources:'Fuentes y límites',
  evidence:'Datos usados',reportTech:'Datos técnicos y cálculos',printFooter:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',
  unsupported:'Aquí todavía no tenemos un calendario de cultivos local comprobado. Puedes marcar y revisar tu terreno, pero las recomendaciones de siembra están disponibles para la costa de Lima.',
@@ -86,12 +88,12 @@ const LABELS={
  en:{
  steps:['My field','My crops','My priorities','My plan'],
  title:'Better harvests, caring for soil and water.',subtitle:'Mark your field, tell us what you grew, and discover options for your next seasons.',
- pilot:'Demo area: Barranca · Pativilca / Supe',region:'Start in Barranca',
+ pilot:'',region:'Barranca · Pativilca and Supe',
  search:'Where is your field?',searchHint:'Enter your town or district',find:'Find a place',
  waitSearch:'Searching for places…',notFound:'No places found. Try a district or province.',
  mapHint:'Zoom in and mark the corners of your field.',draw:'Mark my field',finish:'Finish field',
  undo:'Undo corner',cancel:'Cancel',area:'Approximate area',changeField:'Change field',
- examples:'Want to see how it works?',exampleNote:'These fields are examples for trying BIOTEX. Their actual crops have not been confirmed by farmers.',
+ examples:'Explore BIOTEX in Barranca',exampleNote:'Selected field showing how satellite imagery is analysed.',
  pick:'Use this example',fieldReady:'Your field is marked',fieldMissing:'First mark a field on the map.',
  locationUnavailable:'We could not search places. Please try again.',invalidArea:'Mark an area from 0.1 to 500 hectares.',
  invalidShape:'Check the corners: field edges cannot cross or repeat.',
@@ -112,14 +114,14 @@ const LABELS={
  income:'Which crop do you need to keep growing?',incomeAuto:'My most frequent crop',
  scarcity:'Do you have less irrigation water from May to November?',yes:'Yes',no:'No',unknown:'Not sure',
  action:'Show my plan',working:'Preparing a plan for your field…',
- planTitle:'Your planting plan',planLead:'Options use the information you entered and crop references for coastal Lima.',
- recommended:'Highlighted option for your field',noRecommend:'We have not found a clearly better option yet.',
+ planTitle:'Your planting proposal',planLead:'Review crop order, dates and estimated changes for your field.',
+ recommended:'A rotation to review',noRecommend:'No clearly better rotation has been found yet.',
  current:'Your current planting',alternative:'Another option to review',other:'See other options',keyWater:'Water in dry months',keySoil:'Months without crops',fewer:'less',more:'more',
  waterTrade:'Estimated crop water compared with your current planting',coverage:'out of 24 months without a crop',
- where:'Field',when:'Date',areaPrint:'Approximate area',planSchedule:'Illustrative 24-month rotation',
+ where:'Field',when:'Date',areaPrint:'Approximate area',planSchedule:'Suggested crop order',
  year1:'Year one',year2:'Year two',noCrop:'No crop planned',sowing:'Sown',
  benefits:'What could improve',risks:'What to consider',verify:'Check on your field',
- compare:'Comparison of options',details:'How this was calculated',warning:'These are estimates. Review them with an agricultural technician before changing crops.',
+ compare:'Comparison of options',details:'How this was calculated',warning:'Before planting, check available water and your soil conditions.',
  report:'Print or save PDF',startOver:'Review my answers',sources:'Sources and limitations',
  evidence:'Data used',reportTech:'Technical calculations',printFooter:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',
  unsupported:'We do not yet have a verified local crop calendar here. You can mark and review the field, but planting options are available for coastal Lima.',
@@ -131,7 +133,7 @@ const LABELS={
 function labelCrop(id:string,lang:Lang){return (NAMES[id]||[id,id])[lang==='es'?0:1]}
 function mon(i:number,lang:Lang){const m=(7+i)%12;return (lang==='es'?MONTHS_ES:MONTHS_EN)[m]}
 function monthYear(index:number,baseYear:number,lang:Lang){const d=new Date(Date.UTC(baseYear,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}
-function planMonth(index:number,lang:Lang){return mon(index,lang)+' · '+(lang==='es'?'año ':'year ')+(index<12?'1':'2')}
+function planMonth(index:number,lang:Lang,year?:number){if(year){const d=new Date(Date.UTC(year,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}return mon(index,lang)+' · '+(lang==='es'?'año ':'year ')+(index<12?'1':'2')}
 function ymNumber(s:string){return Number(s.slice(0,4))*12+Number(s.slice(5,7))-1}
 function recentAugust(){const now=new Date();const year=now.getUTCFullYear(),m=now.getUTCMonth()+1;return (m>=8?year:year-1)-2}
 function simpleDate(lang:Lang){return new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US',{year:'numeric',month:'long',day:'numeric'})}
@@ -178,7 +180,8 @@ function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Poi
  return <>{points.length>1&&<Polyline positions={points.map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F7C85C',weight:4}}/>}
  {points.map((p,i)=><CircleMarker key={i} center={[p.lat,p.lng]} radius={i===0?9:6} pathOptions={{color:'#134638',weight:2,fillColor:i===0?'#F7C85C':'#fff',fillOpacity:1}} eventHandlers={i===0?{click:()=>{if(points.length>=3)onFinish()}}:undefined}/>)}</>
 }
-const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,2)
+const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,1)
+const SAVED_FARM_KEY='biotex-farm-v1'
 export default function BiotexFarmerApp(){
  const [lang,setLang]=useState<Lang>(()=>new URLSearchParams(window.location.search).get('lang')==='en'?'en':'es')
  const t=LABELS[lang]
@@ -207,11 +210,19 @@ export default function BiotexFarmerApp(){
  const [manualEntered,setManualEntered]=useState(false)
  const [goal,setGoal]=useState<'water'|'soil'|'both'>('both')
  const [incomeCrop,setIncomeCrop]=useState('')
+ const [soil,setSoil]=useState<FieldSoil>({})
+ const [waterAllowance,setWaterAllowance]=useState('')
  const [scarcity,setScarcity]=useState<'normal'|'escaso'|'no_se'>('no_se')
  const [result,setResult]=useState<Result|null>(null)
  const [planBusy,setPlanBusy]=useState(false)
  const [planError,setPlanError]=useState('')
  const [otherOpen,setOtherOpen]=useState(false)
+ const [mapLayer,setMapLayer]=useState<'photo'|'vegetation'|'rain'>('photo')
+ const [mapLayerFailed,setMapLayerFailed]=useState(false)
+ const [saveMobileData,setSaveMobileData]=useState(false)
+ const [planStartYear,setPlanStartYear]=useState(()=>{const d=new Date();return d.getUTCFullYear()+(d.getUTCMonth()>=7?1:0)})
+ const [savedAvailable,setSavedAvailable]=useState(()=>{try{return Boolean(localStorage.getItem(SAVED_FARM_KEY))}catch{return false}})
+ const [savedNotice,setSavedNotice]=useState('')
  const request=useRef(0)
  const baseYear=recentAugust()
  const point=field?centroid(field):centre
@@ -227,6 +238,32 @@ export default function BiotexFarmerApp(){
 
  useEffect(()=>{document.documentElement.lang=lang},[lang])
  function navigate(s:Step){setStep(s);window.scrollTo({top:0,behavior:'smooth'})}
+ function saveFarm(){
+  if(!field)return
+  try{
+   localStorage.setItem(SAVED_FARM_KEY,JSON.stringify({version:1,field,place,fieldLabel,isDemoField,
+    plantings,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear}))
+   setSavedAvailable(true);setSavedNotice(lang==='es'?'Tus datos se guardaron en este dispositivo.':'Your details are saved on this device.')
+  }catch{setSavedNotice(lang==='es'?'El navegador no permitió guardar los datos.':'Your browser could not save these details.')}
+ }
+ function restoreFarm(){
+  try{
+   const data=JSON.parse(localStorage.getItem(SAVED_FARM_KEY)||'null')
+   if(!data||data.version!==1||!data.field||!Array.isArray(data.plantings))throw new Error('bad saved farm')
+   const vertices=fromGeo(data.field)
+   if(!validatePolygon(vertices).valid||approximatePolygonHectares(vertices)<0.1||approximatePolygonHectares(vertices)>500)throw new Error('bad polygon')
+   const safe= (data.plantings as Planting[]).filter(v=>CROPS.includes(v.crop_id)&&Number.isInteger(v.start_index)&&v.start_index>=0&&v.start_index<24).slice(0,10)
+   resetAfterField()
+   setField(data.field);setCentre(centroid(data.field));setFieldLabel(String(data.fieldLabel||''));setPlace(String(data.place||'Barranca'))
+   setIsDemoField(Boolean(data.isDemoField));setPlantings(safe)
+   if(['water','soil','both'].includes(data.goal))setGoal(data.goal)
+   setIncomeCrop(String(data.incomeCrop||''));setScarcity(['escaso','normal','no_se'].includes(data.scarcity)?data.scarcity:'no_se')
+   setSoil(data.soil&&typeof data.soil==='object'?data.soil:{})
+   setWaterAllowance(String(data.waterAllowance||''))
+   if(Number.isInteger(data.planStartYear))setPlanStartYear(data.planStartYear)
+   setSavedNotice(lang==='es'?'Recuperamos tu chacra. Revisa los cultivos antes de continuar.':'Your field is restored. Please review the crops before continuing.')
+  }catch{setSavedNotice(lang==='es'?'No pudimos recuperar el terreno guardado.':'Unable to restore saved field.')}
+ }
  function resetAfterField(){request.current++;setPlantings([]);setHistory(null);setHistoryBusy(false);setHintChoices({});setSatelliteAccepted(false);setManualEntered(false);setResult(null);setPlanBusy(false);setPlanError('');setHistoryError('')}
  function changeArea(){setField(null);setFieldLabel('');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
  function setExample(f:typeof DEMOS[number]){const p=f.polygon;setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setIsDemoField(true);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
@@ -285,6 +322,9 @@ export default function BiotexFarmerApp(){
    current,priorities,water_turn:scarcity,current_source:source,
    income_crop_id:confirmedOptions.includes(incomeCrop)?incomeCrop:null,
    use_team_templates_as_fallback:false,
+   soil:Object.keys(soil).length?{...soil,source:'farmer_reported'}:null,
+   irrigation_allowance_m3_ha_season:waterAllowance.trim()?Number(waterAllowance):null,
+   irrigation_source:waterAllowance.trim()?'farmer_reported':null,
    history:source==='satellite_confirmed'&&history?{sensor:history.sensor,start:history.period.start,end:history.period.end,months_with_data:history.months_with_data}:null
   }
   try{const r=await fetch(API+'/api/rotation/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
@@ -299,45 +339,76 @@ export default function BiotexFarmerApp(){
  const original=result?.strategies.find(s=>s.id==='S0')||null
  const other=result?.strategies.filter(s=>s.id!=='S0'&&s.id!==preferred?.id)||[]
  function goPrint(){window.print()}
- function strategyName(s:Strategy){if(s.id==='S0')return t.current;return s.key==='water'?(lang==='es'?'Opción para ahorrar agua':'Water-saving option'):(lang==='es'?'Opción para cuidar el suelo':'Soil-care option')}
+ function strategyName(s:Strategy){
+  if(s.id==='S0')return t.current
+  if(s.key==='water'){
+   const change=s.relative_to_current?.water_low_river_change_percent
+   if(change==null||change>=0)return lang==='es'?'Cambiar las fechas de siembra':'Change sowing dates'
+   if(change>-5)return lang==='es'?'Otra forma de sembrar':'Another planting sequence'
+   return lang==='es'?'Opción para usar menos agua':'Option to use less water'
+  }
+  return lang==='es'?'Opción para cuidar la tierra':'Option to care for soil'
+ }
  function schedule(s:Strategy){return [...s.plantings].sort((a,b)=>a.start_index-b.start_index)}
  function showPct(v:number|null|undefined){if(v==null)return '—';return (v>0?'+':'')+Math.round(v)+'%'}
  function consequences(s:Strategy){const r=s.relative_to_current;return r?[
   {title:t.keyWater,value:showPct(r.water_low_river_change_percent),bad:(r.water_low_river_change_percent??0)>0,good:(r.water_low_river_change_percent??0)<0},
   {title:t.keySoil,value:Math.abs(r.bare_months_change)+' '+(r.bare_months_change>0?t.more:r.bare_months_change<0?t.fewer:'='),bad:r.bare_months_change>0,good:r.bare_months_change<0},
-  {title:lang==='es'?'Nuevas siembras de legumbres':'Additional legume crops',value:String(Math.max(0,r.legume_plantings_change)),bad:false,good:r.legume_plantings_change>0}
+  {title:lang==='es'?'Cambios en siembras de legumbres':'Change in legume plantings',value:(r.legume_plantings_change>0?'+':'')+String(r.legume_plantings_change),bad:r.legume_plantings_change<0,good:r.legume_plantings_change>0}
  ]:[]}
  function cropsLine(s:Strategy){return schedule(s).map(p=>labelCrop(p.crop_id,lang)).join(' · ')}
  function technical(s:Strategy){return <details className="b-technical"><summary>{t.details}</summary>
   <div className="b-technical-inner"><h4>{t.evidence}</h4><ul>{s.sections.evidence[lang].map((a,i)=><li key={i}>{a}</li>)}</ul>
-   <h4>{t.verify}</h4><ul>{s.sections.gaps[lang].map((a,i)=><li key={i}>{a}</li>)}</ul></div>
+   <h4>{t.verify}</h4><ul>{s.sections.gaps[lang].map((a,i)=><li key={i}>{a}</li>)}</ul>
+   {result?.farm_inputs?.soil&&<p>{lang==='es'?'Datos del suelo anotados por ti (todavía no utilizados para descartar cultivos):':'Your recorded soil data (not yet used to exclude crops):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+' '+v).join(' · ')}</p>}
+   {result?.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por ti (sin comprobar contra necesidades reales de riego):':'Water volume you entered (not yet compared with actual irrigation needs):'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha</p>}
+   {result?.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season} · {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de la lluvia habitual en cabecera de cuenca; no equivale al caudal del canal.':'of normal rainfall in the upper basin; not canal flow.'}</p>}
+   </div>
  </details>}
- function strip(s:Strategy){return <div className="b-crop-calendar" aria-label={t.planSchedule}>{[0,1].map(year=><div className="b-year" key={year}>
-  <strong>{year===0?t.year1:t.year2}</strong>
-  <div className="b-month-grid">{Array.from({length:12},(_,j)=>{const i=year*12+j;const cell=s.timeline[i];const id=cell?.crop_id;return <div key={i} className={'b-month '+(id?'filled':'empty')} title={id?labelCrop(id,lang):t.noCrop}>
-   <span>{mon(i,lang).slice(0,3)}</span><b>{id?labelCrop(id,lang):'—'}</b>
-  </div>})}</div>
- </div>)}</div>}
- function mainCard(s:Strategy){return <article className="b-recommend">
-  <div className="b-recommend-top"><span className="b-eyebrow">{t.recommended}</span><h2>{strategyName(s)}</h2>
-  <p>{result?.[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']||t.planLead}</p></div>
-  <div className="b-keyfigures">{consequences(s).map((k,i)=><div key={i} className={'b-kpi '+(k.bad?'risk':k.good?'positive':'neutral')}><span>{k.title}</span><strong>{k.value}</strong></div>)}</div>
-  <h3>{t.planSchedule}</h3>{strip(s)}
-  <div className="b-benefits-grid"><section><h3>{t.benefits}</h3><ul>{s.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section>
-  <section><h3>{t.risks}</h3><ul>{s.sections.risks[lang].slice(0,3).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
-  {technical(s)}
- </article>}
+ function strip(s:Strategy){const crops=schedule(s)
+  return <div className="b-sequence" aria-label={t.planSchedule}>{crops.length?crops.map((p,i)=><div className="b-sequence-step" key={p.start_index+'-'+p.crop_id}>
+   <span className="b-sequence-num">{i+1}</span>
+   <div><strong>{labelCrop(p.crop_id,lang)}</strong><span>{lang==='es'?'Sembrar desde':'Sow from'} {planMonth(p.start_index,lang,planStartYear)} · {p.months} {lang==='es'?'meses aprox.':'months approx.'}</span></div>
+  </div>):<p>{t.noCrop}</p>}
+   <p className="b-sequence-foot">{lang==='es'?'El orden se basa en un ciclo de dos años que empieza en agosto. Los meses sin cultivo no son instrucciones de dejar el terreno abandonado.':'Order follows a two-year cycle starting in August. Gaps are not instructions to neglect the field.'}</p>
+  </div>
+ }
+ function mainCard(s:Strategy){
+  const relative=s.relative_to_current
+  const negligible=relative?.water_low_river_change_percent!=null&&Math.abs(relative.water_low_river_change_percent)<5
+  return <article className="b-recommend">
+   <div className="b-recommend-top"><span className="b-eyebrow">{t.recommended}</span><h2>{strategyName(s)}</h2>
+    <p>{result?.[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']||t.planLead}</p>
+    {negligible&&<p className="b-small-change">{lang==='es'?'La diferencia de agua es pequeña: no la tomes como un ahorro comprobado.':'Water difference is small and should not be considered verified savings.'}</p>}
+   </div>
+   <div className="b-keyfigures">{consequences(s).map((k,i)=><div key={i} className={'b-kpi '+(k.bad?'risk':k.good?'positive':'neutral')}><span>{k.title}</span><strong>{k.value}</strong></div>)}</div>
+   <h3>{t.planSchedule}</h3>{strip(s)}
+   <div className="b-benefits-grid"><section><h3>{t.benefits}</h3><ul>{s.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section>
+    <section><h3>{t.risks}</h3><ul>{s.sections.risks[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
+   {technical(s)}
+  </article>
+ }
  function printable(){if(!result)return null;
   const maxWater=Math.max(1,...result.strategies.map(x=>x.indicators.water_low_river_mm));
+  const corners=field?fromGeo(field):[]
+  const xs=corners.map(p=>p.lng),ys=corners.map(p=>p.lat)
+  const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys)
+  const sketch=corners.length>=3?corners.map(p=>{
+   const x=10+100*(p.lng-minX)/Math.max(1e-7,maxX-minX)
+   const y=80-60*(p.lat-minY)/Math.max(1e-7,maxY-minY)
+   return x.toFixed(1)+','+y.toFixed(1)
+  }).join(' '):'';
   return <div className="b-print-report" aria-hidden={step!==3}>
   <div className="b-print-header"><div><strong className="b-print-logo">BIOTEX</strong><p>{t.printFooter}</p></div><div className="b-print-date">{simpleDate(lang)}</div></div>
-  <h1>{t.planTitle}</h1><div className="b-print-meta"><span><b>{t.where}:</b> {place}</span><span><b>{t.areaPrint}:</b> {area.toFixed(2)} ha</span>
+  <h1>{t.planTitle}</h1>
+  {sketch&&<figure className="b-print-sketch"><svg viewBox="0 0 120 100" role="img" aria-label={lang==='es'?'Croquis del terreno marcado':'Outline of marked field'}><rect x="1" y="1" width="118" height="98" rx="5" fill="#f4f7f4" stroke="#d5e3d8"/><polygon points={sketch} fill="#dbeee1" stroke="#236147" strokeWidth="2.3"/><text x="102" y="13" fill="#42654e" fontSize="9">N ↑</text></svg><figcaption>{lang==='es'?'Contorno aproximado de la chacra':'Approximate field outline'}</figcaption></figure>}
+  <div className="b-print-meta"><span><b>{t.where}:</b> {place}</span><span><b>{t.areaPrint}:</b> {area.toFixed(2)} ha</span>
   <span><b>{t.when}:</b> {simpleDate(lang)}</span></div>
   <p className="b-print-intro">{t.warning} {sampleNote?t.exampleNote:''}</p>
   {preferred?<><h2>{t.recommended}: {strategyName(preferred)}</h2><p>{result[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']}</p>
    <div className="b-print-kpis">{consequences(preferred).map((x,i)=><div key={i}><span>{x.title}</span><b>{x.value}</b></div>)}</div>
-   <h3>{t.planSchedule}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Año':'Year'}</th><th>{t.sowing}</th><th>{t.crop}</th><th>{lang==='es'?'Duración':'Duration'}</th></tr></thead>
-    <tbody>{schedule(preferred).map((p,i)=><tr key={i}><td>{p.start_index<12?'1':'2'}</td><td>{planMonth(p.start_index,lang)}</td><td>{labelCrop(p.crop_id,lang)}</td><td>{p.months} {lang==='es'?'meses':'months'}</td></tr>)}</tbody></table>
+   <h3>{t.planSchedule} · {lang==='es'?'inicio: agosto':'start: August'} {planStartYear}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Año':'Year'}</th><th>{t.sowing}</th><th>{t.crop}</th><th>{lang==='es'?'Duración':'Duration'}</th></tr></thead>
+    <tbody>{schedule(preferred).map((p,i)=><tr key={i}><td>{p.start_index<12?'1':'2'}</td><td>{planMonth(p.start_index,lang,planStartYear)}</td><td>{labelCrop(p.crop_id,lang)}</td><td>{p.months} {lang==='es'?'meses':'months'}</td></tr>)}</tbody></table>
    <div className="b-print-grid"><section><h3>{t.benefits}</h3><ul>{preferred.sections.benefits[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section><section><h3>{t.risks}</h3><ul>{preferred.sections.risks[lang].slice(0,4).map((x,i)=><li key={i}>{x}</li>)}</ul></section></div>
   </>:<h2>{t.noRecommend}</h2>}
   <h3>{t.compare}</h3><table className="b-print-table"><thead><tr><th>{lang==='es'?'Opción':'Option'}</th><th>{t.keyWater}</th><th>{t.keySoil}</th></tr></thead>
@@ -350,11 +421,14 @@ export default function BiotexFarmerApp(){
   <div className="b-print-small"><h3>{t.sources}</h3>
   <p>NASA POWER (2001–2025); {history?(lang==='es'?'NASA HLS v2.0 (imágenes consultadas; cultivos confirmados por una persona)':'NASA HLS v2.0 (images consulted; crops confirmed by a person)'):(lang==='es'?'historial de cultivos declarado por la persona (sin análisis HLS)':'farmer-declared crop history (no HLS analysis)')}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
   <p>{lang==='es'?'Solo se utiliza un calendario agrícola aproximado de Lima; no se conoce el análisis de suelo, turno real de riego o precio futuro. Los cálculos son comparaciones relativas, no recomendaciones garantizadas.':'Uses an approximate Lima sowing calendar. Soil test, actual irrigation allocation and future prices are not known. Results are relative comparisons, not guarantees.'}</p>
-  <p>{sampleNote?t.exampleNote:''}</p></div></div>}
+  {result.farm_inputs?.soil&&<p>{lang==='es'?'Suelo declarado (sin validación de laboratorio):':'Reported soil (without laboratory verification):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+': '+v).join(' · ')}</p>}
+  {result.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por el usuario, todavía no usada como restricción:':'Reported irrigation water, not yet a hard constraint:'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha.</p>}
+  {result.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season}, {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de precipitación habitual en la cabecera; no es caudal del río.':'of usual upper-basin precipitation; not river discharge.'}</p>}
+  <p>{sampleNote?(lang==='es'?'Terreno mostrado para demostración; los cultivos registrados fueron proporcionados durante esta sesión.':'Field used for demonstration; crop inputs were supplied during this session.'):''}</p></div></div>}
  return <div className="b-app">
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
   <header className="b-header"><div className="b-header-inner"><div className="b-brand"><span className="b-brand-mark"><Icon name="leaf" size={25}/></span><div><b>BIOTEX</b><small>NSPACE BIOTEX</small></div></div>
-  <span className="b-pilot">{t.pilot}</span>
+
   <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></header>
   <div className="b-progress-wrap"><nav className="b-progress" aria-label="Progreso">{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step||i===3&&!result} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div>
   <main id="main" className="b-main">
@@ -370,8 +444,18 @@ export default function BiotexFarmerApp(){
       {places.length>0&&<div className="b-place-results">{places.map((p,i)=><button key={i} type="button" onClick={()=>pickPlace(p)}><Icon name="pin" size={18}/><span>{p.name}</span></button>)}</div>}
       <p className="b-map-label"><Icon name="pin" size={16}/>{place}</p>
       <p className="b-muted">{t.mapHint}</p>
+      <div className="b-map-view" role="group" aria-label={lang==='es'?'Capas de observación':'Observation layers'}>
+       {(['photo','vegetation','rain'] as const).map(id=><button key={id} type="button" disabled={saveMobileData&&id!=='photo'} aria-pressed={mapLayer===id} onClick={()=>{setMapLayer(id);setMapLayerFailed(false)}}>{id==='photo'?(lang==='es'?'Foto aérea':'Aerial photo'):id==='vegetation'?(lang==='es'?'Vegetación NASA':'NASA vegetation'):(lang==='es'?'Lluvia NASA':'NASA rain')}</button>)}
+      </div>
+      <label className="b-low-bandwidth"><input type="checkbox" checked={saveMobileData} onChange={e=>{setSaveMobileData(e.target.checked);if(e.target.checked)setMapLayer('photo')}}/> {lang==='es'?'Ahorrar datos móviles (mapa sencillo)':'Save mobile data (simple map)'}</label>
+      {drawing&&<div className="b-map-guide"><strong>{lang==='es'?'Marca tu chacra en 3 pasos':'Mark your field in 3 steps'}</strong><ol><li>{lang==='es'?'Acerca el mapa.':'Zoom in.'}</li><li>{lang==='es'?'Toca cada esquina del terreno.':'Tap each field corner.'}</li><li>{lang==='es'?'Pulsa «Terminar terreno».':'Tap Finish field.'}</li></ol></div>}
       <div className="b-map-frame"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
-       <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
+       <TileLayer key={saveMobileData?'streets':'satellite'} attribution={saveMobileData?'© OpenStreetMap contributors':'Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors'}
+        url={saveMobileData?'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}/>
+       {!saveMobileData&&mapLayer!=='photo'&&<WMSTileLayer key={mapLayer} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
+        layers={mapLayer==='vegetation'?'MODIS_Terra_NDVI_8Day':'IMERG_Precipitation_Rate'}
+        styles="" format="image/png" transparent={true} version="1.1.1" opacity={0.72}
+        attribution="NASA GIBS / ESDIS" eventHandlers={{tileerror:()=>setMapLayerFailed(true)}}/>}
        <FlyTo point={centre} polygon={mapPolygon}/>
        <DrawLayer enabled={drawing} points={points} onPoint={p=>{setPoints(x=>[...x,p]);setFieldError('')}} onFinish={finish}/>
        {field&&<Polygon positions={(mapPolygon||[]).map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
@@ -380,17 +464,22 @@ export default function BiotexFarmerApp(){
        <button type="button" className="b-btn b-btn-solid" onClick={finish} disabled={points.length<3}>{t.finish}</button>
        <button type="button" className="b-btn b-btn-light" onClick={()=>{setDrawing(false);setPoints([]);setFieldError('')}}>{t.cancel}</button></>:
        <button type="button" className="b-btn b-btn-solid" onClick={()=>{changeArea();setDrawing(true)}}>{field?t.changeField:t.draw}</button>}</div></div>
+      {mapLayer!=='photo'&&<div className="b-map-evidence"><span>{mapLayer==='vegetation'?(lang==='es'?'Vegetación regional NASA MODIS · 250 m':'Regional NASA MODIS vegetation · 250 m'):(lang==='es'?'Lluvia regional NASA GPM · aprox. 10 km':'Regional NASA GPM rainfall · approx. 10 km')}. {lang==='es'?'No es una medida exacta de tu chacra.':'Not an exact field measurement.'}</span>
+       <a href={'https://worldview.earthdata.nasa.gov/?l='+(mapLayer==='vegetation'?'MODIS_Terra_NDVI_8Day':'IMERG_Precipitation_Rate')} target="_blank" rel="noreferrer">{lang==='es'?'Ver fuente NASA':'NASA source'}</a>
+       {mapLayerFailed&&<span role="status">{lang==='es'?'La capa NASA no cargó para esta vista.':'NASA layer unavailable for this view.'}</span>}</div>}
       {fieldError&&<p role="alert" className="b-error">{fieldError}</p>}
       {field&&<div className="b-field-ready" role="status"><Icon name="check"/><div><strong>{t.fieldReady}</strong><span>{t.area}: {area.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2})} ha</span></div></div>}
       {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
+      {savedNotice&&<p className="b-note" role="status">{savedNotice}</p>}
+      {savedAvailable&&<div className="b-farm-recovery"><button type="button" onClick={restoreFarm}>{lang==='es'?'Recuperar mi chacra guardada':'Restore saved field'}</button></div>}
      </div>
-     <aside className="b-card b-examples"><h2>{t.examples}</h2><p>{t.exampleNote}</p>
+     <aside className="b-card b-examples"><h2>{t.examples}</h2>
       {DEMOS.map((f,i)=><button key={f.id} type="button" className="b-example-choice" onClick={()=>setExample(f)}><span className="b-example-index">{String(i+1).padStart(2,'0')}</span>
-        <span><strong>{lang==='es'?'Terreno de ejemplo '+(i+1):'Example field '+(i+1)}</strong><small>Barranca · Pativilca / Supe</small></span><Icon name="right" size={19}/></button>)}
+        <span><strong>{lang==='es'?'Explorar parcela de Barranca':'Explore a Barranca field'}</strong><small>{lang==='es'?'Vista desde el satélite':'Satellite view'}</small></span><Icon name="right" size={19}/></button>)}
       <p className="b-muted">{lang==='es'?'También puedes buscar tu propio distrito y marcar tu terreno.':'You can also search your district and mark your own field.'}</p>
      </aside>
     </div>
-    <div className="b-next"><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
+    <div className="b-next"><button type="button" className="b-btn b-btn-light" disabled={!field} onClick={saveFarm}>{lang==='es'?'Guardar mi chacra':'Save my field'}</button><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
    </section>}
    {step===1&&<section className="b-form-page"><div className="b-intro"><span className="b-eyebrow">02 / 04</span><h1>{t.historyTitle}</h1><p>{t.historyLead}</p></div>
     <div className="b-entry-grid"><section className="b-card"><h2>{t.add}</h2>
@@ -406,7 +495,8 @@ export default function BiotexFarmerApp(){
        {!history&&!historyBusy&&<button type="button" className="b-btn b-btn-light" onClick={loadImages}>{t.satellite}</button>}
        {historyBusy&&<p className="b-loading" role="status"><span className="b-spinner"/>{t.loading}</p>}
        {historyError&&<p className="b-error" role="alert">{t.satFail} <button type="button" onClick={loadImages}>{lang==='es'?'Reintentar':'Retry'}</button></p>}
-       {history&&<><p>{t.historyFound}</p>
+       {history&&<><SatelliteEvidence months={history.months} polygon={field!} lang={lang} sensor={history.sensor} monthsWithData={history.months_with_data} monthsTotal={history.months_total}/>
+       <p>{t.historyFound}</p>
        {seasons.length===0&&<p className="b-note">{t.noSeasons}</p>}
        <div className="b-season-grid">{seasons.map(c=><div className="b-season" key={c.start}>
         <label>{t.possible} {monthYear(Math.max(0,ymNumber(c.start)-1-firstAugust),baseYear,lang)}?</label>
@@ -428,6 +518,36 @@ export default function BiotexFarmerApp(){
      <span className="b-radio" aria-hidden="true"/></button>)}</div>
      <div className="b-input-row b-input-soft"><label>{t.income}<select value={confirmedOptions.includes(incomeCrop)?incomeCrop:''} onChange={e=>{setIncomeCrop(e.target.value);setResult(null)}}><option value="">{t.incomeAuto}</option>{confirmedOptions.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
       <fieldset><legend>{t.scarcity}</legend><div className="b-choice-row">{(['escaso','normal','no_se'] as const).map(id=><button key={id} type="button" aria-pressed={scarcity===id} className={scarcity===id?'chosen':''} onClick={()=>{setScarcity(id);setResult(null)}}>{id==='escaso'?t.yes:id==='normal'?t.no:t.unknown}</button>)}</div></fieldset></div>
+     <div className="b-year-control"><label>{lang==='es'?'¿En qué año empezarías el plan?':'Which year would you begin?'}
+      <select value={planStartYear} onChange={e=>setPlanStartYear(Number(e.target.value))}>{[0,1,2].map(offset=><option key={offset} value={new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}>{lang==='es'?'Agosto':'August'} {new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}</option>)}</select>
+      </label><small>{lang==='es'?'El modelo empieza su ciclo en agosto; las fechas son aproximadas.':'The model cycle starts in August; dates are approximate.'}</small></div>
+     <details className="b-farm-evidence"><summary>{lang==='es'?'¿Tienes datos de tu suelo o del agua de riego? (opcional)':'Do you have soil or irrigation records? (optional)'}</summary>
+      <p>{lang==='es'?'Anota aquí solo los datos que conoces. Aparecerán en tu informe.':'Enter only values you know. They will appear in your report.'}</p>
+      <div className="b-farm-fields">
+       <label>{lang==='es'?'Tipo de suelo':'Soil texture'}
+        <select value={soil.texture||''} onChange={e=>setSoil(x=>({...x,texture:(e.target.value||undefined) as FieldSoil['texture']}))}>
+         <option value="">{lang==='es'?'No tengo el dato':'Unknown'}</option><option value="arenosa">{lang==='es'?'Arenoso':'Sandy'}</option><option value="franca">{lang==='es'?'Franco':'Loam'}</option><option value="arcillosa">{lang==='es'?'Arcilloso':'Clay'}</option>
+        </select>
+       </label>
+       <label>{lang==='es'?'Acidez del suelo (pH, si tienes análisis)':'Soil pH (if tested)'}
+        <input type="number" inputMode="decimal" min="0" max="14" step="0.1" value={soil.ph??''} onChange={e=>setSoil(x=>({...x,ph:e.target.value===''?undefined:Number(e.target.value)}))}/>
+       </label>
+       <label>{lang==='es'?'Salinidad (dS/m, si tienes análisis)':'Salinity (dS/m, if tested)'}
+        <input type="number" inputMode="decimal" min="0" max="100" step="0.1" value={soil.salinity_ds_m??''} onChange={e=>setSoil(x=>({...x,salinity_ds_m:e.target.value===''?undefined:Number(e.target.value)}))}/>
+       </label>
+       <label>{lang==='es'?'Materia orgánica (%)':'Organic matter (%)'}
+        <input type="number" inputMode="decimal" min="0" max="100" step="0.1" value={soil.organic_matter_percent??''} onChange={e=>setSoil(x=>({...x,organic_matter_percent:e.target.value===''?undefined:Number(e.target.value)}))}/>
+       </label>
+       <label>{lang==='es'?'¿Cómo drena el agua?':'How well does water drain?'}
+        <select value={soil.drainage||''} onChange={e=>setSoil(x=>({...x,drainage:(e.target.value||undefined) as FieldSoil['drainage']}))}>
+         <option value="">{lang==='es'?'No sé':'Unknown'}</option><option value="bueno">{lang==='es'?'Bien':'Well'}</option><option value="regular">{lang==='es'?'Regular':'Moderately'}</option><option value="malo">{lang==='es'?'Se empoza':'Poorly'}</option>
+        </select>
+       </label>
+       <label>{lang==='es'?'Agua asignada en m³/ha por campaña (si tienes el dato)':'Allocated water m³/ha per season (if known)'}
+        <input type="number" inputMode="numeric" min="0" max="1000000" step="1" value={waterAllowance} onChange={e=>setWaterAllowance(e.target.value)}/>
+       </label>
+      </div>
+     </details>
     </section>
     {planError&&<p className="b-error" role="alert">{planError}</p>}
     {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
@@ -436,15 +556,19 @@ export default function BiotexFarmerApp(){
    </section>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro"><span className="b-eyebrow">04 / 04</span><h1>{t.planTitle}</h1><p>{t.planLead}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
-    {sampleNote&&<p className="b-note"><Icon name="info" size={18}/>{t.exampleNote}</p>}
+    {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
     {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
     {preferred?mainCard(preferred):<div className="b-card b-no-recommend"><Icon name="info"/><h2>{t.noRecommend}</h2><p>{t.unavailable}</p></div>}
     <div className="b-caution"><Icon name="alert" size={21}/><p>{t.warning}</p></div>
+    {other.some(x=>(x.relative_to_current?.water_low_river_change_percent??0)>25)&&<p className="b-water-caution">{lang==='es'?'Hay otra opción que necesita bastante más agua en meses secos. Revisa esta diferencia antes de considerarla.':'Another option needs considerably more crop water in dry months. Review this difference before considering it.'}</p>}
     {other.length>0||original?<section className="b-compare-wrap"><button type="button" className="b-compare-trigger" aria-expanded={otherOpen} onClick={()=>setOtherOpen(v=>!v)}><span>{t.other}</span><span>{otherOpen?'−':'+'}</span></button>
       {otherOpen&&<div className="b-other-cards">{[...other,...(original?[original]:[])].map(s=><article className="b-card b-other" key={s.id}>
-       <h3>{strategyName(s)}</h3><p>{cropsLine(s)}</p><div className="b-mini-kpis"><span>{t.keyWater}: {s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</span><span>{t.keySoil}: {s.indicators.bare_months}/24</span></div>
+       <h3>{strategyName(s)}</h3><p>{cropsLine(s)}</p><div className="b-mini-kpis"><span className={(s.relative_to_current?.water_low_river_change_percent??0)>25?'b-water-high':''}>{t.keyWater}: {s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</span><span>{t.keySoil}: {s.indicators.bare_months}/24</span></div>
        {s.plantings.length>0&&<details><summary>{t.planSchedule}</summary>{strip(s)}</details>}{technical(s)}
       </article>)}</div>}</section>:null}
+    <div className="b-save-actions"><button type="button" className="b-btn b-btn-light" onClick={saveFarm}>{lang==='es'?'Guardar datos en mi celular':'Save on this device'}</button>
+     <a className="b-btn b-btn-light" href={'https://wa.me/?text='+encodeURIComponent((lang==='es'?'Mi propuesta BIOTEX para ':'My BIOTEX plan for ')+place+': '+(preferred?cropsLine(preferred):'')+' · '+(result[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']||'')+' · '+window.location.origin)} target="_blank" rel="noreferrer">{lang==='es'?'Compartir por WhatsApp':'Share on WhatsApp'}</a>
+     {savedNotice&&<p role="status">{savedNotice}</p>}</div>
     <div className="b-report-actions"><button type="button" onClick={goPrint} className="b-btn b-btn-primary"><Icon name="print"/>{t.report}</button>
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
