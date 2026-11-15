@@ -1,3 +1,5 @@
+> Documento histórico: no configura ni publica la versión actual. Consulte `docs/BIOTEX_ARCHITECTURE.md` y `docs/vercel-deployment.md`.
+
 # TERRA360 AI — hoja de ruta v0.14 (14 noviembre 2026)
 
 Base: [v0.13](roadmap-v0.13.md).

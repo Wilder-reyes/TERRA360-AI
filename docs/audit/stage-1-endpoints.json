@@ -1,0 +1,236 @@
+[
+  {
+    "path": "/api/health",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/pilot",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/nasa-power/daily",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/gpm-imerg/daily",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/observations/daily",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/metrics/daily",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/arie/catalog",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/arie/crops",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/arie/evaluate",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/arie/decision-method",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/arie/parameters",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/arie/crop-guidance",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/nasa-power/history",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/nasa-power/seasonality",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/planetary-computer/scenes",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/terrain",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/sentinel-2/parcel-ndvi",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/environment/sentinel-2/parcel-ndvi-series",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/environment/gpm-imerg/polygon-daily",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/environment/smap/regional-daily",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/environment/gaez-v5/selected-layer",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/environment/gaez-v5/selected-layer/sample",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/environment/gaez-v5/selected-layer/raw-cell",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/rotation/economics",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/rotation/zones",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/rotation/crops",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/rotation/templates",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/rotation/upper-basin-rain",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/rotation/ai-demo",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/rotation/evidence-sources",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/rotation/climate",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/rotation/history",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/rotation/compare",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/andes/catalog",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/andes/compare",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/andes/sources",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/andes/validate-subplots",
+    "methods": [
+      "post"
+    ]
+  },
+  {
+    "path": "/api/andes/ecostress-scenes",
+    "methods": [
+      "get"
+    ]
+  },
+  {
+    "path": "/api/andes/era5-land",
+    "methods": [
+      "get"
+    ]
+  }
+]

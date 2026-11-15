@@ -4,6 +4,9 @@ export type AIEvidence={
  model_id?:string;source_sensor?:string;
  observed_months?:number;missing_months?:number;
  source_period?:{start:string;end:string};
+ holdout_classification?:{test_observations:number;accuracy_percent:number|null;
+  precision_percent:number|null;recall_percent:number|null;f1_percent:number|null;
+  decision_threshold:number;confusion_matrix:{tp:number;tn:number;fp:number;fn:number}};
  holdout?:{brier_model:number;brier_train_prevalence_baseline:number;relative_brier_improvement:number;
   test_coefficients?:number[]};
  seasonal_bare_probability?:Record<string,number>;
@@ -37,6 +40,19 @@ export default function FarmerAIEvidence({ai,lang}:{ai?:AIEvidence;lang:'es'|'en
      {' '}{es?'Entrenamiento inicial: 33 observaciones; prueba posterior: 11.':'Initial training: 33 observations; later holdout: 11.'}</p>
     {tested&&<p>{es?'Error en la prueba de meses posteriores (Brier; menor es mejor):':'Later-month test error (Brier; lower is better):'}
      {' '}<strong>{ai.holdout!.brier_model.toFixed(3)}</strong> {es?'con IA, frente a':'AI vs'} <strong>{ai.holdout!.brier_train_prevalence_baseline.toFixed(3)}</strong> {es?'con una referencia sin aprendizaje estacional.':'with a non-seasonal baseline.'}</p>}
+    {ai.holdout_classification&&<section className="b-ai-scoped-metrics" aria-label={es?'Métricas de prueba independientes':'Independent holdout metrics'}>
+     <h4>{es?'Evaluación de clasificación de vegetación baja':'Low-vegetation classification evaluation'}</h4>
+     <p>{es?'Prueba cronológica posterior, no entrenamiento: ':'Later chronological holdout, not training: '}
+      <strong>{ai.holdout_classification.test_observations}</strong> {es?'meses. Umbral de decisión fijado: ':'months. Fixed decision threshold: '}
+      {ai.holdout_classification.decision_threshold.toFixed(2)}.</p>
+     <div className="b-ai-metrics-grid">{([
+      ['Accuracy',ai.holdout_classification.accuracy_percent],
+      ['Precision',ai.holdout_classification.precision_percent],
+      ['Recall',ai.holdout_classification.recall_percent],
+      ['F1',ai.holdout_classification.f1_percent]
+     ] as const).map(([name,value])=><div key={name}><span>{name}</span><strong>{value==null?'—':value.toFixed(1)+' %'}</strong></div>)}</div>
+     <p>{es?'Son solo 11 observaciones de una parcela de Barranca. Una precisión alta con esta muestra no prueba desempeño en otros terrenos.':'Only 11 observations from one Barranca field. High precision on this sample does not demonstrate performance elsewhere.'}</p>
+    </section>}
     <p>{es?'Probabilidad modelada de vegetación muy baja por mes (valor estimado, no una medición de rendimiento):':'Modelled probability of very low vegetation by month (not a harvest-yield measure):'}</p>
     <div className="b-ai-months" role="list">{risks.map(x=><div role="listitem" key={x.month} className="b-ai-month" aria-label={months[x.month-1]+' '+Math.round(x.prob*100)+'%'}>
      <span>{months[x.month-1]}</span><div className="b-ai-bar-track"><span className="b-ai-bar" style={{height:Math.max(3,Math.round(x.prob*100))+'%'}}/></div>

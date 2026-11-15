@@ -1,21 +1,32 @@
 // AI-assisted: farmer-first BIOTEX interface. Scientific calculations remain on the server.
-import {useEffect,useMemo,useRef,useState,type ReactNode,type FormEvent} from 'react'
-import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
+import {lazy,Suspense,useEffect,useMemo,useRef,useState,type ReactNode,type FormEvent} from 'react'
+import {CircleMarker,MapContainer,Polygon,Polyline,Rectangle,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {API,httpErrorMessage,readableApiError} from './network'
-import {approximatePolygonHectares,validatePolygon} from './geometry'
-import {TEAM_FIELDS,ZONES,type GeoPolygon} from './rotationZones'
+import {approximatePolygonHectares,validatePolygon,validateSubplotLayout} from './geometry'
+import {TEAM_FIELDS,type GeoPolygon} from './rotationZones'
 import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
 import {relativeMonthIndex,migrateSavedPlantings} from './rotationCalendar'
 import SatelliteEvidence from './SatelliteEvidence'
 import FarmDecisionEvidence,{type EconomicReport} from './FarmDecisionEvidence'
 import FarmerAIEvidence,{type AIEvidence} from './FarmerAIEvidence'
 import './biotex-farmer.css'
-import './biotex-v027.css'
+import BioTour from './BioTour'
+import {CropPhotoGuide} from './CropPhotoGuide'
+import {parseGeoJSONPolygon} from './geometry'
+import {imergApproxCell} from './imerg-grid'
+import {GIBS_LAYERS,GIBS_WMS,gibsLegendUrl,isScienceLayer,type BaseOrScienceLayer} from './scientificLayers'
+import {MANTARO_DEMO,LOC as CHALHUAS} from './andesProfile'
+import {isMantaro} from './farmRegion'
+import './agricultural-dark.css'
+const FieldEvidence=lazy(()=>import('./FieldEvidence'))
+const AndesRotation=lazy(()=>import('./AndesRotation'))
+const CropReference=lazy(()=>import('./CropReference'))
 
 type Lang='es'|'en'
 type Step=0|1|2|3
 type Point={lat:number;lng:number}
 type Planting={crop_id:string;start_index:number}
+type Subplot={id:string;polygon:GeoPolygon}
 type Suggestion={crop_id:string;name_es:string}
 type Campaign={start:string;end:string;candidates:Suggestion[]}
 type History={sensor:string;period:{start:string;end:string};months_with_data:number;months_total:number;months:{month:string;ndvi:number|null;best_scene?:{date:string;scene_id?:string;collection?:string;platform?:string;valid_pixels?:number}|null}[];detection:{campaigns:Campaign[]}}
@@ -50,7 +61,7 @@ const MONTHS_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agost
 const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December']
 const LABELS={
  es:{
- steps:['Mi chacra','Mis cultivos','Mis prioridades','Mi plan'],
+ steps:['Mi terreno','Mis cultivos','Mis prioridades','Mi plan agrícola'],
  title:'Cultiva mejor, cuidando tu agua y tu tierra.',
  subtitle:'Marca tu chacra, cuéntanos qué sembraste y descubre opciones para tus próximas campañas.',
  pilot:'',region:'Barranca · Pativilca y Supe',
@@ -95,7 +106,7 @@ const LABELS={
  unavailable:'No se encontraron alternativas suficientemente claras. Revisa tus siembras o consulta con un técnico.'
  },
  en:{
- steps:['My field','My crops','My priorities','My plan'],
+ steps:['My field','My crops','My priorities','My farm plan'],
  title:'Better harvests, caring for soil and water.',subtitle:'Mark your field, tell us what you grew, and discover options for your next seasons.',
  pilot:'',region:'Barranca · Pativilca and Supe',
  search:'Where is your field?',searchHint:'Enter your town or district',find:'Find a place',
@@ -188,15 +199,24 @@ function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Poi
  return <>{points.length>1&&<Polyline positions={points.map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F7C85C',weight:4}}/>}
  {points.map((p,i)=><CircleMarker key={i} center={[p.lat,p.lng]} radius={i===0?9:6} pathOptions={{color:'#134638',weight:2,fillColor:i===0?'#F7C85C':'#fff',fillOpacity:1}} eventHandlers={i===0?{click:()=>{if(points.length>=3)onFinish()}}:undefined}/>)}</>
 }
+function EditableCorners({points,selected,onPick,onMove}:{points:Point[]|null;selected:number;onPick:(index:number)=>void;onMove:(point:Point)=>void}){
+ useMapEvents({click(e){if(points)onMove({lat:e.latlng.lat,lng:e.latlng.lng})}})
+ if(!points)return null
+ return <>{points.length>=3&&<Polygon positions={points.map(v=>[v.lat,v.lng] as [number,number])} pathOptions={{color:'#F59E0B',weight:3,dashArray:'8 5',fillColor:'#4CD964',fillOpacity:.12}}/>}
+  {points.map((v,i)=><CircleMarker key={i} center={[v.lat,v.lng]} radius={selected===i?10:7} pathOptions={{color:'#0B0E0C',weight:2,fillColor:selected===i?'#F59E0B':'#4CD964',fillOpacity:1}} eventHandlers={{click:(event:{originalEvent:MouseEvent})=>{event.originalEvent.stopPropagation();onPick(i)}}}/>)}
+ </>
+}
 const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,1)
 const SAVED_FARM_KEY='biotex-farm-v1'
 export default function BiotexFarmerApp(){
  const [lang,setLang]=useState<Lang>(()=>new URLSearchParams(window.location.search).get('lang')==='en'?'en':'es')
  const t=LABELS[lang]
  const [step,setStep]=useState<Step>(0)
- const [place,setPlace]=useState('Barranca, Pativilca / Supe')
- const [centre,setCentre]=useState<Point>({lat:ZONES.barranca.lat,lng:ZONES.barranca.lng})
+ const [place,setPlace]=useState('Chalhuas · Huáchac, Junín')
+ const [centre,setCentre]=useState<Point>(CHALHUAS)
  const [query,setQuery]=useState('')
+ const [coordinateLat,setCoordinateLat]=useState('')
+ const [coordinateLng,setCoordinateLng]=useState('')
  const [places,setPlaces]=useState<{name:string;lat:number;lng:number}[]>([])
  const [searching,setSearching]=useState(false)
  const [searchError,setSearchError]=useState('')
@@ -204,6 +224,12 @@ export default function BiotexFarmerApp(){
  const [fieldLabel,setFieldLabel]=useState('')
  const [isDemoField,setIsDemoField]=useState(false)
  const [drawing,setDrawing]=useState(false)
+ const [drawingSubplot,setDrawingSubplot]=useState(false)
+ const [subplots,setSubplots]=useState<Subplot[]>([])
+ const [editVertices,setEditVertices]=useState<Point[]|null>(null)
+ const [selectedCorner,setSelectedCorner]=useState(0)
+ const [cornerLat,setCornerLat]=useState('')
+ const [cornerLng,setCornerLng]=useState('')
  const [points,setPoints]=useState<Point[]>([])
  const [fieldError,setFieldError]=useState('')
  const [plantings,setPlantings]=useState<Planting[]>([])
@@ -226,18 +252,23 @@ export default function BiotexFarmerApp(){
  const [planError,setPlanError]=useState('')
  const [economicReport,setEconomicReport]=useState<EconomicReport|null>(null)
  const [otherOpen,setOtherOpen]=useState(false)
- const [mapLayer,setMapLayer]=useState<'photo'|'vegetation'|'rain'>('photo')
+ const [mapLayer,setMapLayer]=useState<BaseOrScienceLayer>('photo')
+ const [mapDate,setMapDate]=useState(()=>new Date(Date.now()-7*86400000).toISOString().slice(0,10))
+ const [mapOpacity,setMapOpacity]=useState(.72)
  const [mapLayerFailed,setMapLayerFailed]=useState(false)
  const [saveMobileData,setSaveMobileData]=useState(false)
  const [planStartYear,setPlanStartYear]=useState(()=>{const d=new Date();return d.getUTCFullYear()+(d.getUTCMonth()>=7?1:0)})
  const [savedAvailable,setSavedAvailable]=useState(()=>{try{return Boolean(localStorage.getItem(SAVED_FARM_KEY))}catch{return false}})
  const [savedNotice,setSavedNotice]=useState('')
+ const [geoInput,setGeoInput]=useState('')
+ const [legacyAndesAvailable]=useState(()=>{try{return Boolean(localStorage.getItem('biotex-chalhuas-v1'))}catch{return false}})
  const request=useRef(0)
  const baseYear=recentAugust()
  const point=field?centroid(field):centre
  const area=field?approximatePolygonHectares(fromGeo(field)):0
   const confirmedOptions=[...new Set(plantings.map(p=>p.crop_id))]
- const supported=coastalLima(point)
+ const andes=isMantaro(point)
+ const supported=coastalLima(point)||andes
  const province=isBarranca(point)
  const sampleNote=isDemoField
  const source=history&&satelliteAccepted&&!manualEntered?'satellite_confirmed':'farmer_declared'
@@ -250,20 +281,25 @@ export default function BiotexFarmerApp(){
   if(!field)return
   try{
    localStorage.setItem(SAVED_FARM_KEY,JSON.stringify({version:1,field,place,fieldLabel,isDemoField,
-    plantings,baseYear,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear}))
+    plantings,baseYear,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear,subplots}))
    setSavedAvailable(true);setSavedNotice(lang==='es'?'Tus datos se guardaron en este dispositivo.':'Your details are saved on this device.')
   }catch{setSavedNotice(lang==='es'?'El navegador no permitió guardar los datos.':'Your browser could not save these details.')}
  }
- function restoreFarm(){
+ function restoreFarm(legacyAndes=false){
   try{
-   const data=JSON.parse(localStorage.getItem(SAVED_FARM_KEY)||'null')
-   if(!data||data.version!==1||!data.field||!Array.isArray(data.plantings))throw new Error('bad saved farm')
+   const data=JSON.parse(localStorage.getItem(legacyAndes?'biotex-chalhuas-v1':SAVED_FARM_KEY)||'null')
+   if(!data||data.version!==1||!data.field||(!legacyAndes&&!Array.isArray(data.plantings)))throw new Error('bad saved farm')
    const vertices=fromGeo(data.field)
    if(!validatePolygon(vertices).valid||approximatePolygonHectares(vertices)<0.1||approximatePolygonHectares(vertices)>500)throw new Error('bad polygon')
-   const safe=migrateSavedPlantings((data.plantings as Planting[]).filter(v=>CROPS.includes(v.crop_id)),Number.isInteger(data.baseYear)?data.baseYear:null,baseYear).slice(0,10)
-   resetAfterField()
-   setField(data.field);setCentre(centroid(data.field));setFieldLabel(String(data.fieldLabel||''));setPlace(String(data.place||'Barranca'))
-   setIsDemoField(Boolean(data.isDemoField));setPlantings(safe)
+   const safe=migrateSavedPlantings(((data.plantings||[]) as Planting[]).filter(v=>CROPS.includes(v.crop_id)),Number.isInteger(data.baseYear)?data.baseYear:null,baseYear).slice(0,10)
+   const restoredSubplots:Array<Subplot>=Array.isArray(data.subplots)?data.subplots:[]
+   if(restoredSubplots.length){
+    const outcome=validateSubplotLayout(vertices,restoredSubplots.map((v:Subplot)=>({id:v.id,points:fromGeo(v.polygon)})))
+    if(!outcome.valid)throw new Error('invalid saved subplots')
+   }
+   resetAfterField();setSubplots(restoredSubplots);setEditVertices(null);setDrawingSubplot(false)
+   setField(data.field);setCentre(centroid(data.field));setFieldLabel(String(data.fieldLabel||''));setPlace(String(data.place||(legacyAndes?'Chalhuas · Junín':'Terreno guardado')))
+   setIsDemoField(Boolean(legacyAndes?data.isDemo:data.isDemoField));setPlantings(safe)
    if(['water','soil','both'].includes(data.goal))setGoal(data.goal)
    setIncomeCrop(String(data.incomeCrop||''));setScarcity(['escaso','normal','no_se'].includes(data.scarcity)?data.scarcity:'no_se')
    setSoil(data.soil&&typeof data.soil==='object'?data.soil:{})
@@ -273,8 +309,18 @@ export default function BiotexFarmerApp(){
   }catch{setSavedNotice(lang==='es'?'No pudimos recuperar el terreno guardado.':'Unable to restore saved field.')}
  }
  function resetAfterField(){request.current++;setPlantings([]);setHistory(null);setHistoryBusy(false);setHintChoices({});setSatelliteAccepted(false);setManualEntered(false);setResult(null);setPlanBusy(false);setPlanError('');setHistoryError('')}
- function changeArea(){setField(null);setFieldLabel('');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
- function setExample(f:typeof DEMOS[number]){const p=f.polygon;setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setIsDemoField(true);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+ function importField(){
+  try{
+   const polygon=parseGeoJSONPolygon(geoInput);if(!polygon)throw Error('invalid field');const vertices=fromGeo(polygon);const area=approximatePolygonHectares(vertices)
+   if(!validatePolygon(vertices).valid||area<.1||area>500)throw Error('invalid field')
+   resetAfterField();setSubplots([]);setEditVertices(null);setDrawingSubplot(false);setField(polygon);setCentre(centroid(polygon));setFieldLabel(lang==='es'?'Contorno importado por ti':'Outline imported by you');setPlace(lang==='es'?'Terreno importado':'Imported field');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('')
+  }catch{setFieldError(t.invalidShape)}
+ }
+ function selectMantaro(){
+  resetAfterField();setSubplots([]);setEditVertices(null);setDrawingSubplot(false);setField(MANTARO_DEMO);setCentre(centroid(MANTARO_DEMO));setPlace('Chalhuas · Junín');setFieldLabel(lang==='es'?'Ejemplo sintético de Chalhuas':'Synthetic Chalhuas example');setIsDemoField(true);setDrawing(false);setPoints([]);setFieldError('')
+ }
+ function changeArea(){setSubplots([]);setEditVertices(null);setDrawingSubplot(false);setField(null);setFieldLabel('');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+ function setExample(f:typeof DEMOS[number]){const p=f.polygon;setSubplots([]);setEditVertices(null);setDrawingSubplot(false);setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setIsDemoField(true);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
  async function searchPlace(e:FormEvent){
   e.preventDefault();const q=query.trim();if(q.length<3){setSearchError(t.notFound);return}
   setSearching(true);setSearchError('');setPlaces([])
@@ -289,10 +335,54 @@ export default function BiotexFarmerApp(){
   }catch{setSearchError(t.locationUnavailable)}finally{setSearching(false)}
  }
  function pickPlace(p:{name:string;lat:number;lng:number}){setCentre({lat:p.lat,lng:p.lng});setPlace(p.name);setQuery('');setPlaces([]);changeArea()}
+ function goToCoordinates(e:FormEvent){
+  e.preventDefault()
+  const lat=Number(coordinateLat.trim()),lng=Number(coordinateLng.trim())
+  if(!coordinateLat.trim()||!coordinateLng.trim()||!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180){
+   setSearchError(lang==='es'?'Introduce latitud y longitud válidas.':'Enter valid latitude and longitude.');return
+  }
+  changeArea();setCentre({lat,lng});setPlace(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);setPlaces([]);setSearchError('')
+ }
+ function beginCornerEdit(){
+  if(!field)return
+  const vertices=fromGeo(field);setEditVertices(vertices);selectCorner(0,vertices);setDrawing(false);setDrawingSubplot(false);setPoints([]);setFieldError('')
+ }
+ function selectCorner(index:number,vertices=editVertices){
+  if(!vertices?.[index])return
+  setSelectedCorner(index);setCornerLat(String(vertices[index].lat));setCornerLng(String(vertices[index].lng))
+ }
+ function moveSelectedCorner(p:Point){
+  setEditVertices(vertices=>vertices?.map((v,i)=>i===selectedCorner?p:v)||null)
+  setCornerLat(String(p.lat));setCornerLng(String(p.lng));setFieldError('')
+ }
+ function applyCornerCoordinates(){
+  const lat=Number(cornerLat.trim()),lng=Number(cornerLng.trim())
+  if(!cornerLat.trim()||!cornerLng.trim()||!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180){
+   setFieldError(lang==='es'?'Introduce coordenadas válidas para la esquina.':'Enter valid corner coordinates.');return
+  }
+  moveSelectedCorner({lat,lng})
+ }
+ function saveCornerEdit(){
+  if(!field||!editVertices)return
+  const validation=validatePolygon(editVertices),ha=approximatePolygonHectares(editVertices)
+  if(!validation.valid||ha<.1||ha>500){setFieldError(t.invalidShape+' '+t.invalidArea);return}
+  const layout=validateSubplotLayout(editVertices,subplots.map(v=>({id:v.id,points:fromGeo(v.polygon)})))
+  if(!layout.valid){setFieldError(lang==='es'?'Una subparcela quedaría fuera del terreno. Ajusta las esquinas o elimina esa subparcela.':'A subplot would fall outside the field. Adjust corners or remove the subplot.');return}
+  const previous=JSON.stringify(field),updated=toGeo(editVertices)
+  if(JSON.stringify(updated)!==previous){setField(updated);setCentre(centroid(updated));setIsDemoField(false);setFieldLabel(lang==='es'?'Terreno editado por ti':'Field edited by you');resetAfterField()}
+  setEditVertices(null);setFieldError('')
+ }
+ function deleteSubplot(id:string){setSubplots(current=>current.filter(v=>v.id!==id));setFieldError('')}
  function finish(){const check=validatePolygon(points);const ha=approximatePolygonHectares(points)
   if(!check.valid){setFieldError(t.invalidShape);return}
-  if(ha<0.1||ha>500){setFieldError(t.invalidArea);return}
-  setField(toGeo(points));setFieldLabel(lang==='es'?'Chacra marcada por ti':'Field marked by you');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
+  if(ha<(drawingSubplot?.01:.1)||ha>500){setFieldError(t.invalidArea);return}
+  if(drawingSubplot&&field){
+   const next={id:'Subparcela '+(1+Math.max(0,...subplots.map(v=>Number(v.id.split(' ')[1])||0))),polygon:toGeo(points)}
+   const result=validateSubplotLayout(fromGeo(field),[...subplots,next].map(v=>({id:v.id,points:fromGeo(v.polygon)})))
+   if(!result.valid){setFieldError(lang==='es'?'La subparcela debe quedar dentro del terreno, sin solaparse con otras.':'The subplot must remain inside the field without overlapping others.');return}
+   setSubplots(v=>[...v,next]);setDrawingSubplot(false);setPoints([]);setFieldError('');return
+  }
+  setSubplots([]);setField(toGeo(points));setFieldLabel(lang==='es'?'Chacra marcada por ti':'Field marked by you');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
  function addCrop(){const x=addPlantingToRotation(plantings,crop,cropMonth)
   if(x.status!=='added'){setEntryError(x.status==='duplicate'?t.duplicate:t.limit);return}
   setPlantings(x.current);setManualEntered(true);setEntryError('');setResult(null)}
@@ -436,6 +526,13 @@ export default function BiotexFarmerApp(){
   {result.ai_analysis?.status==='trained_and_verified'&&<div className="b-print-ai"><h3>{lang==='es'?'Evidencia del modelo de IA':'AI model evidence'}</h3>
    <p>{lang==='es'?'Regresión logística entrenada con ':'Logistic regression trained with '}{result.ai_analysis.observed_months} {lang==='es'?'observaciones mensuales reales de NASA HLS de esta parcela. La señal aprendida pondera épocas de suelo descubierto; no identifica cultivos ni garantiza rendimientos.':'real NASA HLS monthly observations of this field. Learned patterns weight bare-surface seasons; they do not identify crops or guarantee yields.'}</p>
    <p>{lang==='es'?'Evaluación cronológica: 33 observaciones de entrenamiento y 11 posteriores de prueba.':'Chronological evaluation: 33 training observations and 11 later holdout observations.'}</p>
+   {result.ai_analysis.holdout_classification&&<p>{lang==='es'?'Clasificación de vegetación baja, solo Barranca':'Low-vegetation classification, Barranca only'}:
+    {' '}Accuracy {result.ai_analysis.holdout_classification.accuracy_percent?.toFixed(1)??'—'}%,
+    {' '}Precision {result.ai_analysis.holdout_classification.precision_percent?.toFixed(1)??'—'}%,
+    {' '}Recall {result.ai_analysis.holdout_classification.recall_percent?.toFixed(1)??'—'}%,
+    {' '}F1 {result.ai_analysis.holdout_classification.f1_percent?.toFixed(1)??'—'}%
+    {' '}({result.ai_analysis.holdout_classification.test_observations} {lang==='es'?'observaciones de prueba':'holdout observations'}).
+    {' '}{lang==='es'?'No extrapolar a otra parcela.':'Not transferable to another field.'}</p>}
   </div>}
   {economicReport&&<div className="b-print-economics"><h3>{lang==='es'?'Cuenta económica basada en los datos del agricultor':'Farmer-input economic estimate'}</h3>
    <p>{lang==='es'?'Estimación por hectárea para un ciclo de 24 meses, no ganancia garantizada.':'Estimate per hectare for a 24-month cycle, not guaranteed profit.'}</p>
@@ -446,14 +543,14 @@ export default function BiotexFarmerApp(){
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
   <header className="b-header"><div className="b-header-inner">
  <div className="b-brand"><span className="b-brand-mark"><Icon name="leaf" size={25}/></span><div><b>BIOTEX</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></div>
- <div className="b-header-context"><span className="b-header-dot" aria-hidden="true"/>{lang==='es'?'Piloto agrícola · Barranca, Perú':'Agricultural pilot · Barranca, Peru'}</div>
- <div className="b-header-tools"><a className="b-expert-link" href="/?vista=tecnica" target="_blank" rel="noreferrer">{lang==='es'?'Vista para especialistas':'Expert view'} <Icon name="right" size={16}/></a>
+ <div className="b-header-context"><span className="b-header-dot" aria-hidden="true"/>{lang==='es'?'Planificación agrícola · Perú':'Agricultural planning · Peru'}</div>
+ <div className="b-header-tools">
  <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></div></header>
   <div className="b-progress-wrap"><div className="b-progress-shell"><div className="b-progress-label"><span>{lang==='es'?'Tu recorrido':'Your journey'}</span><strong>{lang==='es'?'Paso '+(step+1)+' de 4':'Step '+(step+1)+' of 4'}</strong></div>
-<nav className="b-progress" aria-label={lang==='es'?'Progreso del plan':'Plan progress'}>{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step||i===3&&!result} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div></div>
+<nav className="b-progress" data-bio-target="bio-steps" aria-label={lang==='es'?'Progreso del plan':'Plan progress'}>{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div></div>
   <main id="main" className="b-main">
    {step===0&&<section className="b-layout">
-    <div className="b-intro b-hero-intro"><div className="b-hero-copy">
+    <div className="b-intro b-hero-intro" data-bio-target="bio-hero"><div className="b-hero-copy">
 <span className="b-eyebrow"><span className="b-hero-spark" aria-hidden="true"/>{lang==='es'?'AGRICULTURA CON EVIDENCIA NASA':'FARMING WITH NASA EVIDENCE'}</span>
 <h1>{t.title}</h1><p>{t.subtitle}</p>
 <div className="b-hero-promise"><span><Icon name="check" size={16}/>{lang==='es'?'Sin conocimientos técnicos':'No technical skills needed'}</span><span><Icon name="check" size={16}/>{lang==='es'?'Sin crear una cuenta':'No account required'}</span></div>
@@ -468,38 +565,79 @@ export default function BiotexFarmerApp(){
        <input id="b-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.searchHint} autoComplete="off"/>
        <button type="submit" className="b-btn b-btn-solid" disabled={searching}><Icon name="search" size={19}/>{searching?t.waitSearch:t.find}</button>
       </form>
+      <details className="b-coordinate-search"><summary>{lang==='es'?'Buscar por coordenadas':'Find by coordinates'}</summary>
+       <form onSubmit={goToCoordinates} className="b-coordinate-fields"><label>{lang==='es'?'Latitud':'Latitude'}<input aria-label={lang==='es'?'Latitud':'Latitude'} type="number" step="any" min="-90" max="90" placeholder="-12.047" value={coordinateLat} onChange={e=>setCoordinateLat(e.target.value)}/></label>
+        <label>{lang==='es'?'Longitud':'Longitude'}<input aria-label={lang==='es'?'Longitud':'Longitude'} type="number" step="any" min="-180" max="180" placeholder="-75.366" value={coordinateLng} onChange={e=>setCoordinateLng(e.target.value)}/></label>
+        <button type="submit" className="b-btn b-btn-light">{lang==='es'?'Ir a coordenadas':'Go to coordinates'}</button></form>
+      </details>
       {searchError&&<p className="b-error" role="alert">{searchError}</p>}
       {places.length>0&&<div className="b-place-results">{places.map((p,i)=><button key={i} type="button" onClick={()=>pickPlace(p)}><Icon name="pin" size={18}/><span>{p.name}</span></button>)}</div>}
       <p className="b-map-label"><Icon name="pin" size={16}/>{place}</p>
       <p className="b-muted">{t.mapHint}</p>
-      <div className="b-map-view" role="group" aria-label={lang==='es'?'Capas de observación':'Observation layers'}>
-       {(['photo','vegetation','rain'] as const).map(id=><button key={id} type="button" disabled={saveMobileData&&id!=='photo'} aria-pressed={mapLayer===id} onClick={()=>{setMapLayer(id);setMapLayerFailed(false)}}>{id==='photo'?(lang==='es'?'Foto aérea':'Aerial photo'):id==='vegetation'?(lang==='es'?'Vegetación NASA':'NASA vegetation'):(lang==='es'?'Lluvia NASA':'NASA rain')}</button>)}
+      <div data-bio-target="bio-layers" className="b-map-view" role="group" aria-label={lang==='es'?'Capas de observación':'Observation layers'}>
+       {(['photo','terrain','vegetation','rain'] as const).map(id=><button key={id} type="button" disabled={saveMobileData&&id!=='photo'} aria-pressed={mapLayer===id} onClick={()=>{setMapLayer(id);setMapLayerFailed(false)}}>{id==='photo'?(lang==='es'?'Foto aérea':'Aerial photo'):id==='terrain'?(lang==='es'?'Mapa de relieve':'Terrain map'):id==='vegetation'?(lang==='es'?'Vegetación NASA':'NASA vegetation'):(lang==='es'?'Lluvia NASA':'NASA rain')}</button>)}
       </div>
       <label className="b-low-bandwidth"><input type="checkbox" checked={saveMobileData} onChange={e=>{setSaveMobileData(e.target.checked);if(e.target.checked)setMapLayer('photo')}}/> {lang==='es'?'Ahorrar datos móviles (mapa sencillo)':'Save mobile data (simple map)'}</label>
-      {drawing&&<div className="b-map-guide"><strong>{lang==='es'?'Marca tu chacra en 3 pasos':'Mark your field in 3 steps'}</strong><ol><li>{lang==='es'?'Acerca el mapa.':'Zoom in.'}</li><li>{lang==='es'?'Toca cada esquina del terreno.':'Tap each field corner.'}</li><li>{lang==='es'?'Pulsa «Terminar terreno».':'Tap Finish field.'}</li></ol></div>}
-      <div className="b-map-frame"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
-       <TileLayer key={saveMobileData?'streets':'satellite'} attribution={saveMobileData?'© OpenStreetMap contributors':'Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors'}
-        url={saveMobileData?'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}/>
-       {!saveMobileData&&mapLayer!=='photo'&&<WMSTileLayer key={mapLayer} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
-        layers={mapLayer==='vegetation'?'MODIS_Terra_NDVI_8Day':'IMERG_Precipitation_Rate'}
-        styles="" format="image/png" transparent={true} version="1.1.1" opacity={0.72}
+      {(drawing||drawingSubplot)&&<div className="b-map-guide"><strong>{drawingSubplot?(lang==='es'?'Dibuja una zona dentro de tu terreno':'Draw an area inside your field'):(lang==='es'?'Marca tu chacra en 3 pasos':'Mark your field in 3 steps')}</strong><ol><li>{lang==='es'?'Acerca el mapa.':'Zoom in.'}</li><li>{lang==='es'?'Toca cada esquina del terreno.':'Tap each field corner.'}</li><li>{drawingSubplot?(lang==='es'?'Pulsa «Guardar subparcela».':'Tap Save subplot.'):(lang==='es'?'Pulsa «Terminar terreno».':'Tap Finish field.')}</li></ol></div>}
+      <div className="b-map-frame" data-bio-target="bio-map"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
+       <TileLayer key={saveMobileData?'streets':mapLayer==='terrain'?'terrain':'satellite'} attribution={saveMobileData?'© OpenStreetMap contributors':'Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors'}
+        url={saveMobileData?'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png':mapLayer==='terrain'?'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}/>
+       {!saveMobileData&&isScienceLayer(mapLayer)&&<WMSTileLayer key={mapLayer+mapDate} url={GIBS_WMS}
+        layers={GIBS_LAYERS[mapLayer].wmsLayer}
+        styles="" format="image/png" transparent={true} version="1.1.1" opacity={mapOpacity} {...{time:mapDate}}
         attribution="NASA GIBS / ESDIS" eventHandlers={{tileerror:()=>setMapLayerFailed(true)}}/>}
+       {mapLayer==='rain'&&field&&<Rectangle bounds={imergApproxCell(point.lat,point.lng)} pathOptions={{color:'#2688bb',fillOpacity:0,dashArray:'5 5'}}/>}
        <FlyTo point={centre} polygon={mapPolygon}/>
-       <DrawLayer enabled={drawing} points={points} onPoint={p=>{setPoints(x=>[...x,p]);setFieldError('')}} onFinish={finish}/>
-       {field&&<Polygon positions={(mapPolygon||[]).map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
+       <DrawLayer enabled={drawing||drawingSubplot} points={points} onPoint={p=>{setPoints(x=>[...x,p]);setFieldError('')}} onFinish={finish}/>
+       <EditableCorners points={editVertices} selected={selectedCorner} onPick={i=>selectCorner(i)} onMove={moveSelectedCorner}/>
+       {field&&!editVertices&&<Polygon positions={(mapPolygon||[]).map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
+       {subplots.map(v=><Polygon key={v.id} positions={fromGeo(v.polygon).map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F59E0B',weight:2,dashArray:'6 4',fillColor:'#4CD964',fillOpacity:.14}}/>)}
       </MapContainer>
-      <div className="b-map-actions">{drawing?<><button type="button" onClick={()=>setPoints(v=>v.slice(0,-1))} disabled={!points.length} className="b-btn b-btn-light"><Icon name="undo" size={16}/>{t.undo}</button>
-       <button type="button" className="b-btn b-btn-solid" onClick={finish} disabled={points.length<3}>{t.finish}</button>
-       <button type="button" className="b-btn b-btn-light" onClick={()=>{setDrawing(false);setPoints([]);setFieldError('')}}>{t.cancel}</button></>:
+      <div className="b-map-actions">{(drawing||drawingSubplot)?<><button type="button" onClick={()=>setPoints(v=>v.slice(0,-1))} disabled={!points.length} className="b-btn b-btn-light"><Icon name="undo" size={16}/>{t.undo}</button>
+       <button type="button" className="b-btn b-btn-solid" onClick={finish} disabled={points.length<3}>{drawingSubplot?(lang==='es'?'Guardar subparcela':'Save subplot'):t.finish}</button>
+       <button type="button" className="b-btn b-btn-light" onClick={()=>{setDrawing(false);setDrawingSubplot(false);setPoints([]);setFieldError('')}}>{t.cancel}</button></>:
        <button type="button" className="b-btn b-btn-solid" onClick={()=>{changeArea();setDrawing(true)}}>{field?t.changeField:t.draw}</button>}</div></div>
-      {mapLayer!=='photo'&&<div className="b-map-evidence"><span>{mapLayer==='vegetation'?(lang==='es'?'Vegetación regional NASA MODIS · 250 m':'Regional NASA MODIS vegetation · 250 m'):(lang==='es'?'Lluvia regional NASA GPM · aprox. 10 km':'Regional NASA GPM rainfall · approx. 10 km')}. {lang==='es'?'No es una medida exacta de tu chacra.':'Not an exact field measurement.'}</span>
-       <a href={'https://worldview.earthdata.nasa.gov/?l='+(mapLayer==='vegetation'?'MODIS_Terra_NDVI_8Day':'IMERG_Precipitation_Rate')} target="_blank" rel="noreferrer">{lang==='es'?'Ver fuente NASA':'NASA source'}</a>
-       {mapLayerFailed&&<span role="status">{lang==='es'?'La capa NASA no cargó para esta vista.':'NASA layer unavailable for this view.'}</span>}</div>}
+      {isScienceLayer(mapLayer)&&<section className="b-map-evidence" aria-label={lang==='es'?'Procedencia de la capa NASA':'NASA layer provenance'}>
+       <div className="b-map-evidence-controls"><label>{lang==='es'?'Fecha solicitada (UTC)':'Requested date (UTC)'}<input type="date" value={mapDate} max={new Date().toISOString().slice(0,10)} onChange={e=>{setMapDate(e.target.value);setMapLayerFailed(false)}}/></label>
+        <label>{lang==='es'?'Opacidad de la capa':'Layer opacity'}<input type="range" min="0" max="1" step=".05" value={mapOpacity} onChange={e=>setMapOpacity(Number(e.target.value))}/></label></div>
+       <div className="b-map-provenance">
+        <strong>{GIBS_LAYERS[mapLayer].product}</strong>
+        <span>{mapLayer==='vegetation'?(lang==='es'?'Vegetación regional NASA MODIS · 250 m':'Regional NASA MODIS vegetation · 250 m'):(lang==='es'?'Lluvia regional NASA GPM · aprox. 10 km':'Regional NASA GPM rainfall · approx. 10 km')}</span>
+        <span>{lang==='es'?GIBS_LAYERS[mapLayer].resolutionEs:GIBS_LAYERS[mapLayer].resolutionEn}</span>
+        <span>{lang==='es'?GIBS_LAYERS[mapLayer].unitEs:GIBS_LAYERS[mapLayer].unitEn}</span>
+        <span>{lang==='es'?GIBS_LAYERS[mapLayer].temporalEs:GIBS_LAYERS[mapLayer].temporalEn}</span>
+        <p>{lang==='es'?GIBS_LAYERS[mapLayer].limitationsEs:GIBS_LAYERS[mapLayer].limitationsEn}</p>
+        <p>{lang==='es'?'La fecha es una solicitud al servicio de imágenes, no una observación confirmada en este terreno. La carga de teselas tampoco valida píxeles.':'The date is an image-service request, not a confirmed observation on this field. Tile loading does not validate pixels.'}</p>
+        {mapLayer==='rain'&&<p>{lang==='es'?'El recuadro azul punteado es esquemático, no una celda IMERG geocodificada.':'The dotted blue rectangle is schematic, not a geocoded IMERG cell.'}</p>}
+        <details className="b-map-legend"><summary>{lang==='es'?'Leyenda NASA original':'Original NASA legend'}</summary><img src={gibsLegendUrl(mapLayer)} alt={lang==='es'?'Leyenda de colores publicada por NASA GIBS':'Official NASA GIBS color legend'} loading="lazy"/><p><a target="_blank" rel="noreferrer" href={gibsLegendUrl(mapLayer)}>{lang==='es'?'Abrir leyenda oficial':'Open official legend'}</a></p></details>
+        <a href={GIBS_LAYERS[mapLayer].worldviewUrl} target="_blank" rel="noreferrer">{lang==='es'?'Ver capa en NASA Worldview':'Open in NASA Worldview'}</a>
+        <a href={GIBS_LAYERS[mapLayer].sourceUrl} target="_blank" rel="noreferrer">{lang==='es'?'Metadatos del proveedor':'Provider metadata'}</a>
+        {mapLayerFailed&&<span role="status">{lang==='es'?'La capa NASA no cargó para esta vista. No se muestra ninguna estimación.':'NASA layer unavailable for this view. No estimate is shown.'}</span>}
+       </div>
+      </section>}
       {fieldError&&<p role="alert" className="b-error">{fieldError}</p>}
       {field&&<div className="b-field-ready" role="status"><Icon name="check"/><div><strong>{t.fieldReady}</strong><span>{t.area}: {area.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2})} ha</span></div></div>}
+      {field&&!drawing&&!drawingSubplot&&<section className="b-parcel-tools" aria-label={lang==='es'?'Herramientas de mi terreno':'My field tools'}>
+        <div className="b-parcel-tools-head"><strong>{lang==='es'?'Límites y subparcelas':'Boundaries and subplots'}</strong><span>{lang==='es'?'Área estimada, no catastral':'Estimated area, not cadastral'}</span></div>
+        {!editVertices?<div className="b-parcel-actions"><button type="button" className="b-btn b-btn-light" onClick={beginCornerEdit}>{lang==='es'?'Editar esquinas':'Edit corners'}</button>
+          <button type="button" className="b-btn b-btn-light" onClick={()=>{setDrawingSubplot(true);setPoints([]);setFieldError('')}}>{lang==='es'?'Dibujar subparcela':'Draw subplot'}</button></div>:
+         <div className="b-vertex-editor"><p>{lang==='es'?'Selecciona una esquina, toca su nueva posición en el mapa o escribe sus coordenadas.':'Choose a corner, tap its new location on the map or enter coordinates.'}</p>
+          <div className="b-vertex-choices" role="group" aria-label={lang==='es'?'Esquina a editar':'Corner to edit'}>{editVertices.map((_,i)=><button key={i} type="button" aria-pressed={selectedCorner===i} onClick={()=>selectCorner(i)}>{lang==='es'?'Esquina':'Corner'} {i+1}</button>)}</div>
+          <div className="b-coordinate-fields"><label>{lang==='es'?'Latitud de la esquina':'Corner latitude'}<input type="number" step="any" min="-90" max="90" value={cornerLat} onChange={e=>setCornerLat(e.target.value)}/></label>
+            <label>{lang==='es'?'Longitud de la esquina':'Corner longitude'}<input type="number" step="any" min="-180" max="180" value={cornerLng} onChange={e=>setCornerLng(e.target.value)}/></label>
+            <button type="button" className="b-btn b-btn-light" onClick={applyCornerCoordinates}>{lang==='es'?'Aplicar coordenadas':'Apply coordinates'}</button></div>
+          <div className="b-parcel-actions"><button type="button" className="b-btn b-btn-primary" onClick={saveCornerEdit}>{lang==='es'?'Guardar contorno':'Save outline'}</button>
+            <button type="button" className="b-btn b-btn-light" onClick={()=>{setEditVertices(null);setFieldError('')}}>{t.cancel}</button></div>
+         </div>}
+        {subplots.length>0&&<ul className="b-subplot-list">{subplots.map(v=><li key={v.id}><span><strong>{v.id}</strong><small>{approximatePolygonHectares(fromGeo(v.polygon)).toFixed(2)} ha</small></span><button type="button" onClick={()=>deleteSubplot(v.id)} aria-label={(lang==='es'?'Eliminar ':'Remove ')+v.id}>{lang==='es'?'Eliminar':'Remove'}</button></li>)}</ul>}
+        {!subplots.length&&<p className="b-muted">{lang==='es'?'No hay subparcelas todavía. Puedes dibujarlas si quieres asignar cultivos por zonas.':'No subplots yet. Draw them only if you want to assign crops by area.'}</p>}
+       </section>}
       {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
       {savedNotice&&<p className="b-note" role="status">{savedNotice}</p>}
-      {savedAvailable&&<div className="b-farm-recovery"><button type="button" onClick={restoreFarm}>{lang==='es'?'Recuperar mi chacra guardada':'Restore saved field'}</button></div>}
+      {savedAvailable&&<div className="b-farm-recovery"><button type="button" onClick={()=>restoreFarm()}>{lang==='es'?'Recuperar mi chacra guardada':'Restore saved field'}</button></div>}
+     <details className="b-technical"><summary>{lang==='es'?'Importar contorno GeoJSON (opcional)':'Import GeoJSON outline (optional)'}</summary><label>{lang==='es'?'Contorno GeoJSON':'GeoJSON outline'}<textarea value={geoInput} onChange={e=>setGeoInput(e.target.value)}/></label><button type="button" className="b-btn b-btn-light" onClick={importField}>{lang==='es'?'Usar contorno':'Use outline'}</button></details>
+     {legacyAndesAvailable&&<button type="button" className="b-btn b-btn-light" onClick={()=>restoreFarm(true)}>{lang==='es'?'Recuperar terreno de Chalhuas guardado':'Restore saved Chalhuas field'}</button>}
+     {field&&<Suspense fallback={<p role="status">{lang==='es'?'Cargando herramientas…':'Loading tools…'}</p>}><FieldEvidence key={JSON.stringify(field)} polygon={field} lang={lang} andes={andes}/></Suspense>}
      </div>
      <aside className="b-card b-examples"><span className="b-sample-label">{lang==='es'?'INICIO RÁPIDO':'QUICK START'}</span>
 <div className="b-sample-graphic" aria-hidden="true"><div className="b-sample-plot"><span/><span/><span/></div><span className="b-sample-sun"/></div>
@@ -507,12 +645,13 @@ export default function BiotexFarmerApp(){
 <p className="b-sample-explain">{lang==='es'?'Usa un terreno de estudio de Barranca sin dibujar nada. No conocemos a su propietario ni sus cultivos reales.':'Explore a Barranca study field without drawing. Its owner and actual crops have not been verified.'}</p>
       {DEMOS.map((f,i)=><button key={f.id} type="button" className="b-example-choice" onClick={()=>setExample(f)}><span className="b-example-index">{String(i+1).padStart(2,'0')}</span>
         <span><strong>{lang==='es'?'Explorar parcela de Barranca':'Explore a Barranca field'}</strong><small>{approximatePolygonHectares(fromGeo(f.polygon)).toFixed(2)} ha · NASA HLS</small></span><Icon name="right" size={19}/></button>)}
+      <button type="button" className="b-example-choice" onClick={selectMantaro}>{lang==='es'?'Explorar ejemplo de Chalhuas':'Explore Chalhuas example'}</button><p className="b-muted">{lang==='es'?'Chalhuas: contorno inventado para tutorial; comparación exploratoria, sin IA local entrenada.':'Chalhuas: fictional tutorial outline; exploratory comparison, no locally trained AI.'}</p>
       <p className="b-muted b-sample-foot"><Icon name="info" size={17}/>{lang==='es'?'La IA entrenada solo se aplica a esta parcela; puedes marcar otra para explorar el mapa.':'Trained AI only applies to this field; you can mark another to explore the map.'}</p>
      </aside>
     </div>
-    <div className="b-next b-next-emphasized"><p className="b-next-context">{field?(lang==='es'?'Terreno seleccionado. Sigue para registrar tus cultivos.':'Field selected. Continue to record your crops.'):(lang==='es'?'Elige el ejemplo o marca un terreno para continuar.':'Choose the example or mark a field to continue.')}</p><button type="button" className="b-btn b-btn-light" disabled={!field} onClick={saveFarm}>{lang==='es'?'Guardar mi chacra':'Save my field'}</button><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
+    <div className="b-next b-next-emphasized" data-bio-target="bio-next"><p className="b-next-context">{field?(lang==='es'?'Terreno seleccionado. Sigue para registrar tus cultivos.':'Field selected. Continue to record your crops.'):(lang==='es'?'Elige el ejemplo o marca un terreno para continuar.':'Choose the example or mark a field to continue.')}</p><button type="button" className="b-btn b-btn-light" disabled={!field} onClick={saveFarm}>{lang==='es'?'Guardar mi chacra':'Save my field'}</button><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
    </section>}
-   {step===1&&<section className="b-form-page"><div className="b-intro"><span className="b-eyebrow">02 / 04</span><h1>{t.historyTitle}</h1><p>{t.historyLead}</p></div>
+   {step===1&&!andes&&<section className="b-form-page"><div className="b-intro"><span className="b-eyebrow">02 / 04</span><h1>{t.historyTitle}</h1><p>{t.historyLead}</p></div>
     <div className="b-field-mini"><Icon name="pin" size={18}/><span>{fieldLabel||place}</span><strong>{area.toFixed(2)} ha</strong></div><div className="b-entry-grid"><section className="b-card"><span className="b-section-kicker">{lang==='es'?'LO QUE RECUERDAS':'WHAT YOU REMEMBER'}</span><h2>{t.add}</h2>
 <p className="b-form-hint">{lang==='es'?'No hace falta recordar todo. Añade al menos un cultivo y el mes aproximado.':'You do not need a complete history. Add at least one crop and an approximate month.'}</p>
      <div className="b-input-row"><label>{t.crop}<select value={crop} onChange={e=>setCrop(e.target.value)}>{CROPS.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
@@ -522,6 +661,8 @@ export default function BiotexFarmerApp(){
     </section><section className="b-card"><span className="b-section-kicker">{lang==='es'?'TU HISTORIAL':'YOUR HISTORY'}</span><h2>{t.saved} <span className="b-count">{plantings.length}</span></h2>
       {plantings.length===0?<p className="b-empty">{t.nothing}</p>:<ul className="b-planting-list">{current.map((p,i)=><li key={p.start_index}><span><strong>{labelCrop(p.crop_id,lang)}</strong><small>{monthYear(p.start_index,baseYear,lang)}</small></span><button type="button" aria-label={t.remove+' '+labelCrop(p.crop_id,lang)} onClick={()=>{setPlantings(removePlantingFromRotation(current,i));setResult(null)}}>{t.remove}</button></li>)}</ul>}
     </section></div>
+    <Suspense fallback={null}><CropReference key={JSON.stringify(field)} point={point} en={lang==='en'}/></Suspense>
+    <details className="b-technical"><summary>{lang==='es'?'Foto de referencia (solo en tu dispositivo)':'Reference photo (on your device only)'}</summary><CropPhotoGuide en={lang==='en'}/></details>
     <details className="b-satellite"><summary><Icon name="info" size={20}/><span>{t.helpMe}</span><strong>{t.satellite}</strong></summary>
       <div className="b-satellite-content"><p>{t.loadingHelp}</p>
        {!history&&!historyBusy&&<button type="button" className="b-btn b-btn-light" onClick={loadImages}>{t.satellite}</button>}
@@ -543,7 +684,7 @@ export default function BiotexFarmerApp(){
     <div className="b-next between"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}><Icon name="left"/>{t.back}</button>
      <button type="button" className="b-btn b-btn-primary" disabled={!current.length} onClick={()=>navigate(2)}>{t.next}<Icon name="right"/></button></div>
    </section>}
-   {step===2&&<section className="b-form-page b-goal-page"><div className="b-intro"><span className="b-eyebrow">03 / 04</span><h1>{t.priorityTitle}</h1><p>{t.priorityLead}</p></div>
+   {step===2&&!andes&&<section className="b-form-page b-goal-page"><div className="b-intro"><span className="b-eyebrow">03 / 04</span><h1>{t.priorityTitle}</h1><p>{t.priorityLead}</p></div>
     <section className="b-card"><span className="b-section-kicker">{lang==='es'?'ELIGE LO QUE MÁS TE IMPORTA':'CHOOSE WHAT MATTERS MOST'}</span><div className="b-goal-options" role="group" aria-label={t.priorityTitle}>{(['water','soil','both'] as const).map(id=><button type="button" key={id} aria-pressed={goal===id} className={'b-goal '+(goal===id?'chosen':'')} onClick={()=>{setGoal(id);setResult(null)}}>
      <span className="b-goal-icon"><Icon name={id==='soil'?'leaf':id==='water'?'water':'check'} size={28}/></span>
      <strong>{id==='water'?t.priorityWater:id==='soil'?t.prioritySoil:t.priorityBoth}</strong>
@@ -587,7 +728,7 @@ export default function BiotexFarmerApp(){
     <div className="b-next between"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(1)}><Icon name="left"/>{t.back}</button>
      <button type="button" className="b-btn b-btn-primary" disabled={!current.length||!supported||planBusy} onClick={showPlan}>{planBusy?<><span className="b-spinner"/>{t.working}</>:<>{t.action}<Icon name="right"/></>}</button></div>
    </section>}
-   {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
+   {step===3&&!andes&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
     {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
@@ -611,8 +752,9 @@ export default function BiotexFarmerApp(){
     <div className="b-report-actions"><button type="button" onClick={goPrint} className="b-btn b-btn-primary"><Icon name="print"/>{t.report}</button>
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
+   {andes&&field&&<Suspense fallback={<p role="status">{lang==='es'?'Cargando comparación regional…':'Loading regional comparison…'}</p>}><AndesRotation key={JSON.stringify(field)} field={field} lang={lang} step={step} onStep={navigate} isDemo={isDemoField} initialSubplots={subplots} lowData={saveMobileData} goal={goal} setGoal={setGoal}/></Suspense>}
   </main>
-  <footer className="b-footer"><div><strong>BIOTEX</strong><span>{lang==='es'?'Información para decidir, no promesas de cosecha.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/BIOTEX_v026_IA_reproducible.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
-  {printable()}
+  <footer className="b-footer"><div><strong>BIOTEX</strong><span>{lang==='es'?'Información para decidir, no promesas de cosecha.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/BIOTEX_v026_IA_reproducible.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span><BioTour lang={lang}/></div></footer>
+  {!andes&&printable()}
  </div>
 }

@@ -1,0 +1,63 @@
+{
+  "baseline": "BIOTEX-etapas-0-3.zip",
+  "scientific_files_compared": 14,
+  "unchanged": true,
+  "files": [
+    {
+      "path": "backend/app/data/crop_directory.py",
+      "sha256": "7f4685e1d1add2743e7178146c35c3faf681c58f086802237391ceaff2b79001"
+    },
+    {
+      "path": "backend/app/data/ecocrop_catalog.py",
+      "sha256": "de7d8dcf59b205f86109858883b1ce433aa7cb16b76365217e627c32fa60ddcd"
+    },
+    {
+      "path": "backend/app/data/ecocrop_species.json",
+      "sha256": "b01d67bf6f4460a883214f4f07f3ddb01c7ef9656395bd4833d5e4b876db2e41"
+    },
+    {
+      "path": "backend/app/data/history_seed/31c8c3892c9f41ba5009c9720af5cbba.json",
+      "sha256": "acb0d518a268a814be31d8dc24a82364b24802315b705f787d1261cbb95dfa16"
+    },
+    {
+      "path": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
+      "sha256": "a89fa9b6dac6ae41920346203de8dfdcb40817b73285cd3dd8922ae00ce74dc4"
+    },
+    {
+      "path": "backend/app/data/history_seed/48d365cea5475f6d79f8bb185a1991de.json",
+      "sha256": "0b435721a95bbc5557ca3a63fc7fb1cf26c0a3d8077dd3f29773aac12a0fc971"
+    },
+    {
+      "path": "backend/app/data/history_seed/61c2888a5da6b7ea145762064e0d756b.json",
+      "sha256": "50bb966c439bffe8bc87040fd341a52ba7985f21a222fb5daebe6d5abf651e56"
+    },
+    {
+      "path": "backend/app/data/history_seed/b1e694df1548ed63cedb0e5623c9a803.json",
+      "sha256": "2a56c0fee891278a1b39d84ab0f274a2a2cc499515b4de78b4e04d06ab5ec6a5"
+    },
+    {
+      "path": "backend/app/data/history_seed/e05f0e92c0d2d52c9df401ae1c3e8c27.json",
+      "sha256": "4443d2d35aefd5d483af322374b3c2f640bfbee14e0d12d569de07a020f4bf0b"
+    },
+    {
+      "path": "backend/app/data/history_seed/fe601f7339dbc0078a556a2108f72da4.json",
+      "sha256": "e01aa8cf047b3ceac1801bf65f6e7a632b7cb5c36ee36eda4954b0cd6c04c699"
+    },
+    {
+      "path": "backend/app/data/models/barranca_hls_bare_v1.json",
+      "sha256": "b060f0216214812c4d727b08d880ee63773a3435ab7c700af06b0ce84a0a0b29"
+    },
+    {
+      "path": "backend/app/data/official_evidence/ana_historical_context.json",
+      "sha256": "4f7c8f693c75d7c142f39a8971909769b025a59212a3dae5ff0b21ddb4d74bd8"
+    },
+    {
+      "path": "backend/app/data/parameter_catalog.json",
+      "sha256": "2a6ff832da967e9083f01f537b71d9e0f84dd68491572e5fc0730d160e00cc37"
+    },
+    {
+      "path": "backend/app/data/rotation_crops.json",
+      "sha256": "2d8f8b77bdd5614009efb0c1471d13d4d8b46d82dd15eabee35e31f1fa2952f3"
+    }
+  ]
+}

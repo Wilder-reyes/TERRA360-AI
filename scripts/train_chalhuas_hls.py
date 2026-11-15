@@ -21,7 +21,8 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"backend"))
 from app.services.field_shift_ai import THRESHOLD,fit_logistic,_probability
-from app.services.sentinel_ndvi import validate_parcel
+from app.ml.holdout_metrics import binary_holdout_metrics
+from app.geospatial.parcel_validation import validate_parcel
 
 def compute(raw:dict,polygon:dict,field_reference:str,source_sha256:str)->dict:
     if raw.get("sensor_id")!="hls" or not str(raw.get("sensor","")).startswith("NASA HLS"):
@@ -64,6 +65,10 @@ def compute(raw:dict,polygon:dict,field_reference:str,source_sha256:str)->dict:
     coeff=fit_logistic(train)
     brier_model=sum((_probability(r["month"],coeff)-int(r["ndvi"]<THRESHOLD))**2 for r in test)/len(test)
     brier_baseline=sum((baseline-int(r["ndvi"]<THRESHOLD))**2 for r in test)/len(test)
+    metrics=binary_holdout_metrics([int(r["ndvi"]<THRESHOLD) for r in test],
+        [_probability(r["month"],coeff) for r in test],baseline_probability=baseline)
+    if abs(metrics['brier_model']-brier_model)>1e-9:
+        raise ValueError("Holdout de clasificación inconsistente")
     if brier_model>=brier_baseline-.01:
         raise ValueError("El modelo no mejora suficientemente el baseline temporal (Brier)")
     final=fit_logistic(valid)
@@ -76,7 +81,8 @@ def compute(raw:dict,polygon:dict,field_reference:str,source_sha256:str)->dict:
             "training":{"months_total":len(months),"months_valid":len(valid),
                         "train_count":len(train),"test_count":len(test),
                         "holdout_first":test[0]["month"],"holdout_last":test[-1]["month"]},
-            "evaluation":{"brier_model":round(brier_model,7),"brier_train_prevalence_baseline":round(brier_baseline,7)},
+            "evaluation":{"brier_model":round(brier_model,7),"brier_train_prevalence_baseline":round(brier_baseline,7),
+                          "classification":metrics},
             "fitted_coefficients":[round(v,10) for v in final],
             "not_validated_for_irrigation_or_yield":True,
             "public_inference_enabled":False}

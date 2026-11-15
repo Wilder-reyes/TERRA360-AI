@@ -1,10 +1,9 @@
-/** TERRA360 API errors: never leak raw browser "Failed to fetch" in the UI.
- * Production requests go through the same-origin Vercel /api rewrite to Render; the
- * developer API origin is configurable ONLY in local Vite development.
+import {apiOrigin} from './apiConfig'
+
+/** VITE_API_URL is a public origin, configurable for development AND production.
+ * An empty production value is same-origin, for a deliberately configured proxy.
  */
-export const API = (
-  import.meta.env.DEV ? (import.meta.env.VITE_API_URL || 'http://localhost:8000') : ''
-).replace(/\/$/, '')
+export const API=apiOrigin(import.meta.env.VITE_API_URL,import.meta.env.DEV)
 
 export function readableApiError(error: unknown, en: boolean): string {
  const e=error instanceof Error?error:null
@@ -22,7 +21,7 @@ export function readableApiError(error: unknown, en: boolean): string {
   : 'No pudimos completar la consulta. Inténtalo de nuevo.'
 }
 
-/** A 502–504 response can mean Render Free is waking up; do not retry POST
+/** A 502–504 response can mean a backend is starting; do not retry POST
  * automatically, since science raster reads and calculations are expensive.
  */
 export async function httpErrorMessage(response: Response, en: boolean): Promise<string> {

@@ -1,8 +1,8 @@
 name: Private NASA GPM ingest (SMAP Huaral pending)
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '15 13 * * *'
+  # Manual-only in the new repository: never consume the free R2 quota
+  # through a scheduled background ingestion without explicit opt-in.
 permissions:
   contents: read
 concurrency:

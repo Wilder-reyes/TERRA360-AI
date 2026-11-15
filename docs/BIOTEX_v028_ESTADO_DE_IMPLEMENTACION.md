@@ -1,3 +1,5 @@
+> Documento histórico: no configura ni publica la versión actual. Consulte `docs/BIOTEX_ARCHITECTURE.md` y `docs/vercel-deployment.md`.
+
 # BIOTEX v0.28 — Estado verificado de ejecución de la hoja de ruta (Chalhuas)
 Fecha de corte: 15 de noviembre de 2026. Esta matriz debe actualizarse con CI y evidencia geográfica cada vez que se publique.
 

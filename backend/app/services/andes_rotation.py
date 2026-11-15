@@ -60,6 +60,16 @@ def describe(sequence:list[str], start_year:int, identity:str, name_es:str, name
             "No se dispone de suelo analizado, volumen de riego, precios en chacra ni historial fitosanitario comprobados.",
             "La presencia de leguminosas no permite cuantificar nitrógeno aportado al suelo.",
         ],
+        "flags_en":[*(
+            ["The same botanical family occurs in consecutive campaigns; review crop health risks."]
+            if repeated else []),
+            *(["Potatoes return in fewer than four campaigns; review pest and disease history."]
+              if potato_intervals and min(potato_intervals)<4 else [])],
+        "limitations_en":[
+            "Illustrative annual campaigns; local sowing and harvesting dates remain unverified.",
+            "Soil test, irrigation volume, farmgate prices and pest history have not been verified.",
+            "Including legumes does not quantify nitrogen inputs or soil fertility improvements.",
+        ],
     }
 
 
@@ -75,6 +85,34 @@ def compare(rotation:list[str],start_year:int,priority:str,history_source:str='e
         "Your recorded sequence" if history_source=="farmer_declared" else "Historical example to explore")
     scenarios=[describe(crops,start_year,identity,title_es,title_en)
                for identity,title_es,title_en,crops in REFERENCES]
+    # Only botanical sequence comparisons have evidence. Water priority may be
+    # selected but cannot be used to rank without validated local crop calendars,
+    # variety/stage Kc, effective rainfall and irrigation allocation.
+    priority_messages={
+        'water': (
+            'Tu prioridad es el agua. Falta evidencia local para comparar demanda o ahorro de riego; '
+            'las opciones quedan sin clasificación hídrica.',
+            'Water is your priority. Local evidence is insufficient to compare irrigation demand or savings; '
+            'none of these options is ranked by water use.'),
+        'soil': (
+            'Tu prioridad es el suelo. Comparamos estructura botánica comprobable: familias distintas, '
+            'repeticiones contiguas y retorno de papa. Esto no demuestra fertilidad ni reduce por sí solo enfermedades.',
+            'Soil is your priority. We compare documented botanical structure: distinct families, '
+            'consecutive repeats and potato return. This does not prove soil fertility or disease reduction.'),
+        'both': (
+            'Buscas equilibrio: es posible comparar diversidad botánica, pero todavía faltan datos locales '
+            'para valorar el agua. Ninguna opción es una recomendación automática.',
+            'For a balance, botanical diversity can be compared, but local water evidence is still missing. '
+            'There is no automatic recommendation.'),
+    }
+    for scenario in [initial,*scenarios]:
+        a,b=initial['indicators'],scenario['indicators']
+        scenario['comparison_to_user_sequence']={
+            'additional_botanical_families': b['botanical_families']-a['botanical_families'],
+            'adjacent_family_repetitions_change': b['adjacent_family_repetitions']-a['adjacent_family_repetitions'],
+            'legume_campaigns_change': b['legume_campaigns']-a['legume_campaigns'],
+            'status':'observed_sequence_structure_only',
+        }
     return {
         "status":"illustrative_comparison",
         "scope":"Chalhuas, Huáchac, Chupaca, Junín — reference sector, not a certified parcel",
@@ -82,7 +120,15 @@ def compare(rotation:list[str],start_year:int,priority:str,history_source:str='e
         "model_status":"not_trained_for_chalhuas","automatic_recommendation":None,
         "confidence":"requires_local_agronomic_validation",
         "strategies":[initial,*scenarios],
-        "comparison_summary_es":"Se muestran diferencias verificables de familias botánicas y orden de campañas. Ninguna opción se clasifica como apta o de menor demanda de riego sin datos locales.",
+        "comparison_summary_es":priority_messages[priority][0],
+        "comparison_summary_en":priority_messages[priority][1],
+        "priority_evidence":{
+            "selected":priority,
+            "soil":"botanical_sequence_structure_only",
+            "water":"insufficient_local_inputs_no_irrigation_ranking",
+            "quantitative_water_savings_available":False,
+            "automatic_farm_suitability_ranking":False,
+        },
         "water_note_es":"No se calculó ahorro de agua ni demanda de riego para Chalhuas: aún faltan calendarios locales, variedad, manejo y disponibilidad efectiva de agua.",
         "source_records":[
             {"title":"Estudio agrológico del proyecto Chalhuas (referencias históricas)","url":STUDY_URL},

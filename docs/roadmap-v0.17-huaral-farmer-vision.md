@@ -1,3 +1,5 @@
+> Documento histórico: no configura ni publica la versión actual. Consulte `docs/BIOTEX_ARCHITECTURE.md` y `docs/vercel-deployment.md`.
+
 # TERRA360 AI — dirección v0.17: piloto Huaral y experiencia del agricultor peruano
 
 **Acuerdo de producto comunicado el 14 de noviembre de 2026.**

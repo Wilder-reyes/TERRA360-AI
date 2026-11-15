@@ -1,0 +1,32 @@
+{
+  "source_zip": "BIOTEX-etapas-0-2.zip",
+  "original_files": 323,
+  "delivered_files_excluding_audit_report": 332,
+  "new_files": [
+    "backend/app/api/scientific_sources_routes.py",
+    "backend/app/quality/evidence.py",
+    "backend/app/services/scientific_registry.py",
+    "docs/BIOTEX_STAGE_3_DELIVERY.md",
+    "frontend/e2e/scientific-layers.spec.ts",
+    "frontend/src/scientificEvidence.ts",
+    "frontend/src/scientificLayers.ts",
+    "frontend/tests/scientific-evidence.test.mjs",
+    "tests/test_scientific_provenance.py"
+  ],
+  "modified_files": [
+    "AGENTS.md",
+    "backend/app/api/routes.py",
+    "backend/app/main.py",
+    "docs/BIOTEX_IMPLEMENTATION_STATUS.md",
+    "frontend/src/BiotexFarmerApp.tsx",
+    "frontend/src/FieldEvidence.tsx",
+    "frontend/src/agricultural-dark.css",
+    "frontend/src/domain.ts"
+  ],
+  "removed_files": [],
+  "unchanged_scientific_data_files": 14,
+  "unchanged_scientific_data_sha256_verified": true,
+  "git_push": false,
+  "deploy": false,
+  "status": "stage3_delivery_pending_full_dependency_validation"
+}

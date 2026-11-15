@@ -1,8 +1,10 @@
+> Documento histórico: no configura ni publica la versión actual. Consulte `docs/BIOTEX_ARCHITECTURE.md` y `docs/vercel-deployment.md`.
+
 # Hoja de ruta TERRA360 AI — v0.11 · corte técnico y científico
 
 **Fecha:** 14 noviembre 2026 (Perú). **Base:** [v0.10](roadmap-v0.10.md).
-**Plataforma:** https://terra360-ai.netlify.app/
-**API:** https://terra360-api.onrender.com/
+**Plataforma:** [dominio histórico retirado]
+**API:** [dominio histórico retirado]
 Los datos satelitales reales no deben confundirse con precisión agronómica validada.
 
 ## Cambios verificables desde v0.10

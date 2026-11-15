@@ -51,4 +51,4 @@ Apply with the existing `ui-ux-pro-max` skill; use the twelve selected Aura guid
 - **Skill Creator:** maintain this file and examples.
 
 ## Release gate
-Keep Vercel static + Render API; no secret in frontend. Build TypeScript, all Python/unit/browser tests pass; scientific provenance/case-study data verified separately. Never describe unvalidated local AI as trained. Leave stable Barranca release accessible until new pilot has verified observations, agronomic review and farmer usability study.
+Keep Vercel static + an independently configured Python API; no secret in frontend. Build TypeScript, all Python/unit/browser tests pass; scientific provenance/case-study data verified separately. Never describe unvalidated local AI as trained. Preserve reproducible Barranca data and model, with explicit abstention outside its exact parcel. Do not reconnect old hosted projects.

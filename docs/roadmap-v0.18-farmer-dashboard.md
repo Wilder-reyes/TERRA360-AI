@@ -1,3 +1,5 @@
+> Documento histórico: no configura ni publica la versión actual. Consulte `docs/BIOTEX_ARCHITECTURE.md` y `docs/vercel-deployment.md`.
+
 # TERRA360 AI v0.18 — agricultor peruano primero
 
 **Piloto:** sector Huando, Huaral, Lima, Perú. La ubicación inicial es un

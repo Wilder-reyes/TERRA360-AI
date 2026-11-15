@@ -1,0 +1,92 @@
+{
+  "model_id": "biotex-barranca-hls-bare-v1",
+  "evaluation": "chronological holdout; training-only coefficients, threshold 0.5 fixed",
+  "n": 11,
+  "target": "monthly NASA HLS NDVI < 0.20; vegetation proxy only",
+  "decision_threshold": 0.5,
+  "positive_count": 9,
+  "negative_count": 2,
+  "confusion_matrix": {
+    "tp": 5,
+    "tn": 2,
+    "fp": 0,
+    "fn": 4
+  },
+  "accuracy_percent": 63.63636363636363,
+  "precision_percent": 100.0,
+  "recall_percent": 55.55555555555556,
+  "specificity_percent": 100.0,
+  "balanced_accuracy_percent": 77.77777777777777,
+  "f1_percent": 71.42857142857143,
+  "brier_model_recomputed": 0.2340806662985984,
+  "brier_train_prevalence_baseline": 0.48025711662075293,
+  "scope": "one Barranca parcel, 11 temporal holdout months; no external spatial validation and no Chalhuas inference",
+  "rows": [
+    {
+      "month": "2025-12",
+      "target": 1,
+      "probability": 0.20882721110450542,
+      "prediction": 0
+    },
+    {
+      "month": "2026-01",
+      "target": 0,
+      "probability": 0.05027910553996398,
+      "prediction": 0
+    },
+    {
+      "month": "2026-02",
+      "target": 0,
+      "probability": 0.0401893572621028,
+      "prediction": 0
+    },
+    {
+      "month": "2026-03",
+      "target": 1,
+      "probability": 0.1282614888827367,
+      "prediction": 0
+    },
+    {
+      "month": "2026-04",
+      "target": 1,
+      "probability": 0.3959328911752643,
+      "prediction": 0
+    },
+    {
+      "month": "2026-05",
+      "target": 1,
+      "probability": 0.5409226276545925,
+      "prediction": 1
+    },
+    {
+      "month": "2026-07",
+      "target": 1,
+      "probability": 0.41599279188858795,
+      "prediction": 0
+    },
+    {
+      "month": "2026-08",
+      "target": 1,
+      "probability": 0.5908590229494195,
+      "prediction": 1
+    },
+    {
+      "month": "2026-09",
+      "target": 1,
+      "probability": 0.8343584001482609,
+      "prediction": 1
+    },
+    {
+      "month": "2026-10",
+      "target": 1,
+      "probability": 0.8962918394224563,
+      "prediction": 1
+    },
+    {
+      "month": "2026-11",
+      "target": 1,
+      "probability": 0.7498813150189004,
+      "prediction": 1
+    }
+  ]
+}

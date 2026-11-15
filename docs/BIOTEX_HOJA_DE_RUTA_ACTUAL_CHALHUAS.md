@@ -1,7 +1,9 @@
+> Documento histórico: no configura ni publica la versión actual. Consulte `docs/BIOTEX_ARCHITECTURE.md` y `docs/vercel-deployment.md`.
+
 # BIOTEX · Hoja de ruta vigente — Piloto de rotaciones del Valle del Mantaro
-**Actualizada:** 15 de noviembre de 2026  
-**Estado:** planificación validable; NO constituye implementación ni autorización agronómica de siembra.  
-**Sustituye como plan futuro:** hojas de ruta históricas basadas en Barranca. Las versiones anteriores se conservan para trazabilidad.  
+**Actualizada:** 15 de noviembre de 2026
+**Estado:** planificación validable; NO constituye implementación ni autorización agronómica de siembra.
+**Sustituye como plan futuro:** hojas de ruta históricas basadas en Barranca. Las versiones anteriores se conservan para trazabilidad.
 **Producción actual:** BIOTEX v0.26 (IA NASA HLS específica de Barranca) + UX v0.27. No confundir esa producción estable con el futuro piloto.
 
 ## Decisión territorial

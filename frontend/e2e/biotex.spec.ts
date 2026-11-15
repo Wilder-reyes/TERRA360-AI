@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test'
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
 
 const message=(text:string)=>({es:[text],en:[text]})
 const sections={
@@ -213,7 +214,7 @@ test('UX Pro Max journey keeps the farmer and clear next action first',async({pa
  await page.goto('/')
  await expect(page.getByText('AGRICULTURA CON EVIDENCIA NASA')).toBeVisible()
  await expect(page.getByText('Paso 1 de 4')).toBeVisible()
- await expect(page.getByRole('link',{name:/Vista para especialistas/})).toHaveAttribute('href','/?vista=tecnica')
+ await expect(page.getByRole('link',{name:/Vista para especialistas/})).toHaveCount(0)
  await expect(page.getByText('INICIO RÁPIDO')).toBeVisible()
  await expect(page.getByText('La IA entrenada solo se aplica a esta parcela;')).toBeVisible()
  await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
@@ -245,10 +246,11 @@ test('mobile redesign offers sample before map and never overflows',async({page}
 
 test('release keeps science v0.26 and makes visual redesign identifiable',async({page})=>{
  await page.goto('/')
- await expect(page.locator('meta[name="biotex-ui-release"]')).toHaveAttribute('content','v0.27-farmer-first-ux-pro-max')
+ await expect(page.locator('meta[name="biotex-ui-release"]')).toHaveAttribute('content','stage-1-unified-workflow')
  const res=await page.request.get('/release.json')
  const data=await res.json()
  expect(data.release).toBe('v0.26-hls-trained-ai-barranca')
- expect(data.ui_release).toBe('v0.27-farmer-first-ux-pro-max')
- expect(data.primary_url).toBe('https://terra360-ai-eta.vercel.app/')
+ expect(data.ui_release).toBe('stage-1-unified-workflow')
+ expect(data.primary_url).toBeUndefined()
+ expect(data.regional_profiles.mantaro).toBe('exploratory_no_local_ai_model')
 })

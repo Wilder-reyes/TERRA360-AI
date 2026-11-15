@@ -1,0 +1,32 @@
+{
+  "status": "reproduced",
+  "model_id": "biotex-barranca-hls-bare-v1",
+  "source": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
+  "source_blob_sha": "8846b0ceb4669c8372d0ea724263d263a4bf37d7",
+  "source_sensor": "NASA HLS v2.0 (Landsat 8/9 + Sentinel-2, 30 m)",
+  "observations_total": 71,
+  "observations_valid": 44,
+  "train_observations": 33,
+  "holdout_observations": 11,
+  "holdout_period": [
+    "2025-12",
+    "2026-11"
+  ],
+  "holdout_brier_model": 0.23408067,
+  "holdout_brier_baseline": 0.48025712,
+  "probabilities_by_calendar_month_2026": [
+    0.147854,
+    0.137432,
+    0.31709,
+    0.599265,
+    0.700853,
+    0.672716,
+    0.69278,
+    0.833649,
+    0.933461,
+    0.945692,
+    0.844877,
+    0.432129
+  ],
+  "warning": "Learned seasonal bare-surface proxy for one parcel; NOT validated crop identity, yield or farm irrigation data."
+}

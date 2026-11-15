@@ -56,3 +56,80 @@ export function validatePolygon(points:GeoPoint[]):{valid:boolean;reason:string}
   if(!Number.isFinite(area)||area<0.000001)return {valid:false,reason:'too_small'}
   return {valid:true,reason:'ok'}
 }
+
+/** Import a single unambiguous outer ring; never discard malformed vertices or holes. */
+export function parseGeoJSONPolygon(text:string):{type:'Polygon';coordinates:number[][][]}|null{
+ try{
+  let value=JSON.parse(text)
+  if(value?.type==='FeatureCollection'){
+   if(!Array.isArray(value.features)||value.features.length!==1)return null
+   value=value.features[0]
+  }
+  if(value?.type==='Feature')value=value.geometry
+  if(value?.type==='MultiPolygon'){
+   if(!Array.isArray(value.coordinates)||value.coordinates.length!==1)return null
+   value={type:'Polygon',coordinates:value.coordinates[0]}
+  }
+  if(value?.type!=='Polygon'||!Array.isArray(value.coordinates)||value.coordinates.length!==1)return null
+  const ring=value.coordinates[0]
+  if(!Array.isArray(ring)||ring.length<3||ring.some((p:unknown)=>!Array.isArray(p)||p.length<2||!p.every(n=>typeof n==='number'&&Number.isFinite(n))))return null
+  const clean:number[][]=ring.map((p:number[])=>[p[0],p[1]])
+  if(clean[0][0]!==clean[clean.length-1][0]||clean[0][1]!==clean[clean.length-1][1])clean.push([...clean[0]])
+  const points=clean.slice(0,-1).map(([lng,lat])=>({lat,lng}))
+  if(!validatePolygon(points).valid)return null
+  return {type:'Polygon',coordinates:[clean]}
+ }catch{return null}
+}
+
+/** Validation of user-defined subplots using local planar topology for small parcels.
+ * Shared edges are allowed. Strict interior overlap and crossings are rejected.
+ * This is a geometry check, never a cadastral or agronomic validation.
+ */
+function strictlyCross(a:GeoPoint,b:GeoPoint,c:GeoPoint,d:GeoPoint):boolean{
+ const o1=orient(a,b,c),o2=orient(a,b,d),o3=orient(c,d,a),o4=orient(c,d,b)
+ return ((o1>0&&o2<0)||(o1<0&&o2>0))&&((o3>0&&o4<0)||(o3<0&&o4>0))
+}
+function pointOnBoundary(p:GeoPoint,ring:GeoPoint[]):boolean{
+ const eps=1e-11
+ return ring.some((a,i)=>{
+  const b=ring[(i+1)%ring.length]
+  return Math.abs(orient(a,b,p))<eps&&onSeg(a,b,p)
+ })
+}
+function pointInside(p:GeoPoint,ring:GeoPoint[],includeBoundary=true):boolean{
+ if(pointOnBoundary(p,ring))return includeBoundary
+ let inside=false
+ for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+  const a=ring[i],b=ring[j]
+  if(((a.lat>p.lat)!==(b.lat>p.lat))&&p.lng<(b.lng-a.lng)*(p.lat-a.lat)/(b.lat-a.lat)+a.lng)inside=!inside
+ }
+ return inside
+}
+function crossings(a:GeoPoint[],b:GeoPoint[]):boolean{
+ return a.some((p,i)=>b.some((q,j)=>strictlyCross(p,a[(i+1)%a.length],q,b[(j+1)%b.length])))
+}
+function polygonContained(inner:GeoPoint[],outer:GeoPoint[]):boolean{
+ return inner.every(p=>pointInside(p,outer))&&!crossings(inner,outer)&&
+  inner.every((p,i)=>pointInside({lat:(p.lat+inner[(i+1)%inner.length].lat)/2,
+   lng:(p.lng+inner[(i+1)%inner.length].lng)/2},outer))
+}
+function polygonsOverlap(a:GeoPoint[],b:GeoPoint[]):boolean{
+ const average=(ring:GeoPoint[])=>({lat:ring.reduce((t,p)=>t+p.lat,0)/ring.length,lng:ring.reduce((t,p)=>t+p.lng,0)/ring.length})
+ return crossings(a,b)||a.some(p=>pointInside(p,b,false))||b.some(p=>pointInside(p,a,false))||
+  (pointInside(average(a),a,false)&&pointInside(average(a),b,false))||
+  (pointInside(average(b),b,false)&&pointInside(average(b),a,false))
+}
+export function validateSubplotLayout(field:GeoPoint[],subplots:{id:string;points:GeoPoint[]}[]):{valid:boolean;reason:string}{
+ if(!validatePolygon(field).valid)return {valid:false,reason:'invalid_field'}
+ if(subplots.length>32)return {valid:false,reason:'too_many_subplots'}
+ const ids=new Set<string>()
+ for(let i=0;i<subplots.length;i++){
+  const s=subplots[i]
+  if(typeof s.id!=='string'||!s.id.trim()||ids.has(s.id))return {valid:false,reason:'duplicate_id'}
+  ids.add(s.id)
+  if(!validatePolygon(s.points).valid||approximatePolygonHectares(s.points)<.01)return {valid:false,reason:'invalid_subplot'}
+  if(!polygonContained(s.points,field))return {valid:false,reason:'outside_field'}
+  for(let j=0;j<i;j++)if(polygonsOverlap(s.points,subplots[j].points))return {valid:false,reason:'overlap'}
+ }
+ return {valid:true,reason:'ok'}
+}

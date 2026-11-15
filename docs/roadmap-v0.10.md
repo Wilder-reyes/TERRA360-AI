@@ -1,6 +1,8 @@
+> Documento histórico: no configura ni publica la versión actual. Consulte `docs/BIOTEX_ARCHITECTURE.md` y `docs/vercel-deployment.md`.
+
 # Hoja de ruta TERRA360 AI — v0.10 · estado verificable
 
-**Fecha:** 13 de noviembre de 2026 (Perú). **Destino:** https://terra360-ai.netlify.app/. **API:** https://terra360-api.onrender.com/. Los cambios técnicos se publican automáticamente desde `main`. Un commit aprobado en CI no equivale a verificación científica ni de experiencia real.
+**Fecha:** 13 de noviembre de 2026 (Perú). **Destino:** [dominio histórico retirado] **API:** [dominio histórico retirado] Los cambios técnicos se publican automáticamente desde `main`. Un commit aprobado en CI no equivale a verificación científica ni de experiencia real.
 
 ## Resultado ejecutivo
 

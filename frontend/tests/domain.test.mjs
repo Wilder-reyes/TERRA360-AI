@@ -44,12 +44,11 @@ test('no valid min/max observations is not reported as zero cold/hot days', () =
   assert.equal(r.hotDays, null)
 })
 
-test('new sessions require an explicit location, and favicon is declared', async () => {
-  const {readFile} = await import('node:fs/promises')
-  const app = await readFile(new URL('../src/App.tsx',import.meta.url),'utf8')
-  const html = await readFile(new URL('../index.html',import.meta.url),'utf8')
-  assert.match(app,/useState<Position\|null>\(null\)/)
-  assert.doesNotMatch(app,/Referencia: Calca, Cusco/)
-  assert.match(app,/if\(!point\)\{setLoading\(false\)/)
-  assert.match(html,/href="\/favicon\.svg"/)
+test('new sessions require explicit field selection and declare a favicon', async () => {
+ const {readFile}=await import('node:fs/promises')
+ const app=await readFile(new URL('../src/BiotexFarmerApp.tsx',import.meta.url),'utf8')
+ const html=await readFile(new URL('../index.html',import.meta.url),'utf8')
+ assert.match(app,/useState<GeoPolygon\|null>\(null\)/)
+ assert.match(app,/if\(!field\)/)
+ assert.match(html,/href="\/favicon\.svg"/)
 })

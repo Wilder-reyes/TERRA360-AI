@@ -25,3 +25,15 @@ test('collinear vertices are invalid geometry',()=>{
  const line=[{lat:0,lng:0},{lat:.001,lng:.001},{lat:.002,lng:.002}]
  assert.equal(validatePolygon(line).valid,false)
 })
+
+import {validateSubplotLayout} from '../src/geometry.ts'
+const rectangle=(s,w,n,e)=>[{lat:s,lng:w},{lat:s,lng:e},{lat:n,lng:e},{lat:n,lng:w}]
+test('farmer-defined subplots are contained, unique and disjoint; adjacent edges are permitted',()=>{
+ const field=rectangle(-12.049,-75.369,-12.045,-75.364)
+ const a={id:'1',points:rectangle(-12.048,-75.368,-12.046,-75.366)}
+ const b={id:'2',points:rectangle(-12.048,-75.366,-12.046,-75.365)}
+ assert.equal(validateSubplotLayout(field,[a,b]).valid,true)
+ assert.equal(validateSubplotLayout(field,[a,a]).reason,'duplicate_id')
+ assert.equal(validateSubplotLayout(field,[a,{id:'2',points:rectangle(-12.047,-75.367,-12.0455,-75.3655)}]).reason,'overlap')
+ assert.equal(validateSubplotLayout(field,[{id:'outer',points:rectangle(-12.050,-75.367,-12.046,-75.366)}]).reason,'outside_field')
+})
