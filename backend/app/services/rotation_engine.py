@@ -622,7 +622,8 @@ def _strategy(key: str, plantings: list[dict], climate: dict, base: dict | None,
 
 
 def highlight_for_farmer(strategies: list[dict], priorities: dict,
-                         water_turn: str = "no_se") -> dict:
+                         water_turn: str = "no_se",
+                         ai_bare_risk: dict[str, float] | None = None) -> dict:
     """Highlight an evidence-supported option, not an agronomic prescription.
 
     1. Scarce irrigation: never promote an option with higher estimated dry-season
@@ -657,9 +658,17 @@ def highlight_for_farmer(strategies: list[dict], priorities: dict,
         pests_gain = (base.get("same_family_consecutive", 0)
                       - ind.get("same_family_consecutive", 0)) / max(
                           1.0, base.get("same_family_consecutive", 0))
-        score = water_weight * water_gain + 2 * soil_weight * cover_gain + 0.15 * pests_weight * pests_gain
-        # Exclude score-only noise that has no useful water, soil, or family benefit.
-        if score > 0.01 and (water_gain > 0.01 or cover_gain > 0 or pests_gain > 0):
+        # NASA-HLS learned seasonal exposure is a separate, transparent
+        # input: covering historically exposed months counts more than
+        # a calendar-shift without evidence. It is not a yield predictor.
+        ai_gain = 0.0
+        if ai_bare_risk and s0["id"] in ai_bare_risk and strategy["id"] in ai_bare_risk:
+            ai_gain = ai_bare_risk[s0["id"]] - ai_bare_risk[strategy["id"]]
+        score = (water_weight * water_gain + 2 * soil_weight * cover_gain
+                 + 0.15 * pests_weight * pests_gain + 0.8 * soil_weight * ai_gain)
+        # NASA model never overrides the scarce-water safety guard above.
+        if score > 0.01 and (water_gain > 0.01 or cover_gain > 0 or pests_gain > 0 or
+                            (soil_weight > 0 and ai_gain > 0.01)):
             candidates.append((score, strategy["id"], water_difference, cover_gain))
     if not candidates:
         return {
@@ -695,7 +704,12 @@ def highlight_for_farmer(strategies: list[dict], priorities: dict,
         "recommendation_reason_es": water_es + " " + soil_es,
         "recommendation_reason_en": water_en + " " + soil_en,
         "recommendation_confidence": strength,
-        "recommendation_method": "Relative crop-water, crop coverage and family-repeat scores; scarce-water and +25% safety guards. No measured irrigation or economic predictions.",
+        "recommendation_method": ("Relative crop-water, crop coverage and family-repeat scores; "
+                                  + ("plus verified NASA HLS learned seasonal bare-risk exposure; "
+                                     if ai_bare_risk else "")
+                                  + "scarce-water and +25% safety guards. No measured irrigation, "
+                                  "harvest-yield or economic predictions."),
+        "ai_weighted": bool(ai_bare_risk),
     }
 
 
