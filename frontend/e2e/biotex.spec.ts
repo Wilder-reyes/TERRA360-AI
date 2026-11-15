@@ -124,3 +124,15 @@ test('Satellite clues display acquisition dates, mapped NASA imagery and origina
  await expect(page.getByRole('link',{name:'Consultar la imagen HLS utilizada'})).toHaveAttribute('href',/planetarycomputer\.microsoft\.com/)
  await expect(page.getByText('0.62')).toBeVisible()
 })
+
+test('Farmers can save and restore their marked field without an account',async({page})=>{
+ await page.goto('/')
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await expect(page.getByText('Tu terreno está marcado')).toBeVisible()
+ await page.getByRole('button',{name:'Guardar mi chacra'}).click()
+ await expect(page.getByText('Tus datos se guardaron en este dispositivo.')).toBeVisible()
+ await page.reload()
+ await page.getByRole('button',{name:'Recuperar mi chacra guardada'}).click()
+ await expect(page.getByText('Tu terreno está marcado')).toBeVisible()
+ await expect(page.getByText('Recuperamos tu chacra. Revisa los cultivos antes de continuar.')).toBeVisible()
+})
