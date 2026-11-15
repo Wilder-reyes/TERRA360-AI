@@ -23,7 +23,8 @@ type Strategy={
  relative_to_current:{water_low_river_change_percent:number|null;water_total_change_percent:number|null;bare_months_change:number;legume_plantings_change:number}|null;
  sections:{why:{es:string[];en:string[]};benefits:{es:string[];en:string[]};gaps:{es:string[];en:string[]};risks:{es:string[];en:string[]};evidence:{es:string[];en:string[]}}
 }
-type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';
+type FieldSoil={texture?:'arenosa'|'franca'|'arcillosa';ph?:number;salinity_ds_m?:number;organic_matter_percent?:number;drainage?:'bueno'|'regular'|'malo'}
+type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};
  recommendation_reason_es?:string;recommendation_reason_en?:string;
  climate?:{period:string;annual_et0_mm:number;cell_adjustment?:{reason_es:string;reason_en:string}|null};
  income_crop?:string;disclaimer_es?:string;disclaimer_en?:string;method?:Record<string,unknown>}
@@ -208,6 +209,8 @@ export default function BiotexFarmerApp(){
  const [manualEntered,setManualEntered]=useState(false)
  const [goal,setGoal]=useState<'water'|'soil'|'both'>('both')
  const [incomeCrop,setIncomeCrop]=useState('')
+ const [soil,setSoil]=useState<FieldSoil>({})
+ const [waterAllowance,setWaterAllowance]=useState('')
  const [scarcity,setScarcity]=useState<'normal'|'escaso'|'no_se'>('no_se')
  const [result,setResult]=useState<Result|null>(null)
  const [planBusy,setPlanBusy]=useState(false)
@@ -289,6 +292,9 @@ export default function BiotexFarmerApp(){
    current,priorities,water_turn:scarcity,current_source:source,
    income_crop_id:confirmedOptions.includes(incomeCrop)?incomeCrop:null,
    use_team_templates_as_fallback:false,
+   soil:Object.keys(soil).length?{...soil,source:'farmer_reported'}:null,
+   irrigation_allowance_m3_ha_season:waterAllowance.trim()?Number(waterAllowance):null,
+   irrigation_source:waterAllowance.trim()?'farmer_reported':null,
    history:source==='satellite_confirmed'&&history?{sensor:history.sensor,start:history.period.start,end:history.period.end,months_with_data:history.months_with_data}:null
   }
   try{const r=await fetch(API+'/api/rotation/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
@@ -463,6 +469,33 @@ export default function BiotexFarmerApp(){
      <div className="b-year-control"><label>{lang==='es'?'¿En qué año empezarías el plan?':'Which year would you begin?'}
       <select value={planStartYear} onChange={e=>setPlanStartYear(Number(e.target.value))}>{[0,1,2].map(offset=><option key={offset} value={new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}>{lang==='es'?'Agosto':'August'} {new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}</option>)}</select>
       </label><small>{lang==='es'?'El modelo empieza su ciclo en agosto; las fechas son aproximadas.':'The model cycle starts in August; dates are approximate.'}</small></div>
+     <details className="b-farm-evidence"><summary>{lang==='es'?'¿Tienes datos de tu suelo o del agua de riego? (opcional)':'Do you have soil or irrigation records? (optional)'}</summary>
+      <p>{lang==='es'?'Anota aquí solo los datos que conoces. Aparecerán en tu informe.':'Enter only values you know. They will appear in your report.'}</p>
+      <div className="b-farm-fields">
+       <label>{lang==='es'?'Tipo de suelo':'Soil texture'}
+        <select value={soil.texture||''} onChange={e=>setSoil(x=>({...x,texture:(e.target.value||undefined) as FieldSoil['texture']}))}>
+         <option value="">{lang==='es'?'No tengo el dato':'Unknown'}</option><option value="arenosa">{lang==='es'?'Arenoso':'Sandy'}</option><option value="franca">{lang==='es'?'Franco':'Loam'}</option><option value="arcillosa">{lang==='es'?'Arcilloso':'Clay'}</option>
+        </select>
+       </label>
+       <label>{lang==='es'?'Acidez del suelo (pH, si tienes análisis)':'Soil pH (if tested)'}
+        <input type="number" inputMode="decimal" min="0" max="14" step="0.1" value={soil.ph??''} onChange={e=>setSoil(x=>({...x,ph:e.target.value===''?undefined:Number(e.target.value)}))}/>
+       </label>
+       <label>{lang==='es'?'Salinidad (dS/m, si tienes análisis)':'Salinity (dS/m, if tested)'}
+        <input type="number" inputMode="decimal" min="0" max="100" step="0.1" value={soil.salinity_ds_m??''} onChange={e=>setSoil(x=>({...x,salinity_ds_m:e.target.value===''?undefined:Number(e.target.value)}))}/>
+       </label>
+       <label>{lang==='es'?'Materia orgánica (%)':'Organic matter (%)'}
+        <input type="number" inputMode="decimal" min="0" max="100" step="0.1" value={soil.organic_matter_percent??''} onChange={e=>setSoil(x=>({...x,organic_matter_percent:e.target.value===''?undefined:Number(e.target.value)}))}/>
+       </label>
+       <label>{lang==='es'?'¿Cómo drena el agua?':'How well does water drain?'}
+        <select value={soil.drainage||''} onChange={e=>setSoil(x=>({...x,drainage:(e.target.value||undefined) as FieldSoil['drainage']}))}>
+         <option value="">{lang==='es'?'No sé':'Unknown'}</option><option value="bueno">{lang==='es'?'Bien':'Well'}</option><option value="regular">{lang==='es'?'Regular':'Moderately'}</option><option value="malo">{lang==='es'?'Se empoza':'Poorly'}</option>
+        </select>
+       </label>
+       <label>{lang==='es'?'Agua asignada en m³/ha por campaña (si tienes el dato)':'Allocated water m³/ha per season (if known)'}
+        <input type="number" inputMode="numeric" min="0" max="1000000" step="1" value={waterAllowance} onChange={e=>setWaterAllowance(e.target.value)}/>
+       </label>
+      </div>
+     </details>
     </section>
     {planError&&<p className="b-error" role="alert">{planError}</p>}
     {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
