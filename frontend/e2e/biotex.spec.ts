@@ -120,7 +120,7 @@ test('Satellite clues display acquisition dates, mapped NASA imagery and origina
  await page.getByText('¿No recuerdas alguna siembra?').click()
  await page.getByRole('button',{name:'Buscar pistas con imágenes del terreno'}).click()
  await expect(page.getByText('Así se veía la zona desde el espacio')).toBeVisible()
- await expect(page.getByText('2026-08-16')).toBeVisible()
+ await expect(page.locator('.b-satellite-gallery select')).toHaveValue('2026-08')
  await expect(page.getByRole('link',{name:'Consultar la imagen HLS utilizada'})).toHaveAttribute('href',/planetarycomputer\.microsoft\.com/)
  await expect(page.getByText('0.62')).toBeVisible()
 })
