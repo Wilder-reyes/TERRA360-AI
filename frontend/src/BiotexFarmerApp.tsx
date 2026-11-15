@@ -219,6 +219,7 @@ export default function BiotexFarmerApp(){
  const [otherOpen,setOtherOpen]=useState(false)
  const [mapLayer,setMapLayer]=useState<'photo'|'vegetation'|'rain'>('photo')
  const [mapLayerFailed,setMapLayerFailed]=useState(false)
+ const [saveMobileData,setSaveMobileData]=useState(false)
  const [planStartYear,setPlanStartYear]=useState(()=>{const d=new Date();return d.getUTCFullYear()+(d.getUTCMonth()>=7?1:0)})
  const [savedAvailable,setSavedAvailable]=useState(()=>{try{return Boolean(localStorage.getItem(SAVED_FARM_KEY))}catch{return false}})
  const [savedNotice,setSavedNotice]=useState('')
@@ -444,11 +445,14 @@ export default function BiotexFarmerApp(){
       <p className="b-map-label"><Icon name="pin" size={16}/>{place}</p>
       <p className="b-muted">{t.mapHint}</p>
       <div className="b-map-view" role="group" aria-label={lang==='es'?'Capas de observación':'Observation layers'}>
-       {(['photo','vegetation','rain'] as const).map(id=><button key={id} type="button" aria-pressed={mapLayer===id} onClick={()=>{setMapLayer(id);setMapLayerFailed(false)}}>{id==='photo'?(lang==='es'?'Foto aérea':'Aerial photo'):id==='vegetation'?(lang==='es'?'Vegetación NASA':'NASA vegetation'):(lang==='es'?'Lluvia NASA':'NASA rain')}</button>)}
+       {(['photo','vegetation','rain'] as const).map(id=><button key={id} type="button" disabled={saveMobileData&&id!=='photo'} aria-pressed={mapLayer===id} onClick={()=>{setMapLayer(id);setMapLayerFailed(false)}}>{id==='photo'?(lang==='es'?'Foto aérea':'Aerial photo'):id==='vegetation'?(lang==='es'?'Vegetación NASA':'NASA vegetation'):(lang==='es'?'Lluvia NASA':'NASA rain')}</button>)}
       </div>
+      <label className="b-low-bandwidth"><input type="checkbox" checked={saveMobileData} onChange={e=>{setSaveMobileData(e.target.checked);if(e.target.checked)setMapLayer('photo')}}/> {lang==='es'?'Ahorrar datos móviles (mapa sencillo)':'Save mobile data (simple map)'}</label>
+      {drawing&&<div className="b-map-guide"><strong>{lang==='es'?'Marca tu chacra en 3 pasos':'Mark your field in 3 steps'}</strong><ol><li>{lang==='es'?'Acerca el mapa.':'Zoom in.'}</li><li>{lang==='es'?'Toca cada esquina del terreno.':'Tap each field corner.'}</li><li>{lang==='es'?'Pulsa «Terminar terreno».':'Tap Finish field.'}</li></ol></div>}
       <div className="b-map-frame"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
-       <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
-       {mapLayer!=='photo'&&<WMSTileLayer key={mapLayer} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
+       <TileLayer key={saveMobileData?'streets':'satellite'} attribution={saveMobileData?'© OpenStreetMap contributors':'Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors'}
+        url={saveMobileData?'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}/>
+       {!saveMobileData&&mapLayer!=='photo'&&<WMSTileLayer key={mapLayer} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
         layers={mapLayer==='vegetation'?'MODIS_Terra_NDVI_8Day':'IMERG_Precipitation_Rate'}
         styles="" format="image/png" transparent={true} version="1.1.1" opacity={0.72}
         attribution="NASA GIBS / ESDIS" eventHandlers={{tileerror:()=>setMapLayerFailed(true)}}/>}
