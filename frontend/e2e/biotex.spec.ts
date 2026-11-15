@@ -207,3 +207,48 @@ test('NASA trained AI influences the farmer workflow and evidence stays optional
  await expect(page.locator('.b-ai-month')).toHaveCount(12)
  await expect(page.getByRole('link',{name:'Ver procedimiento reproducible'})).toHaveAttribute('href',/BIOTEX_v026_IA_reproducible/)
 })
+
+
+test('UX Pro Max journey keeps the farmer and clear next action first',async({page})=>{
+ await page.goto('/')
+ await expect(page.getByText('AGRICULTURA CON EVIDENCIA NASA')).toBeVisible()
+ await expect(page.getByText('Paso 1 de 4')).toBeVisible()
+ await expect(page.getByRole('link',{name:/Vista para especialistas/})).toHaveAttribute('href','/?vista=tecnica')
+ await expect(page.getByText('INICIO RÁPIDO')).toBeVisible()
+ await expect(page.getByText('La IA entrenada solo se aplica a esta parcela;')).toBeVisible()
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await expect(page.getByText('Terreno seleccionado. Sigue para registrar tus cultivos.')).toBeVisible()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await expect(page.getByText('Paso 2 de 4')).toBeVisible()
+ await expect(page.getByText('No hace falta recordar todo.')).toBeVisible()
+ await page.getByRole('button',{name:'Agregar cultivo'}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await expect(page.getByText('ELIGE LO QUE MÁS TE IMPORTA',{exact:true})).toBeVisible()
+ await expect(page.getByText('Equilibrar las dos necesidades en la comparación.')).toBeVisible()
+})
+
+test('mobile redesign offers sample before map and never overflows',async({page})=>{
+ await page.setViewportSize({width:375,height:812})
+ await page.goto('/')
+ await expect(page.getByRole('button',{name:/Explorar parcela de Barranca/})).toBeVisible()
+ const positions=await page.evaluate(()=>{
+  const example=document.querySelector('.b-examples')!.getBoundingClientRect()
+  const search=document.querySelector('.b-search-card')!.getBoundingClientRect()
+  return {exampleTop:example.top,searchTop:search.top,width:document.documentElement.scrollWidth}
+ })
+ expect(positions.exampleTop).toBeLessThan(positions.searchTop)
+ expect(positions.width).toBeLessThanOrEqual(377)
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await expect(page.getByRole('heading',{name:'¿Qué cultivos sembraste?'})).toBeVisible()
+})
+
+test('release keeps science v0.26 and makes visual redesign identifiable',async({page})=>{
+ await page.goto('/')
+ await expect(page.locator('meta[name="biotex-ui-release"]')).toHaveAttribute('content','v0.27-farmer-first-ux-pro-max')
+ const res=await page.request.get('/release.json')
+ const data=await res.json()
+ expect(data.release).toBe('v0.26-hls-trained-ai-barranca')
+ expect(data.ui_release).toBe('v0.27-farmer-first-ux-pro-max')
+ expect(data.primary_url).toBe('https://terra360-ai-eta.vercel.app/')
+})

@@ -6,6 +6,10 @@
 
 BIOTEX compara la rotación de cultivos actual con opciones que priorizan agua y cobertura vegetal para una **parcela de estudio de ~2,24 hectáreas en Barranca (Pativilca/Supe), Perú**. Permite marcar la parcela en el mapa, revisar las observaciones NASA, registrar el historial agrícola y obtener un plan comprensible para el agricultor.
 
+## Nueva experiencia UI UX Pro Max · v0.27
+
+La interfaz se rediseñó para que el agricultor entienda el resultado antes de leer índices: **parcela → cultivos → prioridades → propuesta**, con ejemplo listo de Barranca, móvil accesible, comparación de agua/cobertura y advertencias antes de sembrar. Los cálculos y el modelo científico siguen siendo **v0.26**. Consulta [el diseño y la investigación UX](docs/BIOTEX_UX_v027_diseno_agricultor.md) para principios, fuentes y límites de validación.
+
 ## IA real y evidencia
 
 - **NASA HLS v2.0:** 44 meses con NDVI válido entre 2021 y noviembre de 2026; 27 meses sin observación válida, nunca inventados.
