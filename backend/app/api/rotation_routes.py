@@ -112,6 +112,18 @@ class EconomicsRequest(BaseModel):
     crop_budgets: list[CropBudget] = Field(min_length=1, max_length=16)
 
 
+class SpatialZoneRequest(BaseModel):
+    id: str = Field(min_length=1, max_length=80)
+    crop_id: str
+    planted_month: str = Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
+    polygon: dict[str, Any] | None = None
+
+
+class SpatialPlanRequest(BaseModel):
+    polygon: dict[str, Any]
+    zones: list[SpatialZoneRequest] = Field(min_length=1, max_length=25)
+
+
 class CompareRequest(BaseModel):
     zone: Literal["huaral", "barranca"] | None = None
     polygon: dict[str, Any] | None = None
@@ -278,3 +290,31 @@ async def compare(req: CompareRequest):
         return compare_rotation(req,clim,parcel)
     except engine.RotationError as exc:
         raise HTTPException(422,str(exc)) from exc
+
+
+@router.post("/spatial-plan")
+async def spatial_plan(req: SpatialPlanRequest):
+    """Three-step farmer experience: spatial crop assignments, dates and care.
+
+    Requests can delineate valid farmland anywhere; local Lima calendars and
+    trained HLS are limited to the geographies that support those claims.
+    NASA POWER climatology enriches the reference calculation when available.
+    """
+    from shapely.geometry import shape
+    from app.services.spatial_plan import build_spatial_plan
+    polygon = polygon_from_geojson(req.polygon)
+    try:
+        centre = shape(polygon).centroid
+        climate_data = None
+        if -60 <= centre.y <= 60:
+            try:
+                climate_data = await asyncio.wait_for(
+                    monthly_climate(centre.y, centre.x), timeout=10.0)
+            except (ClimateError, ValueError, asyncio.TimeoutError):
+                pass
+        return build_spatial_plan(
+            polygon, [zone.model_dump(exclude_none=True) for zone in req.zones],
+            climate_data)
+    except (ValueError, engine.RotationError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+
