@@ -1,4 +1,5 @@
 /** Clear, print-safe spatial planting recommendations; do not mistake colors for satellite evidence. */
+import type {ReactNode} from 'react'
 import type {GeoPolygon} from './rotationZones'
 import {printableGeometry} from './campaignPlan'
 
@@ -38,7 +39,7 @@ export function ChakraZoneSketch({field,subplots,plan,lang}:{field:GeoPolygon;su
    <text x="554" y="30" fontSize="18" fill="#244A35">N ↑</text>
   </svg>
   <figcaption>{es?'Esquema de las zonas dibujadas, áreas aproximadas':'Sketch of drawn zones, approximate areas'}</figcaption>
-  <div className="chakra-sketch-legend">{plan.zone_plans.map((row,i)=><span key={row.zone_id}><i style={{background:shade(i)}}/>{label(row.zone_id,es)} · {localizedCrop(row.suggested_crop,row.suggested_crop_en,es)}</span>)}</div>
+  <div className="chakra-sketch-legend">{plan.zone_plans.map((row,i)=><span key={row.zone_id}><i style={{background:shade(i)}}/>{label(row.zone_id,es)} · {row.area_ha.toLocaleString(es?'es-PE':'en-US',{maximumFractionDigits:2})} ha · {localizedCrop(row.suggested_crop,row.suggested_crop_en,es)}</span>)}</div>
  </figure>
 }
 export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}:{
@@ -76,9 +77,9 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
  </section>
 }
 
-export function ChakraZonePrint({plan,field,subplots,lang,place}:{
+export function ChakraZonePrint({plan,field,subplots,lang,place,extra}:{
  plan:ChakraSpatialPlan;field:GeoPolygon;subplots:ChakraParcel[];
- lang:'es'|'en';place:string
+ lang:'es'|'en';place:string;extra?:ReactNode
 }){
  const es=lang==='es'
  return <article className="chakra-spatial-print">
@@ -94,6 +95,7 @@ export function ChakraZonePrint({plan,field,subplots,lang,place}:{
    <p>{!es&&row.why_en?row.why_en:row.why_es}</p>
    <ol>{(!es&&row.how_en?row.how_en:row.how_es).map((s,j)=><li key={j}>{s}</li>)}</ol>
   </section>)}
+  {extra}
   <footer><p>{es?plan.disclaimer_es:plan.disclaimer_en||plan.disclaimer_es}</p><p>{plan.sources.join(' · ')}</p></footer>
  </article>
 }
