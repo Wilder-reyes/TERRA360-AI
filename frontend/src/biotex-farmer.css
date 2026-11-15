@@ -350,3 +350,45 @@
 .b-map-guide strong{font-size:.92rem;color:#17513a}
 .b-map-guide ol{display:flex;flex-wrap:wrap;gap:7px 24px;margin:7px 0 0;padding-left:20px;font-size:.87rem;color:#2f5540}
 .b-map-view button:disabled{opacity:.38}
+
+
+/* BIOTEX v0.25 farmer decision support · UI UX Pro Max.
+   Information hierarchy: recommended crop sequence -> 2 action checks ->
+   optional economy -> optional sources. Minimum touch target 48px. */
+.b-decision-support{max-width:960px;margin:20px auto 24px;display:grid;gap:14px}
+.b-decision-check{padding:20px 22px;border:1px solid #bfd6c5;background:#edf7f0;border-radius:18px;color:#1b4833}
+.b-decision-check-heading{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.b-decision-check-heading>span{width:34px;height:34px;display:flex;justify-content:center;align-items:center;background:#206849;color:#fff;border-radius:50%;font-weight:800}
+.b-decision-check h2{margin:0;font-size:clamp(1.16rem,2.3vw,1.45rem)}
+.b-decision-check p{margin:9px 0;font-size:1rem;line-height:1.55}
+.b-decision-check a{display:inline-block;margin-top:5px;font-weight:760;color:#174e38;text-underline-offset:4px}
+.b-decision-soil-risk{border-left:3px solid #bf6835;padding-left:12px;color:#713916;font-weight:650}
+.b-farm-econ,.b-evidence-sources{border:1px solid #d2e2d5;border-radius:16px;background:#fff;overflow:hidden}
+.b-farm-econ>summary,.b-evidence-sources>summary{min-height:56px;padding:14px 20px;color:#1c5139;font-weight:760;cursor:pointer;font-size:1.03rem;display:list-item;list-style-position:inside}
+.b-farm-econ>summary:focus-visible,.b-evidence-sources>summary:focus-visible{outline:3px solid #386e55;outline-offset:-3px}
+.b-farm-econ-inner,.b-evidence-body{padding:0 20px 20px}
+.b-farm-econ-inner>p,.b-evidence-body p{color:#405e4b;line-height:1.55;font-size:.95rem}
+.b-econ-crops{display:grid;gap:18px;margin:18px 0}
+.b-econ-crops fieldset{border:1px solid #d2e1d8;border-radius:12px;padding:13px 15px;min-width:0}
+.b-econ-crops legend{font-weight:790;padding:0 7px;color:#1d4e36}
+.b-econ-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.b-econ-fields label{display:flex;flex-direction:column;gap:8px;font-size:.92rem;font-weight:650;color:#304e3a;min-width:0}
+.b-econ-fields input{font:inherit;color:#19382b;width:100%;min-height:50px;padding:10px 12px;border:1.4px solid #a5c7ac;border-radius:10px;background:#fff}
+.b-econ-fields input:focus-visible{outline:3px solid #86bc99;outline-offset:2px}
+.b-econ-outcomes{border-top:1px solid #e2ece4;margin-top:20px;padding-top:15px}
+.b-econ-outcomes h3{font-size:1.12rem;margin-bottom:14px}
+.b-econ-result{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #e7efe8}
+.b-econ-result strong{font-variant-numeric:tabular-nums;color:#1e6041}
+.b-decision-footnote{font-size:.87rem!important;color:#607465!important}
+.b-evidence-body a,.b-farm-econ-inner a{color:#1b6447;font-weight:740;text-decoration:underline;text-underline-offset:3px}
+.b-print-economics{border-top:1px solid #bdd3c6;margin-top:5mm;padding-top:2mm;break-inside:avoid}
+@media(max-width:740px){
+ .b-econ-fields{grid-template-columns:1fr}
+ .b-decision-check{padding:17px 16px}
+ .b-farm-econ-inner,.b-evidence-body{padding-left:16px;padding-right:16px}
+ .b-farm-econ>summary,.b-evidence-sources>summary{padding:14px 16px}
+}
+@media print{
+ .b-decision-support{display:none!important}
+ .b-print-economics{display:block}
+}
