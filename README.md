@@ -1,6 +1,7 @@
 # BIOTEX · NSPACE BIOTEX — Field Shift crop-rotation decision support (repository: TERRA360-AI)
 
-**App (Vercel):** https://terra360-ai-xi.vercel.app/\n**Alternative deployment:** https://terra360-ai.netlify.app/ (ES/EN selector in the header; `?lang=en` opens it in English)
+**App (Vercel):** https://terra360-ai-xi.vercel.app/
+**Alternative deployment:** https://terra360-ai.netlify.app/ (ES/EN selector in the header; `?lang=en` opens it in English)
 **API:** https://terra360-api.onrender.com/api/health · Spanish README: [README.es.md](README.es.md)
 
 BIOTEX helps family farmers in the irrigated coastal valleys of Lima, Peru (demo zones **Huaral** and **Barranca**) see how their crop rotation affects their **soil** and how exposed it is to **scarce dry-season irrigation water and heat**. It compares the farmer's current rotation with two alternatives:
@@ -22,6 +23,16 @@ All indicators are **relative to the current rotation**. They are not yield, pro
 - **GeoJSON limits:** malformed/non-finite coordinates return HTTP 422; manual GeoJSON follows the same parcel area limits as drawn fields.
 - **NASA GPM IMERG basin climatology:** when `backend/app/data/imerg_basin_seed.json` is absent, the app displays an unavailable state rather than inventing precipitation. Basin precipitation is not river discharge or the farmer's irrigation entitlement.
 - **Validation status:** documented methods and automated tests are not field validation. Crop water is a relative Kc × ET0 estimate, not measured irrigation needs or yield.
+
+## v0.24 · Barranca farmer-first visual evidence
+
+- **One** public Barranca field to explore; the user may search other locations and mark a farm, but noncoastal agricultural models abstain.
+- **NASA imagery in the actual app:** NASA GIBS MODIS regional vegetation, GPM regional precipitation and dated true-colour MODIS layers. The farmer can also open the original STAC record for the HLS image used in NDVI. MODIS images and field-scale HLS are *different products* with different resolutions; the interface never substitutes one as if it were the other.
+- **Farmer outcome:** a crop-by-crop sequence with approximate calendar dates and durations, a transparent explanation, explicit small-effect warning (<5% water change), and a warning when an alternative increases dry-season crop water sharply.
+- **Safety rule:** if irrigation is scarce, an option needing more estimated dry-season water cannot be highlighted. Even when water is adequate, >25% extra dry-season demand is not highlighted. The historical baseline and all computed alternatives stay available.
+- **Input evidence:** optional farmer-entered soil texture/pH/salinity/drainage/organic matter and irrigation allowance are recorded in the report, but **not used for suitability screening** until locally validated agronomic rules exist. Do not call this soil laboratory verification.
+- **Useful workflow:** explicit three-step field drawing, reduced-data map mode, local save/restore and a WhatsApp summary. The printable A4 report adds an approximate parcel outline and dates aligned to an August-based illustrative two-year cycle.
+- **External blockers:** NASA GPM IMERG *upper-basin aggregate* still requires validated Earthdata preprocessing (`backend/app/data/imerg_basin_seed.json` missing). The NASA GIBS GPM map is a regional rainfall **image**, not that aggregate, river discharge or a forecast. No actual farmer soil test, ANA water allocation or agronomist field validation is bundled. See issue #27.
 
 ## BIOTEX v0.23 — mobile-first farmer journey
 
