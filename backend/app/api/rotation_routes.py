@@ -295,6 +295,7 @@ async def compare(req: CompareRequest):
             result["strategies"], {**req.priorities.model_dump()}, req.water_turn,
             ai_bare_risk=model_analysis["weighted_uncovered_exposure"])
         result.update(scored)
+        result["ai_analysis"]["used_for_decision"] = bool(scored.get("ai_weighted"))
         result["ai_analysis"]["influenced_recommendation"] = (
             earlier != result.get("recommended_strategy_id"))
     else:
