@@ -119,6 +119,7 @@ class CompareRequest(BaseModel):
     priorities: Priorities = Priorities()
     water_turn: Literal["normal", "escaso", "no_se"] = "normal"
     history: dict[str, Any] | None = Field(None, description="summary: sensor, start, end, months_with_data")
+    field_polygon: dict[str, Any] | None = Field(None, description="Selected farm polygon; cached HLS inference only (never invent imagery)")
     current_source: Literal["farmer_declared", "satellite_confirmed", "team_demo"] = "farmer_declared"
     income_crop_id: str | None = None
     soil: FieldSoil | None = None
@@ -179,6 +180,18 @@ async def _climate(zone: str | None, lat: float | None, lon: float | None) -> di
 @router.get("/upper-basin-rain")
 def upper_basin_rain(zone: Literal["huaral", "barranca"]):
     return basin_context(zone)
+
+
+@router.get("/ai-model")
+def ai_model():
+    """Published trained NASA HLS model summary and its out-of-time validation."""
+    from app.services.hls_regime_model import load_model
+    model = load_model()
+    if not model:
+        return {"status": "unavailable", "message_es": "Aún no hay un modelo verificable para este terreno."}
+    return {key: model[key] for key in ("version", "status", "dataset", "region", "training_window",
+                                      "holdout_window", "training_task", "method", "validation",
+                                      "reproducibility", "limitations_es", "sources")}
 
 
 @router.get("/evidence-sources")
@@ -258,6 +271,34 @@ async def compare(req: CompareRequest):
     except engine.RotationError as exc:
         raise HTTPException(422, str(exc)) from exc
     result["zone"] = req.zone
+    # A real, trained environmental-pattern model participates only when the
+    # exact selected parcel has genuine cloud-screened NASA HLS observations.
+    # Never substitute a different demo field for a newly drawn farmer parcel.
+    from app.services.hls_regime_model import assess_field
+    ai_context = {"status": "unavailable", "reason": "no_selected_field_or_cached_hls"}
+    if req.field_polygon is not None:
+        polygon = polygon_from_geojson(req.field_polygon)
+        coords = polygon["coordinates"][0][:-1]
+        avg_lat = sum(v[1] for v in coords) / len(coords)
+        avg_lon = sum(v[0] for v in coords) / len(coords)
+        if -10.95 <= avg_lat <= -10.40 and -78.07 <= avg_lon <= -77.35:
+            field_history = cached_history(polygon, start_year=2021)
+            ai_context = assess_field(field_history)
+        else:
+            ai_context = {"status": "out_of_pilot", "reason": "AI trained for Barranca satellite plots only"}
+    if ai_context.get("status") == "available":
+        baseline_id = result.get("recommended_strategy_id")
+        chosen = engine.highlight_for_farmer(
+            result["strategies"], req.priorities.model_dump(), req.water_turn,
+            ai_cover_context=ai_context)
+        result.update(chosen)
+        result["ai_decision_impact"] = {
+            "without_ai_strategy_id": baseline_id,
+            "with_ai_strategy_id": result.get("recommended_strategy_id"),
+            "strategy_changed": baseline_id != result.get("recommended_strategy_id"),
+            "evidence_used": "NASA HLS 2021-2026 field observations; crop-water remains NASA POWER + FAO56",
+        }
+    result["ai_analysis"] = ai_context
     # P1 «agua que viene»: IMERG rain in the upper basin (context only; abstains if not computed).
     if req.zone in ("huaral", "barranca"):
         basin = basin_context(req.zone)
@@ -296,7 +337,8 @@ async def compare(req: CompareRequest):
         if result.get("recommended_strategy_id") and not any(
                 x["id"] == result["recommended_strategy_id"] for x in valid):
             chosen = engine.highlight_for_farmer(
-                valid, {**req.priorities.model_dump()}, req.water_turn)
+                valid, {**req.priorities.model_dump()}, req.water_turn,
+                ai_cover_context=ai_context)
             result.update(chosen)
             result["soil_reranked"] = True
     result["upper_basin_rain"] = basin

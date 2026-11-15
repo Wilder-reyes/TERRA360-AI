@@ -24,6 +24,15 @@ All indicators are **relative to the current rotation**. They are not yield, pro
 - **NASA GPM IMERG basin climatology:** when `backend/app/data/imerg_basin_seed.json` is absent, the app displays an unavailable state rather than inventing precipitation. Basin precipitation is not river discharge or the farmer's irrigation entitlement.
 - **Validation status:** documented methods and automated tests are not field validation. Crop water is a relative Kc × ET0 estimate, not measured irrigation needs or yield.
 
+## BIOTEX v0.26 — trained NASA AI with reproducible field evidence
+
+The Barranca pilot now includes a **genuinely fitted unsupervised model** using 158 real cloud-screened NASA HLS NDVI observations from four local study polygons (2021–2025). Its withheld 2026 set contains 41 observations. Its 86.784% reduction in **NDVI reconstruction distortion** against a one-centroid baseline is *not* crop classification accuracy, agronomic accuracy or profit/yield prediction.
+
+The trained model is committed at backend/app/data/ai/barranca_hls_regimes_v1.json and can be recreated offline with **python scripts/train_hls_regimes.py --check**. GitHub CI verifies the exact HLS sources and model every PR. One selected Barranca parcel remains visible to farmers; additional historical study polygons are training examples, not identified farmer records.
+
+**AI contributes to the decision:** the exact selected parcel's HLS history is classified into learned low/medium/high-vegetation states. Its recent low-cover evidence can increase the soil-coverage priority **only when the farmer values soil**; FAO-56/NASA POWER estimates and strict scarce-water guards remain in force. The API returns an AI-versus-without-AI comparison and evidence provenance. On missing genuine field imagery it abstains rather than inventing results.
+
+See [reproducible NASA AI methodology](docs/BIOTEX_v026_ia_reproducible.md). For the farmer, the evidence is explained in Spanish without NDVI/S0/S1 jargon; detailed holdout metrics stay optional.
 ## BIOTEX v0.25 — contrastar evidencia antes de recomendar
 
 * **Design:** the farmer sees the crop sequence first, followed by a short irrigation/soil checklist. Official water, alerts, prices and model methods are progressively disclosed. The target-persona and field testing protocol are in [docs/BIOTEX_v025_analisis_usuario_y_validacion.md](docs/BIOTEX_v025_analisis_usuario_y_validacion.md). No farmer interviews or agronomist approval have been claimed.

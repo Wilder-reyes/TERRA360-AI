@@ -21,6 +21,10 @@ jobs:
         env:
           PYTHONPATH: backend
         run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Reproduce published Barranca NASA HLS machine learning model
+        env:
+          PYTHONPATH: backend
+        run: python scripts/train_hls_regimes.py --check
   frontend:
     runs-on: ubuntu-latest
     steps:

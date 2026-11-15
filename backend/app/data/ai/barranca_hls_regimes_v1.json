@@ -1,0 +1,95 @@
+{
+  "version": "biotex-hls-regimes-v1",
+  "status": "trained_unsupervised_nasa_hls",
+  "region": "Barranca, Pativilca / Supe, Peru",
+  "training_task": "vegetation_regime_clustering_not_crop_or_yield_prediction",
+  "dataset": "NASA HLS v2.0, Landsat 8/9 and Sentinel-2, 30 m",
+  "training_window": "2021-01 through 2025-12",
+  "holdout_window": "2026-01 through 2026-11",
+  "method": "Deterministic k-means (k=3) on valid observed field NDVI; no missing-value filling",
+  "features": [
+    "cloud_masked_hls_ndvi"
+  ],
+  "model": {
+    "state_names_es": [
+      "vegetacion_baja",
+      "vegetacion_media",
+      "vegetacion_alta"
+    ],
+    "centroids_ndvi": [
+      0.252074,
+      0.4559943,
+      0.6657158
+    ],
+    "transition_probabilities": [
+      [
+        0.6,
+        0.3,
+        0.1
+      ],
+      [
+        0.1774194,
+        0.5967742,
+        0.2258065
+      ],
+      [
+        0.1666667,
+        0.25,
+        0.5833333
+      ]
+    ],
+    "train_observations_by_regime": [
+      50,
+      70,
+      38
+    ]
+  },
+  "validation": {
+    "train_month_observations": 158,
+    "holdout_2026_observations": 41,
+    "training_example_polygons": 4,
+    "train_one_centroid_mse_on_2026": 0.0476666,
+    "trained_kmeans_mse_on_2026": 0.0062997,
+    "holdout_distortion_reduction_vs_one_centroid": 0.86784,
+    "metric_interpretation": "Descriptive holdout reconstruction; not crop, soil or yield accuracy",
+    "independent_farmer_validation": false
+  },
+  "sources": [
+    {
+      "path": "backend/app/data/history_seed/31c8c3892c9f41ba5009c9720af5cbba.json",
+      "git_blob_sha": "c36bbc2039edd9e8f59f65dbb91700ae0ba4642f",
+      "field_id": "barranca-test-2",
+      "valid_months_declared": 48
+    },
+    {
+      "path": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
+      "git_blob_sha": "8846b0ceb4669c8372d0ea724263d263a4bf37d7",
+      "field_id": "barranca-1",
+      "valid_months_declared": 44
+    },
+    {
+      "path": "backend/app/data/history_seed/e05f0e92c0d2d52c9df401ae1c3e8c27.json",
+      "git_blob_sha": "ca83863a8c56a96625c6e9b0d2c9ebc89ca9dd9f",
+      "field_id": "barranca-test-1",
+      "valid_months_declared": 51
+    },
+    {
+      "path": "backend/app/data/history_seed/fe601f7339dbc0078a556a2108f72da4.json",
+      "git_blob_sha": "95f213a3df9f26322de9918a873ed4ca9b385dad",
+      "field_id": "barranca-2",
+      "valid_months_declared": 56
+    }
+  ],
+  "limitations_es": [
+    "Las parcelas de entrenamiento son polígonos de estudio, no parcelas de agricultores verificados.",
+    "NDVI bajo indica poca vegetación observada, no identifica el cultivo ni prueba mala salud del suelo.",
+    "El conjunto de prueba de 2026 comparte zonas de entrenamiento; no demuestra generalización a otras regiones.",
+    "La recomendación usa además NASA POWER y parámetros FAO-56; el modelo HLS solo ajusta el peso de cobertura del suelo."
+  ],
+  "reproducibility": {
+    "entrypoint": "python scripts/train_hls_regimes.py --check",
+    "seed_data": "backend/app/data/history_seed/*.json",
+    "fit_seed": "fixed observed quantiles 15%, 50%, 85%; no random-number generator",
+    "holdout": "2026 withheld by calendar time"
+  }
+}

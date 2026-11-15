@@ -622,7 +622,8 @@ def _strategy(key: str, plantings: list[dict], climate: dict, base: dict | None,
 
 
 def highlight_for_farmer(strategies: list[dict], priorities: dict,
-                         water_turn: str = "no_se") -> dict:
+                         water_turn: str = "no_se",
+                         ai_cover_context: dict | None = None) -> dict:
     """Highlight an evidence-supported option, not an agronomic prescription.
 
     1. Scarce irrigation: never promote an option with higher estimated dry-season
@@ -641,6 +642,13 @@ def highlight_for_farmer(strategies: list[dict], priorities: dict,
     water_weight = max(0, int(priorities.get("water", 1)))
     soil_weight = max(0, int(priorities.get("soil", 1)))
     pests_weight = max(0, int(priorities.get("pests", 0)))
+    # Model learnt from observed Barranca HLS NDVI. A conservative, bounded
+    # multiplier reinforces soil coverage ONLY if the farmer values the soil.
+    # It never changes the hard scarce-water safety gates.
+    ai_used = bool(ai_cover_context and ai_cover_context.get("status") == "available"
+                   and ai_cover_context.get("model_version") == "biotex-hls-regimes-v1")
+    cover_boost = float(ai_cover_context["cover_priority_multiplier"]) if ai_used else 1.0
+    cover_boost = max(1.0, min(1.6, cover_boost))
     candidates = []
     for strategy in strategies:
         if strategy["id"] == "S0":
@@ -657,7 +665,7 @@ def highlight_for_farmer(strategies: list[dict], priorities: dict,
         pests_gain = (base.get("same_family_consecutive", 0)
                       - ind.get("same_family_consecutive", 0)) / max(
                           1.0, base.get("same_family_consecutive", 0))
-        score = water_weight * water_gain + 2 * soil_weight * cover_gain + 0.15 * pests_weight * pests_gain
+        score = water_weight * water_gain + 2 * soil_weight * cover_boost * cover_gain + 0.15 * pests_weight * pests_gain
         # Exclude score-only noise that has no useful water, soil, or family benefit.
         if score > 0.01 and (water_gain > 0.01 or cover_gain > 0 or pests_gain > 0):
             candidates.append((score, strategy["id"], water_difference, cover_gain))
@@ -695,7 +703,9 @@ def highlight_for_farmer(strategies: list[dict], priorities: dict,
         "recommendation_reason_es": water_es + " " + soil_es,
         "recommendation_reason_en": water_en + " " + soil_en,
         "recommendation_confidence": strength,
-        "recommendation_method": "Relative crop-water, crop coverage and family-repeat scores; scarce-water and +25% safety guards. No measured irrigation or economic predictions.",
+        "recommendation_method": "Relative crop-water, crop coverage and family-repeat scores; scarce-water and +25% safety guards. Trained HLS vegetation model may scale soil-cover weight only when field imagery is available.",
+        "ai_influenced_ranking": ai_used and soil_weight > 0 and cover_boost > 1.0,
+        "ai_cover_multiplier": round(cover_boost, 4) if ai_used else None,
     }
 
 

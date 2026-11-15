@@ -30,7 +30,11 @@ type OfficialContext={
  basin?:{status:string};weather_alerts?:{status:string};market_prices?:{status:string}
 }
 type SoilResult={status:string;alerts?:{crop_id:string;message_es:string}[];needs_review?:string[]}
-type Result={status:string;strategies:Strategy[];official_evidence?:OfficialContext;soil_assessment?:SoilResult;recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};upper_basin_rain?:{status:string;last_season?:{season:string;percent_of_normal:number};note_es?:string;note_en?:string};
+type AiAnalysis={status:string;model_version?:string;field_months_observed?:number;low_vegetation_months?:number;low_vegetation_share?:number;explanation_es?:string;explanation_en?:string;limitations_es?:string;
+ regimes?:{month:string;state:string;ndvi:number}[];
+ validation?:{train_month_observations:number;holdout_2026_observations:number;holdout_distortion_reduction_vs_one_centroid:number;independent_farmer_validation:boolean}}
+type AiImpact={without_ai_strategy_id?:string|null;with_ai_strategy_id?:string|null;strategy_changed?:boolean;evidence_used?:string}
+type Result={status:string;strategies:Strategy[];ai_analysis?:AiAnalysis;ai_decision_impact?:AiImpact;official_evidence?:OfficialContext;soil_assessment?:SoilResult;recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};upper_basin_rain?:{status:string;last_season?:{season:string;percent_of_normal:number};note_es?:string;note_en?:string};
  recommendation_reason_es?:string;recommendation_reason_en?:string;
  climate?:{period:string;annual_et0_mm:number;cell_adjustment?:{reason_es:string;reason_en:string}|null};
  income_crop?:string;disclaimer_es?:string;disclaimer_en?:string;method?:Record<string,unknown>}
@@ -326,7 +330,7 @@ export default function BiotexFarmerApp(){
   const priorities=goal==='water'?{water:2,soil:0,income:1,pests:1}:goal==='soil'?{water:0,soil:2,income:1,pests:1}:{water:2,soil:2,income:1,pests:1}
   const payload={
    zone:province?'barranca':null,latitude:point.lat,longitude:point.lng,
-   current,priorities,water_turn:scarcity,current_source:source,
+   current,field_polygon:field,priorities,water_turn:scarcity,current_source:source,
    income_crop_id:confirmedOptions.includes(incomeCrop)?incomeCrop:null,
    use_team_templates_as_fallback:false,
    soil:Object.keys(soil).length?{...soil,source:'farmer_reported'}:null,
@@ -426,6 +430,7 @@ export default function BiotexFarmerApp(){
   {result.strategies.map(s=><div key={s.id} className="b-print-bar-row"><span>{strategyName(s)}</span><div className="b-print-bar-track"><div className="b-print-bar-fill" style={{width:(100*s.indicators.bare_months/24).toFixed(1)+'%'}}/></div><strong>{s.indicators.bare_months}/24</strong></div>)}
   </section>
   <div className="b-print-small"><h3>{t.sources}</h3>
+  {result.ai_analysis?.status==='available'&&<p>IA {result.ai_analysis.model_version}: {result.ai_analysis.low_vegetation_months}/{result.ai_analysis.field_months_observed} {lang==='es'?'meses con vegetación baja observada por HLS. Modelo de patrones no supervisado, no predictor de cosechas.':'observed low-vegetation months. Unsupervised pattern model, not a yield predictor.'}</p>}
   <p>NASA POWER (2001–2025); {history?(lang==='es'?'NASA HLS v2.0 (imágenes consultadas; cultivos confirmados por una persona)':'NASA HLS v2.0 (images consulted; crops confirmed by a person)'):(lang==='es'?'historial de cultivos declarado por la persona (sin análisis HLS)':'farmer-declared crop history (no HLS analysis)')}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
   <p>{lang==='es'?'Solo se utiliza un calendario agrícola aproximado de Lima; no se conoce el análisis de suelo, turno real de riego o precio futuro. Los cálculos son comparaciones relativas, no recomendaciones garantizadas.':'Uses an approximate Lima sowing calendar. Soil test, actual irrigation allocation and future prices are not known. Results are relative comparisons, not guarantees.'}</p>
   {result.farm_inputs?.soil&&<p>{lang==='es'?'Suelo declarado (sin validación de laboratorio):':'Reported soil (without laboratory verification):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+': '+v).join(' · ')}</p>}
@@ -570,6 +575,27 @@ export default function BiotexFarmerApp(){
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
     {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
     {preferred?mainCard(preferred):<div className="b-card b-no-recommend"><Icon name="info"/><h2>{t.noRecommend}</h2><p>{t.unavailable}</p></div>}
+    {result.ai_analysis?.status==='available'&&<section className="b-ai-evidence" aria-label={lang==='es'?'Análisis de inteligencia artificial de la chacra':'Artificial intelligence field analysis'}>
+     <div className="b-ai-evidence-header"><span className="b-ai-mark" aria-hidden="true"><Icon name="leaf" size={22}/></span>
+      <div><span className="b-eyebrow">{lang==='es'?'Análisis de IA con datos NASA':'AI analysis using NASA data'}</span>
+       <h2>{lang==='es'?'Lo que aprendimos de tu terreno':'What we learned about your field'}</h2></div></div>
+     <p>{lang==='es'?result.ai_analysis.explanation_es:result.ai_analysis.explanation_en}</p>
+     <div className="b-ai-stats">
+      <div><strong>{result.ai_analysis.low_vegetation_months} / {result.ai_analysis.field_months_observed}</strong>
+       <span>{lang==='es'?'meses con poca vegetación observada':'observed months with low vegetation'}</span></div>
+      <div><strong>NASA HLS</strong><span>{lang==='es'?'Imágenes reales de esta parcela':'Real imagery for this parcel'}</span></div>
+     </div>
+     <details className="b-technical"><summary>{lang==='es'?'Ver cómo aprendió la IA':'How the AI was trained'}</summary>
+      <div className="b-technical-inner">
+       <p>{lang==='es'?'El modelo aprendió patrones de vegetación con imágenes NASA de cuatro zonas de estudio de Barranca. No es una predicción de rendimiento ni identifica cultivos por su imagen.':'The model learned vegetation patterns from NASA imagery over four Barranca study polygons. It does not predict yield or identify crop species.'}</p>
+       <p>{lang==='es'?'Entrenamiento: ':'Training: '}{result.ai_analysis.validation?.train_month_observations} {lang==='es'?'observaciones. Prueba separada de 2026: ':'observations. Separate 2026 holdout: '}{result.ai_analysis.validation?.holdout_2026_observations}.</p>
+       <p>{lang==='es'?'Reducción del error de reconstrucción frente a un modelo simple: ':'Reduction in reconstruction error versus one-centroid baseline: '}{Math.round(100*(result.ai_analysis.validation?.holdout_distortion_reduction_vs_one_centroid??0))}%.</p>
+       <p>{lang==='es'?'Esta cifra no representa precisión para recomendar cultivos ni validación con agricultores.':'This metric is not crop recommendation accuracy or farmer validation.'}</p>
+       <p>{lang==='es'?'Cambió la alternativa destacada: ':'Changed the highlighted strategy: '}{result.ai_decision_impact?.strategy_changed?(lang==='es'?'Sí':'Yes'):(lang==='es'?'No, pero se utilizó en la puntuación de cobertura.':'No, but contributed to the coverage score.')}</p>
+       <a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/BIOTEX_v026_ia_reproducible.md" target="_blank" rel="noreferrer">{lang==='es'?'Consultar datos y entrenamiento reproducible':'View reproducible data and training'}</a>
+      </div>
+     </details>
+    </section>}
     <FarmDecisionEvidence lang={lang} strategies={result.strategies} names={NAMES}
       context={result.official_evidence} soil={result.soil_assessment}
       irrigationKnown={waterAllowance.trim().length>0}
