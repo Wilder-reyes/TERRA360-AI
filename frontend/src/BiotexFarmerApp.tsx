@@ -418,6 +418,34 @@ export default function BiotexFarmerApp(){
   finally{if(request.current===token)setHistoryBusy(false)}
  }
  const seasons=(history?.detection.campaigns||[]).filter(c=>{const n=relativeMonthIndex(c.start,baseYear);return n>=0&&n<=23}).slice(0,8)
+
+ function applyZoneCrop(){
+  const month=new Date(Date.UTC(baseYear,7+cropMonth,1)).toISOString().slice(0,7)
+  setZoneCrops(entries=>({...entries,[selectedZone]:{crop_id:crop,planted_month:month}}))
+  setSpatialPlan(null);setSpatialError('')
+ }
+ async function buildSpatialPlan(){
+  if(!field)return
+  if(!availableZones.length||availableZones.some(z=>!zoneCrops[z.id])){
+   setSpatialError(lang==='es'?'Registra un cultivo en cada zona para preparar tu plan.':'Record a crop for every area to prepare your plan.');return
+  }
+  setSpatialBusy(true);setSpatialError('')
+  try{
+   const payload={polygon:field,zones:availableZones.map(zone=>({
+    id:zone.id,crop_id:zoneCrops[zone.id].crop_id,planted_month:zoneCrops[zone.id].planted_month,
+    ...(zone.polygon?{polygon:zone.polygon}:{})
+   }))}
+   const response=await fetch(API+'/api/rotation/spatial-plan',{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+   })
+   if(!response.ok)throw new Error(await httpErrorMessage(response,lang==='en'))
+   const data=await response.json() as ChakraSpatialPlan
+   if(data.status!=='prepared'||!Array.isArray(data.zone_plans))throw new Error('Plan response needs review')
+   setSpatialPlan(data);navigate(2)
+  }catch(e){setSpatialError(readableApiError(e,lang==='en'))}
+  finally{setSpatialBusy(false)}
+ }
+
  async function showPlan(){
   if(!current.length){setPlanError(t.missingPlan);return}
   if(!supported){setPlanError(t.unsupported);return}
