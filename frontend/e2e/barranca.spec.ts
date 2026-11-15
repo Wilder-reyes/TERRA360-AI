@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test'
-import history from '../src/data/barrancaHls.json'
+import history from '../src/data/barrancaHls.json' with {type:'json'}
 
 test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
 
