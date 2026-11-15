@@ -681,83 +681,55 @@ export default function BiotexFarmerApp(){
     </div>
     <div className="b-next b-next-emphasized" data-bio-target="bio-next"><p className="b-next-context">{field?(lang==='es'?'Terreno seleccionado. Sigue para registrar tus cultivos.':'Field selected. Continue to record your crops.'):(lang==='es'?'Elige el ejemplo o marca un terreno para continuar.':'Choose the example or mark a field to continue.')}</p><button type="button" className="b-btn b-btn-light" disabled={!field} onClick={saveFarm}>{lang==='es'?'Guardar mi chacra':'Save my field'}</button><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>{setLanding(false);navigate(1)}}>{lang==='es'?'Registrar cultivos por zona':'Record crops by zone'}<Icon name="right"/></button></div>
    </section>}
-   {step===1&&<section className="b-form-page"><div className="b-intro"><span className="b-eyebrow">02 / 04</span><h1>{t.historyTitle}</h1><p>{t.historyLead}</p></div>
-    <div className="b-field-mini"><Icon name="pin" size={18}/><span>{fieldLabel||place}</span><strong>{area.toFixed(2)} ha</strong></div><div className="b-entry-grid"><section className="b-card"><span className="b-section-kicker">{lang==='es'?'LO QUE RECUERDAS':'WHAT YOU REMEMBER'}</span><h2>{t.add}</h2>
-<p className="b-form-hint">{lang==='es'?'No hace falta recordar todo. Añade al menos un cultivo y el mes aproximado.':'You do not need a complete history. Add at least one crop and an approximate month.'}</p>
-     <div className="b-input-row"><label>{t.crop}<select value={crop} onChange={e=>setCrop(e.target.value)}>{CROPS.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
-     <label>{t.month}<select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{Array.from({length:24},(_,i)=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label></div>
-     <button type="button" className="b-btn b-btn-solid b-add" onClick={addCrop}>{t.add}</button>
-     {entryError&&<p className="b-error" role="alert">{entryError}</p>}
-    </section><section className="b-card"><span className="b-section-kicker">{lang==='es'?'TU HISTORIAL':'YOUR HISTORY'}</span><h2>{t.saved} <span className="b-count">{plantings.length}</span></h2>
-      {plantings.length===0?<p className="b-empty">{t.nothing}</p>:<ul className="b-planting-list">{current.map((p,i)=><li key={p.start_index}><span><strong>{labelCrop(p.crop_id,lang)}</strong><small>{monthYear(p.start_index,baseYear,lang)}</small></span><button type="button" aria-label={t.remove+' '+labelCrop(p.crop_id,lang)} onClick={()=>{setPlantings(removePlantingFromRotation(current,i));setResult(null)}}>{t.remove}</button></li>)}</ul>}
-    </section></div>
-    <Suspense fallback={null}><CropReference key={JSON.stringify(field)} point={point} en={lang==='en'}/></Suspense>
-    <details className="b-technical"><summary>{lang==='es'?'Foto de referencia (solo en tu dispositivo)':'Reference photo (on your device only)'}</summary><CropPhotoGuide en={lang==='en'}/></details>
-    <details className="b-satellite"><summary><Icon name="info" size={20}/><span>{t.helpMe}</span><strong>{t.satellite}</strong></summary>
-      <div className="b-satellite-content"><p>{t.loadingHelp}</p>
-       {!history&&!historyBusy&&<button type="button" className="b-btn b-btn-light" onClick={loadImages}>{t.satellite}</button>}
-       {historyBusy&&<p className="b-loading" role="status"><span className="b-spinner"/>{t.loading}</p>}
-       {historyError&&<p className="b-error" role="alert">{t.satFail} <button type="button" onClick={loadImages}>{lang==='es'?'Reintentar':'Retry'}</button></p>}
-       {history&&<><SatelliteEvidence months={history.months} polygon={field!} lang={lang} sensor={history.sensor} monthsWithData={history.months_with_data} monthsTotal={history.months_total}/>
-       <p>{t.historyFound}</p>
-       {seasons.length===0&&<p className="b-note">{t.noSeasons}</p>}
-       <div className="b-season-grid">{seasons.map(c=><div className="b-season" key={c.start}>
-        <label>{t.possible} {monthYear(relativeMonthIndex(c.start,baseYear),baseYear,lang)}?</label>
-        <div className="b-season-row"><select value={hintChoices[c.start]||''} onChange={e=>setHintChoices(v=>({...v,[c.start]:e.target.value}))}>
-         <option value="">{t.choose}</option>{CROPS.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select>
-        <button type="button" className="b-btn b-btn-light" disabled={!hintChoices[c.start]} onClick={()=>recordSeason(c)}>{t.record}</button></div>
-        {c.candidates[0]&&<small>{lang==='es'?'Una posibilidad según la imagen: ':'Possible crop from the image: '}{labelCrop(c.candidates[0].crop_id,lang)}. {lang==='es'?'Confirma tú.':'You decide.'}</small>}
-       </div>)}</div>
-       <details className="b-technical"><summary>{t.satMore}</summary><p>{history.sensor}. {t.satMonth}: {history.months_with_data}/{history.months_total}.</p></details>
-       </>}</div>
-    </details>
-    <div className="b-next between"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}><Icon name="left"/>{t.back}</button>
-     <button type="button" className="b-btn b-btn-primary" disabled={!current.length} onClick={()=>navigate(2)}>{t.next}<Icon name="right"/></button></div>
-   </section>}
-   {step===2&&<section className="b-form-page b-goal-page"><div className="b-intro"><span className="b-eyebrow">03 / 04</span><h1>{t.priorityTitle}</h1><p>{t.priorityLead}</p></div>
-    <section className="b-card"><span className="b-section-kicker">{lang==='es'?'ELIGE LO QUE MÁS TE IMPORTA':'CHOOSE WHAT MATTERS MOST'}</span><div className="b-goal-options" role="group" aria-label={t.priorityTitle}>{(['water','soil','both'] as const).map(id=><button type="button" key={id} aria-pressed={goal===id} className={'b-goal '+(goal===id?'chosen':'')} onClick={()=>{setGoal(id);setResult(null)}}>
-     <span className="b-goal-icon"><Icon name={id==='soil'?'leaf':id==='water'?'water':'check'} size={28}/></span>
-     <strong>{id==='water'?t.priorityWater:id==='soil'?t.prioritySoil:t.priorityBoth}</strong>
-<small className="b-goal-description">{id==='water'?(lang==='es'?'Comparar opciones que podrían necesitar menos agua cuando escasea.':'Favor options that may need less water in dry months.'):id==='soil'?(lang==='es'?'Buscar menos meses sin cultivo y una cobertura más continua.':'Look for fewer months without crops and more continuous cover.'):(lang==='es'?'Buscar un equilibrio entre agua y tierra.':'Balance both needs in the comparison.')}</small>
-<span className="b-radio" aria-hidden="true"/></button>)}</div>
-     <div className="b-input-row b-input-soft"><label>{t.income}<select value={confirmedOptions.includes(incomeCrop)?incomeCrop:''} onChange={e=>{setIncomeCrop(e.target.value);setResult(null)}}><option value="">{t.incomeAuto}</option>{confirmedOptions.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
-      <fieldset><legend>{t.scarcity}</legend><div className="b-choice-row">{(['escaso','normal','no_se'] as const).map(id=><button key={id} type="button" aria-pressed={scarcity===id} className={scarcity===id?'chosen':''} onClick={()=>{setScarcity(id);setResult(null)}}>{id==='escaso'?t.yes:id==='normal'?t.no:t.unknown}</button>)}</div></fieldset></div>
-     <div className="b-year-control"><label>{lang==='es'?'¿En qué año empezarías el plan?':'Which year would you begin?'}
-      <select value={planStartYear} onChange={e=>{setPlanStartYear(Number(e.target.value));setResult(null)}}>{[0,1,2].map(offset=><option key={offset} value={new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}>{lang==='es'?'Agosto':'August'} {new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}</option>)}</select>
-      </label><small>{lang==='es'?'El modelo empieza su ciclo en agosto; las fechas son aproximadas.':'The model cycle starts in August; dates are approximate.'}</small></div>
-     <details className="b-farm-evidence"><summary>{lang==='es'?'¿Tienes datos de tu suelo o del agua de riego? (opcional)':'Do you have soil or irrigation records? (optional)'}</summary>
-      <p>{lang==='es'?'Anota aquí solo los datos que conoces. Aparecerán en tu informe.':'Enter only values you know. They will appear in your report.'}</p>
-      <div className="b-farm-fields">
-       <label>{lang==='es'?'Tipo de suelo':'Soil texture'}
-        <select value={soil.texture||''} onChange={e=>setSoil(x=>({...x,texture:(e.target.value||undefined) as FieldSoil['texture']}))}>
-         <option value="">{lang==='es'?'No tengo el dato':'Unknown'}</option><option value="arenosa">{lang==='es'?'Arenoso':'Sandy'}</option><option value="franca">{lang==='es'?'Franco':'Loam'}</option><option value="arcillosa">{lang==='es'?'Arcilloso':'Clay'}</option>
-        </select>
-       </label>
-       <label>{lang==='es'?'Acidez del suelo (pH, si tienes análisis)':'Soil pH (if tested)'}
-        <input type="number" inputMode="decimal" min="0" max="14" step="0.1" value={soil.ph??''} onChange={e=>setSoil(x=>({...x,ph:e.target.value===''?undefined:Number(e.target.value)}))}/>
-       </label>
-       <label>{lang==='es'?'Salinidad (dS/m, si tienes análisis)':'Salinity (dS/m, if tested)'}
-        <input type="number" inputMode="decimal" min="0" max="100" step="0.1" value={soil.salinity_ds_m??''} onChange={e=>setSoil(x=>({...x,salinity_ds_m:e.target.value===''?undefined:Number(e.target.value)}))}/>
-       </label>
-       <label>{lang==='es'?'Materia orgánica (%)':'Organic matter (%)'}
-        <input type="number" inputMode="decimal" min="0" max="100" step="0.1" value={soil.organic_matter_percent??''} onChange={e=>setSoil(x=>({...x,organic_matter_percent:e.target.value===''?undefined:Number(e.target.value)}))}/>
-       </label>
-       <label>{lang==='es'?'¿Cómo drena el agua?':'How well does water drain?'}
-        <select value={soil.drainage||''} onChange={e=>setSoil(x=>({...x,drainage:(e.target.value||undefined) as FieldSoil['drainage']}))}>
-         <option value="">{lang==='es'?'No sé':'Unknown'}</option><option value="bueno">{lang==='es'?'Bien':'Well'}</option><option value="regular">{lang==='es'?'Regular':'Moderately'}</option><option value="malo">{lang==='es'?'Se empoza':'Poorly'}</option>
-        </select>
-       </label>
-       <label>{lang==='es'?'Agua asignada en m³/ha por campaña (si tienes el dato)':'Allocated water m³/ha per season (if known)'}
-        <input type="number" inputMode="numeric" min="0" max="1000000" step="1" value={waterAllowance} onChange={e=>setWaterAllowance(e.target.value)}/>
-       </label>
-      </div>
-     </details>
+   {step===1&&field&&<section className="b-form-page chakra-zone-page">
+    <div className="b-intro"><span className="b-eyebrow">{lang==='es'?'PASO 2 DE 3':'STEP 2 OF 3'}</span>
+     <h1>{lang==='es'?'¿Qué sembraste y en qué parte?':'What did you plant and where?'}</h1>
+     <p>{lang==='es'?'Toca una zona, elige su cultivo y registra el mes. Puedes dibujar tantas zonas como necesites.':'Choose an area, its crop and planting month. Draw other zones as needed.'}</p></div>
+    <div className="chakra-zone-map-wrap">
+     <div className="chakra-zone-map-frame"><MapContainer center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
+      <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
+      <FlyTo point={point} polygon={mapPolygon}/>
+      <DrawLayer enabled={drawingSubplot} points={points} onPoint={p=>{setPoints(q=>[...q,p]);setFieldError('')}} onFinish={finish}/>
+      <Polygon positions={(mapPolygon||[]).map(v=>[v.lat,v.lng] as [number,number])} interactive={false} pathOptions={{color:'#D6F866',weight:3,fillColor:'#D6F866',fillOpacity:.1}}/>
+      {subplots.map(z=><Polygon key={z.id} positions={fromGeo(z.polygon).map(v=>[v.lat,v.lng] as [number,number])}
+       pathOptions={{color:selectedZone===z.id?'#D6F866':'#F1CC80',weight:selectedZone===z.id?4:2,fillColor:zoneCrops[z.id]?'#77B78A':'#F1CC80',fillOpacity:.4}}
+       interactive={!drawingSubplot} eventHandlers={{click:()=>setActiveZone(z.id)}}/>)}
+     </MapContainer></div>
+     <div className="chakra-zone-map-actions">
+      {drawingSubplot?<><span>{lang==='es'?'Toca las esquinas de la zona.':'Tap area corners.'}</span>
+       <button className="b-btn b-btn-light" type="button" disabled={!points.length} onClick={()=>setPoints(v=>v.slice(0,-1))}>{t.undo}</button>
+       <button className="b-btn b-btn-primary" type="button" disabled={points.length<3} onClick={finish}>{lang==='es'?'Guardar zona':'Save zone'}</button>
+       <button className="b-btn b-btn-light" type="button" onClick={()=>{setDrawingSubplot(false);setPoints([])}}>{t.cancel}</button></>:
+       <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={()=>{setDrawingSubplot(true);setPoints([]);setFieldError('')}}>{lang==='es'?'+ Dibujar otra zona':'+ Draw another area'}</button>}
+     </div>
+     <p className="chakra-zone-map-note">{lang==='es'?'Límite lima: tu terreno. Cada zona que dibujes se registra por separado.':'Lime outline: your field. Each drawn section is recorded separately.'}</p>
+    </div>
+    {fieldError&&<p className="b-error" role="alert">{fieldError}</p>}
+    <div className="chakra-zones-heading"><h2>{lang==='es'?'¿Dónde sembraste?':'Where did you plant?'}</h2><span>{assignedCount}/{availableZones.length} {lang==='es'?'zonas registradas':'areas recorded'}</span></div>
+    <div className="chakra-zone-choices">{availableZones.map(z=><button className={'chakra-zone-choice '+(selectedZone===z.id?'chosen':'')} type="button" key={z.id} aria-pressed={selectedZone===z.id}
+     onClick={()=>{setActiveZone(z.id);const previous=zoneCrops[z.id];if(previous){setCrop(previous.crop_id);const idx=relativeMonthIndex(previous.planted_month,baseYear);if(idx>=0&&idx<24)setCropMonth(idx)}}}>
+     <span>{z.id==='rest'?(lang==='es'?'Resto del terreno':'Remaining field'):z.id}</span><small>{z.ha.toFixed(2)} ha</small>
+     <strong>{zoneCrops[z.id]?labelCrop(zoneCrops[z.id].crop_id,lang):(lang==='es'?'Por registrar':'To register')}</strong></button>)}</div>
+    <section className="chakra-crop-section"><h2>{lang==='es'?'¿Qué sembraste aquí?':'What did you grow here?'}</h2>
+     <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>setCrop(id)}>
+      <span className="chakra-crop-art" aria-hidden="true">{({maiz_amarillo_duro:'🌽',maiz_chala:'🌽',camote:'🍠',papa:'🥔',frijol_grano_seco:'🫘',frijol_castilla:'🫘',vainita:'🫛',pallar:'🫘',arveja_verde:'🫛',cebolla:'🧅',zanahoria:'🥕',brocoli_col:'🥦',alfalfa:'🌿'} as Record<string,string>)[id]}</span>
+      <span>{labelCrop(id,lang)}</span><span className="chakra-crop-tick">{crop===id?'✓':''}</span></button>)}</div>
+     <div className="chakra-crop-when"><label>{lang==='es'?'¿En qué mes lo sembraste?':'When did you plant it?'}
+      <select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{monthChoices.map(i=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label>
+      <button className="b-btn b-btn-primary" type="button" onClick={applyZoneCrop}>{lang==='es'?'Guardar cultivo de esta zona':'Save this area crop'}</button></div>
     </section>
-    {planError&&<p className="b-error" role="alert">{planError}</p>}
-    {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
-    <div className="b-next between"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(1)}><Icon name="left"/>{t.back}</button>
-     <button type="button" className="b-btn b-btn-primary" disabled={!current.length||!supported||planBusy} onClick={showPlan}>{planBusy?<><span className="b-spinner"/>{t.working}</>:<>{t.action}<Icon name="right"/></>}</button></div>
+    <details className="chakra-zone-help"><summary>{lang==='es'?'Administrar zonas':'Manage areas'}</summary>
+     <p>{lang==='es'?'Dibuja zonas dentro del terreno para registrar otros cultivos. El resto se calcula automáticamente.':'Draw zones inside the field to record other crops. Remaining area is calculated automatically.'}</p>
+     {subplots.map(z=><button type="button" className="b-btn b-btn-light" key={z.id} onClick={()=>deleteSubplot(z.id)}>{lang==='es'?'Quitar ':'Remove '}{z.id}</button>)}</details>
+    <div className="b-next between">
+     <button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}>{t.back}</button>
+     <button type="button" className="b-btn b-btn-light" onClick={saveFarm}>{lang==='es'?'Guardar avance':'Save progress'}</button>
+     <button type="button" className="b-btn b-btn-primary" disabled={spatialBusy||!availableZones.length} onClick={()=>void buildSpatialPlan()}>{spatialBusy?(lang==='es'?'Preparando…':'Preparing…'):(lang==='es'?'Preparar mi plan':'Prepare my plan')}</button></div>
+    {spatialError&&<p className="b-error" role="alert">{spatialError}</p>}
+    {savedNotice&&<p role="status">{savedNotice}</p>}
    </section>}
+   {step===2&&spatialPlan&&field&&<ChakraZonePlan plan={spatialPlan} field={field} subplots={subplots}
+    lang={lang} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
