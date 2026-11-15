@@ -223,7 +223,7 @@ test('UX Pro Max journey keeps the farmer and clear next action first',async({pa
  await expect(page.getByText('No hace falta recordar todo.')).toBeVisible()
  await page.getByRole('button',{name:'Agregar cultivo'}).click()
  await page.getByRole('button',{name:'Continuar'}).click()
- await expect(page.getByText('ELIGE LO QUE MÁS TE IMPORTA')).toBeVisible()
+ await expect(page.getByText('ELIGE LO QUE MÁS TE IMPORTA',{exact:true})).toBeVisible()
  await expect(page.getByText('Equilibrar las dos necesidades en la comparación.')).toBeVisible()
 })
 
