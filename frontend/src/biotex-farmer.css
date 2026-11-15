@@ -392,3 +392,29 @@
  .b-decision-support{display:none!important}
  .b-print-economics{display:block}
 }
+
+
+/* v0.26 — AI evidence presented for farmers first; technical model in disclosure.
+   UI UX Pro Max: 48px touch, progressive disclosure, clear source/uncertainty. */
+.b-ai-evidence{background:#f2f8f0;border:1px solid #c4dec8;border-radius:20px;padding:23px 24px;margin:20px 0;color:#244a32}
+.b-ai-evidence-header{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+.b-ai-mark{width:48px;height:48px;min-width:48px;background:#d8f0dc;border:1px solid #b1d8bd;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#216241}
+.b-ai-evidence .b-eyebrow{margin:0 0 4px;font-size:.72rem;letter-spacing:.1em}
+.b-ai-evidence h2{margin:0;font-size:clamp(1.15rem,2vw,1.5rem)}
+.b-ai-evidence>p{font-size:1.02rem;line-height:1.55;max-width:800px;margin:0 0 17px}
+.b-ai-stats{display:flex;gap:11px;flex-wrap:wrap}
+.b-ai-stats>div{min-width:0;flex:1 1 170px;background:white;border:1px solid #d7e7da;border-radius:13px;padding:13px 15px}
+.b-ai-stats strong{display:block;font-size:1.28rem;line-height:1.25;color:#1d6242}
+.b-ai-stats span{color:#445f4c;font-size:.87rem;display:block;margin-top:4px}
+.b-ai-evidence .b-technical{margin:17px 0 0;background:#fff}
+.b-ai-evidence .b-technical-inner{font-size:.88rem}
+.b-ai-evidence .b-technical-inner p{color:#415c49;margin:10px 0}
+.b-ai-evidence .b-technical-inner a{display:inline-flex;min-height:44px;align-items:center;color:#1a6544;text-decoration:underline;text-underline-offset:3px;font-weight:780}
+@media(max-width:640px){
+ .b-ai-evidence{padding:16px;margin:15px 0;border-radius:16px}
+ .b-ai-evidence-header{align-items:flex-start}
+ .b-ai-stats>div{flex-basis:100%}
+}
+@media print{
+ .b-ai-evidence{display:none!important}
+}
