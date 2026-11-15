@@ -34,7 +34,7 @@ test.beforeEach(async({page})=>{
  await page.route('**/api/arie/crop-guidance**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify(guidance)}))
  await page.route('**/api/arie/crops?**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({items:[{id:'sweet_potato',name:'Camote',scientific_name:'Ipomoea batatas'}]})}))
 })
-async function selectedField(page:import('@playwright/test').Page){await page.goto('/');await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()}
+async function selectedField(page:import('@playwright/test').Page){await page.goto('/?research=1');await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()}
 async function context(page:import('@playwright/test').Page){await selectedField(page);await page.getByText('Datos ambientales y satélite (opcional)',{exact:true}).click();await page.getByRole('button',{name:'Consultar datos del terreno'}).click()}
 async function cropReference(page:import('@playwright/test').Page){
  await selectedField(page);await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click();await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('camote');await page.getByRole('button',{name:'Buscar en catálogo'}).click();await page.getByRole('button',{name:'Camote · Ipomoea batatas'}).click();await page.getByRole('button',{name:'Revisar referencia regional'}).click()
@@ -66,7 +66,7 @@ test('zone-by-zone PDF uses the native print entry point and a geometric map',as
  })}))
  await selectedField(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
- await page.getByRole('button',{name:'Guardar cultivo de esta zona'}).click()
+ await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await page.getByRole('button',{name:'Imprimir mapa y plan PDF'}).click()
@@ -88,7 +88,7 @@ test('missing NASA data remains unknown and catalogue review never invents plant
  await cropReference(page);await expect(page.getByText(/Años completos: 0/)).toBeVisible();await expect(page.getByText(/Lluvia anual media: —/)).toBeVisible()
 })
 test('release describes the unified application with no published-site dependency',async({page})=>{
- await page.goto('/');await expect(page).toHaveTitle('CHAKRA | Tu tierra. Tu próxima siembra.')
+ await page.goto('/?research=1');await expect(page).toHaveTitle('CHAKRA | Tu tierra. Mi plan de cultivos.')
  const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('chakra-1.0.0-nasa-space-apps-2026');expect(d.environment).toBe('production');expect(d.team).toBe('CHAKRA X');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('chakra-glass-lime')
 })
 test('NASA GIBS layers and POWER figures keep distinct regional provenance',async({page})=>{
@@ -103,7 +103,7 @@ test('NASA GIBS layers and POWER figures keep distinct regional provenance',asyn
  await expect(page.getByRole('region',{name:'Clima histórico'})).toContainText('NASA POWER')
 })
 test('mobile map controls stay usable without a separate dashboard page',async({page})=>{
- await page.setViewportSize({width:375,height:812});await page.goto('/');await expect(page.locator('.b-map')).toBeVisible();await page.getByRole('button',{name:'Delimitar otro terreno'}).click();await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeDisabled();await page.getByRole('button',{name:'Cancelar',exact:true}).click()
+ await page.setViewportSize({width:375,height:812});await page.goto('/?research=1');await expect(page.locator('.b-map')).toBeVisible();await page.getByRole('button',{name:'Delimitar otro terreno'}).click();await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeDisabled();await page.getByRole('button',{name:'Cancelar',exact:true}).click()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(376)
  await expect(page.locator('a[href*="vista="]')).toHaveCount(0)
 })

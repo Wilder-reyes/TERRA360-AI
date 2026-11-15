@@ -7,7 +7,7 @@ test.beforeEach(async({page})=>{
 })
 
 test('starts with a clearly labeled Barranca study example and accepts other coordinates',async({page})=>{
- await page.goto('/')
+ await page.goto('/?research=1')
  await expect(page.locator('.b-field-ready')).toHaveCount(1)
  await expect(page.getByRole('button',{name:'Delimitar otro terreno'})).toBeVisible()
  await page.getByText('Buscar por coordenadas').click()
@@ -19,7 +19,7 @@ test('starts with a clearly labeled Barranca study example and accepts other coo
 })
 
 test('farmer may import an outline, edit a vertex and restore the confirmed geometry locally',async({page})=>{
- await page.goto('/')
+ await page.goto('/?research=1')
  await page.getByText('Importar contorno GeoJSON (opcional)').click()
  await page.locator('.b-technical textarea').fill(JSON.stringify(barrancaOutline))
  await page.getByRole('button',{name:'Usar contorno'}).click()
