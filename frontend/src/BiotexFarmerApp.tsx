@@ -425,7 +425,7 @@ export default function BiotexFarmerApp(){
   }catch{setFieldError(t.invalidShape)}
  }
  function changeArea(){setLanding(false);setSubplots([]);setEditVertices(null);setDrawingSubplot(false);setField(null);setFieldLabel('');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
- function setExample(f:typeof DEMOS[number]){setLanding(false);const p=f.polygon;setSubplots([]);setEditVertices(null);setDrawingSubplot(false);setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setIsDemoField(true);setDrawing(false);setPoints([]);setFieldError('');resetAfterField();setMapLayer('hls')}
+ function setExample(f:typeof DEMOS[number]){setLanding(false);const p=f.polygon;setSubplots([]);setEditVertices(null);setDrawingSubplot(false);setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setIsDemoField(true);setDrawing(false);setPoints([]);setFieldError('');resetAfterField();setMapLayer('photo')}
  async function searchPlace(e:FormEvent){
   e.preventDefault();const q=query.trim();if(q.length<3){setSearchError(t.notFound);return}
   setSearching(true);setSearchError('');setPlaces([])
