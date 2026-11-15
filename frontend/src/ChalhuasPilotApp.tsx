@@ -3,7 +3,7 @@
  * All map polygons are either farmer-drawn or explicitly synthetic examples.
  */
 import {useEffect,useMemo,useState} from 'react'
-import {MapContainer,Polygon,Polyline,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
+import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {API,httpErrorMessage} from './network'
 import {approximatePolygonHectares,validatePolygon,type GeoPoint} from './geometry'
 import BioTour from './BioTour'
@@ -88,7 +88,7 @@ function FieldMap({field,subplots,drawing,vertices,onPoint,layer,lowData,layerDa
     {...{time:layerDate}} attribution="NASA GIBS / ESDIS" eventHandlers={{tileerror:()=>setTileError(true)}} />}
    <MoveMap centre={p} field={field}/>
    <DrawClicks mode={drawing} onPoint={onPoint}/>
-   {!field&&<Polygon positions={[[LOC.lat-.00012,LOC.lng-.00012],[LOC.lat-.00012,LOC.lng+.00012],[LOC.lat+.00012,LOC.lng+.00012]]} pathOptions={{fillOpacity:0,weight:0}}/>}
+   {!field&&<CircleMarker center={[LOC.lat,LOC.lng]} radius={8} pathOptions={{color:'#fff8db',fillColor:'#215c40',fillOpacity:1,weight:3}}/>}
    {field&&<Polygon positions={points(field).map(p=>[p.lat,p.lng] as [number,number])}
     pathOptions={{color:'#f7d06b',weight:4,fillOpacity:.045}}/>}
    {subplots.map((parcel,i)=>{
@@ -348,7 +348,18 @@ export default function ChalhuasPilotApp(){
        {terrain&&<div className="c-science-value"><b>{terrain.elevation_m.toFixed(0)} m</b><span>{es?'Elevación aproximada SRTM (90 m)':'Approx. SRTM elevation (90 m)'}</span></div>}
        {terrain&&<div className="c-science-value"><b>{terrain.approximate_gradient_degrees.toFixed(1)}°</b><span>{es?'Gradiente del entorno a 180 m, no pendiente del lote':'Neighbourhood gradient, not field slope'}</span></div>}
        {climate&&<><div className="c-science-value"><b>{climate.min_air_temperature_c?.toFixed(1)} °C</b><span>{es?'Mínima regional estimada de 2025':'2025 modelled regional minimum'}</span></div>
-        <div className="c-science-value"><b>{climate.rainfall_sum_mm?.toFixed(0)} mm</b><span>{es?'Lluvia regional estimada de 2025':'2025 modelled regional precipitation'}</span></div></>}
+        <div className="c-science-value"><b>{climate.rainfall_sum_mm?.toFixed(0)} mm</b><span>{es?'Lluvia regional estimada de 2025':'2025 modelled regional precipitation'}</span></div>
+        <details className="c-annual-details"><summary>{es?'Ver los 12 meses de 2025':'View 12 months of 2025'}</summary>
+         <p>{es?'Lluvia y mínima del aire por mes (reanálisis regional, no estación del terreno).':'Monthly rain and minimum air temperature (regional reanalysis, not a farm station).'}</p>
+         <div className="c-monthly-grid">{climate.months?.map(m=><div key={m.month} className="c-monthly-row">
+          <span>{['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'][m.month-1]}</span>
+          <div className="c-monthly-track"><div style={{width:Math.min(100,Math.max(0,(m.rainfall_sum_mm??0)/(Math.max(1,...(climate.months?.map(x=>x.rainfall_sum_mm||0)||[])))*100))+'%'}}/></div>
+          <strong>{m.rainfall_sum_mm?.toFixed(0)??'—'} mm</strong>
+          <small>{m.min_air_temperature_c?.toFixed(1)??'—'} °C</small>
+         </div>)}</div>
+         <a href={climate.source_url} target="_blank" rel="noreferrer">{es?'Ver fuente ERA5-Land':'View ERA5-Land source'}</a>
+        </details>
+       </>}
        <section className="c-hls-evidence"><h4>{es?'Historia de vegetación HLS (parcela marcada)':'HLS vegetation history (marked area)'}</h4>
         <button type="button" className="c-action secondary" disabled={!field||hlsBusy} onClick={loadHls}>{hlsBusy?(es?'Buscando imágenes NASA HLS…':'Loading NASA HLS scenes…'):(es?'Consultar NDVI histórico':'Check historical NDVI')}</button>
         {hls&&<div className="c-hls-reading"><strong>{hls.months_with_data}/{hls.months_total}</strong><span>{es?'Meses con lecturas válidas':'Months with valid readings'}</span>
