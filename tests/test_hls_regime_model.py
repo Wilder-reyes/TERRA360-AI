@@ -1,9 +1,12 @@
 """Real NASA HLS model: reproducing training, held-out 2026 and decision effects."""
 from __future__ import annotations
 import json
+import sys
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'backend'))
 
 from fastapi.testclient import TestClient
 from app.main import app
@@ -83,7 +86,7 @@ class TrainedHLSModelTests(unittest.TestCase):
     def test_demo_compare_attaches_model_only_to_exact_selected_field(self):
         fields = json.loads((ROOT/"frontend"/"src"/"exampleFields.json").read_text(encoding="utf-8"))
         example = next(p for p in fields["team_fields"] if p["id"] == "barranca-1")
-        from tests.test_rotation import coastal_climate
+        from test_rotation import coastal_climate
 
         async def fake_monthly_climate(lat, lon, client=None, coastal=True):
             return coastal_climate()
