@@ -122,6 +122,7 @@ class SpatialZoneRequest(BaseModel):
 class SpatialPlanRequest(BaseModel):
     polygon: dict[str, Any]
     zones: list[SpatialZoneRequest] = Field(min_length=1, max_length=25)
+    planning_months: int = Field(12, ge=3, le=60, description="Consecutive months in the future rotation plan")
 
 
 class CompareRequest(BaseModel):
@@ -314,7 +315,7 @@ async def spatial_plan(req: SpatialPlanRequest):
                 pass
         return build_spatial_plan(
             polygon, [zone.model_dump(exclude_none=True) for zone in req.zones],
-            climate_data)
+            climate_data, planning_months=req.planning_months)
     except (ValueError, engine.RotationError) as exc:
         raise HTTPException(422, str(exc)) from exc
 

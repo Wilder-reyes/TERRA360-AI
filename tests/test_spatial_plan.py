@@ -51,6 +51,29 @@ class SpatialPlanTests(unittest.TestCase):
         self.assertEqual(result["climate_status"], "reference_rules")
         self.assertEqual(result["zone_plans"][0]["sowing_window_scope"], "farmer_check")
 
+    def test_custom_horizons_have_chained_campaigns_without_overlap(self):
+        for months in (3, 6, 12, 18, 24, 36, 60):
+            with self.subTest(months=months):
+                result = build_spatial_plan(self.field, [
+                    {"id": "rest", "crop_id": "maiz_amarillo_duro",
+                     "planted_month": "2026-01"},
+                ], self.climate, planning_months=months)
+                self.assertEqual(result["planning_months"], months)
+                self.assertEqual(result["plan_kind"], "reference_rotation_not_future_weather_forecast")
+                campaigns = result["zone_plans"][0]["campaigns"]
+                for i, row in enumerate(campaigns):
+                    self.assertLess(row["sow_month"], result["plan_end_month"])
+                    self.assertLess(row["sow_month"], row["end_month"])
+                    if i:
+                        self.assertGreaterEqual(row["sow_month"], campaigns[i - 1]["end_month"])
+                        self.assertNotEqual(row["crop_id"], campaigns[i - 1]["crop_id"])
+
+    def test_invalid_planning_months_rejected(self):
+        with self.assertRaisesRegex(ValueError, "3 y 60"):
+            build_spatial_plan(self.field, [
+                {"id": "rest", "crop_id": "camote", "planted_month": "2026-01"}
+            ], planning_months=61)
+
     def test_overlapping_subplots_rejected(self):
         with self.assertRaisesRegex(ValueError, "superpongan"):
             build_spatial_plan(self.field, [
@@ -101,6 +124,21 @@ class SpatialEndpointTests(unittest.TestCase):
         self.assertEqual(body["ai_status"], "agronomic_rule_engine")
         self.assertEqual(body["zone_plans"][0]["current_crop"], "Camote")
         self.assertTrue(body["zone_plans"][0]["how_es"])
+
+    def test_endpoint_respects_planning_months(self):
+        from fastapi.testclient import TestClient
+        from unittest.mock import patch, AsyncMock
+        from app.main import app
+        with patch("app.api.rotation_routes.monthly_climate",
+                   new_callable=AsyncMock, return_value={"months": []}):
+            response = TestClient(app).post("/api/rotation/spatial-plan", json={
+                "polygon": polygon(-71.993, -13.517, -71.991, -13.515),
+                "zones": [{"id": "rest", "crop_id": "camote", "planted_month": "2026-01"}],
+                "planning_months": 18,
+            })
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["planning_months"], 18)
+        self.assertIn("campaigns", response.json()["zone_plans"][0])
 
     def test_rejects_unknown_crop_cleanly(self):
         from fastapi.testclient import TestClient
