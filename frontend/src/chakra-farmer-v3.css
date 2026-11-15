@@ -111,3 +111,43 @@
  .chakra-farmer-clean #chakra-field .b-map{min-height:320px!important}
  .chakra-farmer-clean #chakra-field .b-search-card{padding:12px!important}
 }
+
+/* Slide six: readable quarter/year planning, not a 60-column spreadsheet. */
+.chakra-calendar-v3{padding:clamp(16px,2.7vw,29px);background:#121d16}
+.chakra-calendar-years{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:25px 0 15px}
+.chakra-calendar-years button{min-height:52px;padding:12px 22px;border:1px solid #426847;border-radius:14px;background:#213526;color:#eef6e9;font-size:19px;font-weight:800;cursor:pointer}
+.chakra-calendar-years button[aria-pressed=true]{background:#D6F866;color:#17220d;border-color:#D6F866}
+.chakra-calendar-months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:7px;margin-bottom:21px}
+.chakra-calendar-months button{min-width:0;min-height:45px;padding:8px 3px;border:1px solid #466344;background:#1c3022;color:#eaf4e6;border-radius:10px;font-weight:650;font-size:13px;cursor:pointer}
+.chakra-calendar-months button.selected{background:#D6F866;color:#14230d;border-color:#D6F866}
+.chakra-quarters{display:grid;gap:9px}
+.chakra-quarter-heading,.chakra-quarter-row{display:grid;grid-template-columns:132px repeat(4,minmax(0,1fr));gap:9px;align-items:stretch}
+.chakra-quarter-heading>div{padding:11px 10px;color:#d0e2c9;background:#213626;border:1px solid #405842;border-radius:10px;font-size:13px;text-align:center;font-weight:800}
+.chakra-quarter-row{padding:0}
+.chakra-quarter-zone{border-radius:14px;background:#28412d;padding:14px 10px;font-weight:850;color:#fff;display:flex;flex-direction:column;gap:8px}
+.chakra-quarter-zone small{font-weight:500;color:#d3e1c9;font-size:11px;line-height:1.4}
+.chakra-quarter-cell{border:1px solid #405742;background:#1b2c20;border-radius:14px;min-height:111px;display:flex;flex-direction:column;gap:6px;padding:8px;align-items:stretch;justify-content:center}
+.chakra-quarter-crop{display:flex;align-items:center;gap:6px;padding:9px 7px;border-radius:9px;color:#172a1a;min-width:0;flex-wrap:wrap}
+.chakra-quarter-crop span{font-size:19px;flex:0 0 auto}
+.chakra-quarter-crop strong{font-size:13px;color:#172b1a;line-height:1.25;flex:1}
+.chakra-quarter-crop small{font-size:10px;font-weight:900;color:#314636}
+.chakra-quarter-empty{color:#c1d5b9;font-size:12px;line-height:1.45}
+.chakra-quarter-empty small{display:block;color:#9cb39e;font-size:11px;margin-top:5px}
+.chakra-quarter-muted{color:#6f9478;text-align:center}
+.chakra-quarter-period{display:none;font-size:12px;font-weight:800;color:#D6F866}
+.chakra-calendar-v3 .chakra-calendar-intro{align-items:start}
+.chakra-calendar-v3 .chakra-calendar-active{border:1px solid #406548;background:#1d3424;border-radius:15px;padding:12px 17px;min-width:125px}
+.chakra-calendar-v3 .chakra-calendar-active strong{white-space:nowrap;font-size:23px}
+.chakra-calendar-v3 .chakra-calendar-legend{margin-top:20px}
+.chakra-calendar-v3 .chakra-calendar-legend span{max-width:100%;flex-wrap:wrap}
+[data-theme="light"] .chakra-calendar-v3{background:#eaf1e6}
+[data-theme="light"] .chakra-calendar-years button:not([aria-pressed=true]){background:#e3ede1;color:#263e29;border-color:#a8bba5}
+[data-theme="light"] .chakra-calendar-months button:not(.selected){background:#e4ede0;color:#243d28;border-color:#b4c8af}
+[data-theme="light"] .chakra-quarter-row .chakra-quarter-zone{background:#d3e5ce;color:#1a351e}
+[data-theme="light"] .chakra-quarter-zone small{color:#3b5d42}
+[data-theme="light"] .chakra-quarter-cell{background:#ecf4e8;border-color:#bed0b8}
+[data-theme="light"] .chakra-quarter-heading>div{background:#d5e5d0;color:#243a26;border-color:#bdcdb8}
+[data-theme="light"] .chakra-quarter-empty{color:#49634a}
+@media(max-width:900px){.chakra-calendar-months{grid-template-columns:repeat(6,minmax(0,1fr))}.chakra-quarter-heading,.chakra-quarter-row{grid-template-columns:110px repeat(4,minmax(0,1fr))}.chakra-quarter-cell{padding:5px}.chakra-quarter-crop{padding:6px 4px}.chakra-quarter-crop strong{font-size:11px}}
+@media(max-width:700px){.chakra-quarter-heading{display:none}.chakra-quarter-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}.chakra-quarter-zone{grid-column:1/-1;padding:10px 13px;min-height:42px;flex-direction:row;align-items:center;justify-content:space-between}.chakra-quarter-cell{min-height:90px;padding:8px}.chakra-quarter-period{display:block}.chakra-calendar-v3 .chakra-calendar-active{padding:8px 12px}.chakra-calendar-v3 .chakra-calendar-active strong{font-size:17px}.chakra-calendar-years button{padding:8px 15px;min-height:46px;font-size:16px}}
+@media print{.chakra-calendar-v3{display:none!important}.chakra-print-year{break-inside:avoid-page!important}.chakra-print-year table{table-layout:fixed;font-size:10px!important}.chakra-print-year th small{display:block;font-size:8px!important;font-weight:normal}.chakra-print-year td span{display:inline-block!important;margin:1px 0;font-size:9px;max-width:100%}}
