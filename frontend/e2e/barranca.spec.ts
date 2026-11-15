@@ -1,5 +1,7 @@
 import {test,expect} from '@playwright/test'
-import {BARRANCA_HISTORY} from '../src/barrancaObservation'
+import {readFileSync} from 'node:fs'
+// Playwright runs this spec in Node, where imported JSON needs an import attribute.
+const BARRANCA_HISTORY=JSON.parse(readFileSync(new URL('../src/data/barrancaHls.json',import.meta.url),'utf8')) as {months:{month:string;ndvi:number|null}[]}
 
 test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
 
