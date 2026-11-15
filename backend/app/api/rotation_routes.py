@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.services import rotation_engine as engine
+from app.services import field_shift_ai as field_ai
 from app.services.hls_history import cached_history, monthly_history
 from app.services.imerg_basin import basin_context
 from app.services.power_climatology import ClimateError, monthly_climate
@@ -113,6 +114,7 @@ class EconomicsRequest(BaseModel):
 
 class CompareRequest(BaseModel):
     zone: Literal["huaral", "barranca"] | None = None
+    polygon: dict[str, Any] | None = None
     latitude: float | None = Field(None, ge=-60, le=60)
     longitude: float | None = Field(None, ge=-180, le=180)
     current: list[Planting] = Field(default_factory=list, max_length=10)
@@ -179,6 +181,30 @@ async def _climate(zone: str | None, lat: float | None, lon: float | None) -> di
 @router.get("/upper-basin-rain")
 def upper_basin_rain(zone: Literal["huaral", "barranca"]):
     return basin_context(zone)
+
+
+@router.get("/ai-demo")
+def ai_demo(field: Literal["barranca-1"] = "barranca-1"):
+    """Reproducible HLS training evidence, without invented crop labels."""
+    try:
+        model = field_ai.validated_barranca_model()
+    except (OSError, ValueError, KeyError) as exc:
+        return {"status": "not_verified", "source": "NASA HLS", "reason": type(exc).__name__}
+    artifact = model["artifact"]
+    observations = [{"month": x["month"], "ndvi": x["ndvi"]}
+                    for x in model["observed"]]
+    return {"status": "trained_and_verified", "field": field,
+            "model_id": artifact["model_id"], "sensor": artifact["source_sensor"],
+            "source_url": model["source"]["source_url"],
+            "source_period": artifact["source_period"],
+            "observed_months": artifact["observed_months"],
+            "missing_months": artifact["missing_months"],
+            "holdout": artifact["evaluation"],
+            "real_ndvi_observations": observations,
+            "seasonal_bare_probability":
+                {str(i+1): model["probabilities"][i] for i in range(12)},
+            "target": artifact["target"],
+            "limitation_es": "El modelo aprende baja cobertura vegetal de una parcela, no identifica cultivos ni predice rendimientos."}
 
 
 @router.get("/evidence-sources")
@@ -258,6 +284,22 @@ async def compare(req: CompareRequest):
     except engine.RotationError as exc:
         raise HTTPException(422, str(exc)) from exc
     result["zone"] = req.zone
+    # The actual NASA-HLS model is only applicable to the exact polygon
+    # from which its real Earth observations were collected.
+    parcel = polygon_from_geojson(req.polygon) if req.polygon else None
+    model_analysis = field_ai.assess_strategies(parcel, result["strategies"])
+    result["ai_analysis"] = model_analysis
+    if model_analysis["status"] == "trained_and_verified":
+        earlier = result.get("recommended_strategy_id")
+        scored = engine.highlight_for_farmer(
+            result["strategies"], {**req.priorities.model_dump()}, req.water_turn,
+            ai_bare_risk=model_analysis["weighted_uncovered_exposure"])
+        result.update(scored)
+        result["ai_analysis"]["used_for_decision"] = bool(scored.get("ai_weighted"))
+        result["ai_analysis"]["influenced_recommendation"] = (
+            earlier != result.get("recommended_strategy_id"))
+    else:
+        result["ai_analysis"]["influenced_recommendation"] = False
     # P1 «agua que viene»: IMERG rain in the upper basin (context only; abstains if not computed).
     if req.zone in ("huaral", "barranca"):
         basin = basin_context(req.zone)
@@ -296,7 +338,9 @@ async def compare(req: CompareRequest):
         if result.get("recommended_strategy_id") and not any(
                 x["id"] == result["recommended_strategy_id"] for x in valid):
             chosen = engine.highlight_for_farmer(
-                valid, {**req.priorities.model_dump()}, req.water_turn)
+                valid, {**req.priorities.model_dump()}, req.water_turn,
+                ai_bare_risk=(model_analysis.get("weighted_uncovered_exposure")
+                              if model_analysis["status"] == "trained_and_verified" else None))
             result.update(chosen)
             result["soil_reranked"] = True
     result["upper_basin_rain"] = basin

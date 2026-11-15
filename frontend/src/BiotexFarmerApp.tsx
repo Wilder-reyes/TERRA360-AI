@@ -7,6 +7,7 @@ import {TEAM_FIELDS,ZONES,type GeoPolygon} from './rotationZones'
 import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
 import SatelliteEvidence from './SatelliteEvidence'
 import FarmDecisionEvidence,{type EconomicReport} from './FarmDecisionEvidence'
+import FarmerAIEvidence,{type AIEvidence} from './FarmerAIEvidence'
 import './biotex-farmer.css'
 
 type Lang='es'|'en'
@@ -30,7 +31,7 @@ type OfficialContext={
  basin?:{status:string};weather_alerts?:{status:string};market_prices?:{status:string}
 }
 type SoilResult={status:string;alerts?:{crop_id:string;message_es:string}[];needs_review?:string[]}
-type Result={status:string;strategies:Strategy[];official_evidence?:OfficialContext;soil_assessment?:SoilResult;recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};upper_basin_rain?:{status:string;last_season?:{season:string;percent_of_normal:number};note_es?:string;note_en?:string};
+type Result={status:string;strategies:Strategy[];ai_analysis?:AIEvidence;ai_weighted?:boolean;official_evidence?:OfficialContext;soil_assessment?:SoilResult;recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};upper_basin_rain?:{status:string;last_season?:{season:string;percent_of_normal:number};note_es?:string;note_en?:string};
  recommendation_reason_es?:string;recommendation_reason_en?:string;
  climate?:{period:string;annual_et0_mm:number;cell_adjustment?:{reason_es:string;reason_en:string}|null};
  income_crop?:string;disclaimer_es?:string;disclaimer_en?:string;method?:Record<string,unknown>}
@@ -325,7 +326,7 @@ export default function BiotexFarmerApp(){
   const token=++request.current;setPlanBusy(true);setPlanError('');setResult(null)
   const priorities=goal==='water'?{water:2,soil:0,income:1,pests:1}:goal==='soil'?{water:0,soil:2,income:1,pests:1}:{water:2,soil:2,income:1,pests:1}
   const payload={
-   zone:province?'barranca':null,latitude:point.lat,longitude:point.lng,
+   zone:province?'barranca':null,latitude:point.lat,longitude:point.lng,polygon:field,
    current,priorities,water_turn:scarcity,current_source:source,
    income_crop_id:confirmedOptions.includes(incomeCrop)?incomeCrop:null,
    use_team_templates_as_fallback:false,
@@ -369,6 +370,7 @@ export default function BiotexFarmerApp(){
    <h4>{t.verify}</h4><ul>{s.sections.gaps[lang].map((a,i)=><li key={i}>{a}</li>)}</ul>
    {result?.farm_inputs?.soil&&<p>{lang==='es'?'Datos del suelo anotados por ti (todavía no utilizados para descartar cultivos):':'Your recorded soil data (not yet used to exclude crops):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+' '+v).join(' · ')}</p>}
    {result?.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por ti (sin comprobar contra necesidades reales de riego):':'Water volume you entered (not yet compared with actual irrigation needs):'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha</p>}
+   {result?.ai_analysis?.status==='trained_and_verified'&&<p>{lang==='es'?'Modelo IA entrenado con observaciones NASA HLS reales de esta parcela: ':'AI trained on real NASA HLS observations from this parcel: '}{result.ai_analysis.observed_months} {lang==='es'?'meses. Los patrones estacionales contribuyen a la comparación de cobertura, no a predecir la cosecha.':'months. Seasonal patterns help compare crop coverage, not predict harvest.'}</p>}
    {result?.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season} · {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de la lluvia habitual en cabecera de cuenca; no equivale al caudal del canal.':'of normal rainfall in the upper basin; not canal flow.'}</p>}
    </div>
  </details>}
@@ -431,6 +433,10 @@ export default function BiotexFarmerApp(){
   {result.farm_inputs?.soil&&<p>{lang==='es'?'Suelo declarado (sin validación de laboratorio):':'Reported soil (without laboratory verification):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+': '+v).join(' · ')}</p>}
   {result.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por el usuario, todavía no usada como restricción:':'Reported irrigation water, not yet a hard constraint:'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha.</p>}
   {result.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season}, {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de precipitación habitual en la cabecera; no es caudal del río.':'of usual upper-basin precipitation; not river discharge.'}</p>}
+  {result.ai_analysis?.status==='trained_and_verified'&&<div className="b-print-ai"><h3>{lang==='es'?'Evidencia del modelo de IA':'AI model evidence'}</h3>
+   <p>{lang==='es'?'Regresión logística entrenada con ':'Logistic regression trained with '}{result.ai_analysis.observed_months} {lang==='es'?'observaciones mensuales reales de NASA HLS de esta parcela. La señal aprendida pondera épocas de suelo descubierto; no identifica cultivos ni garantiza rendimientos.':'real NASA HLS monthly observations of this field. Learned patterns weight bare-surface seasons; they do not identify crops or guarantee yields.'}</p>
+   <p>{lang==='es'?'Evaluación cronológica: 33 observaciones de entrenamiento y 11 posteriores de prueba.':'Chronological evaluation: 33 training observations and 11 later holdout observations.'}</p>
+  </div>}
   {economicReport&&<div className="b-print-economics"><h3>{lang==='es'?'Cuenta económica basada en los datos del agricultor':'Farmer-input economic estimate'}</h3>
    <p>{lang==='es'?'Estimación por hectárea para un ciclo de 24 meses, no ganancia garantizada.':'Estimate per hectare for a 24-month cycle, not guaranteed profit.'}</p>
    {economicReport.strategies.map(x=><p key={x.strategy_id}><strong>{x.strategy_id==='S0'?t.current:x.strategy_id}:</strong> {x.margin_soles_ha_24months==null?(lang==='es'?'Datos incompletos':'Incomplete inputs'):'S/ '+x.margin_soles_ha_24months.toLocaleString(lang==='es'?'es-PE':'en-US')}</p>)}
@@ -570,6 +576,7 @@ export default function BiotexFarmerApp(){
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
     {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
     {preferred?mainCard(preferred):<div className="b-card b-no-recommend"><Icon name="info"/><h2>{t.noRecommend}</h2><p>{t.unavailable}</p></div>}
+    <FarmerAIEvidence ai={result.ai_analysis} lang={lang}/>
     <FarmDecisionEvidence lang={lang} strategies={result.strategies} names={NAMES}
       context={result.official_evidence} soil={result.soil_assessment}
       irrigationKnown={waterAllowance.trim().length>0}

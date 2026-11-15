@@ -172,3 +172,38 @@ test('Farmer reads a short decision checklist, optional economics are hidden unt
  await expect(page.locator('.b-econ-result').first()).toContainText('6,000')
  await expect(page.getByText('Fuentes oficiales y datos técnicos')).toBeVisible()
 })
+
+
+test('NASA trained AI influences the farmer workflow and evidence stays optional',async({page})=>{
+ const probabilities=Object.fromEntries(Array.from({length:12},(_,i)=>[String(i+1),i>=8&&i<=10?.85:.22]))
+ await page.route('**/api/rotation/compare',async route=>{
+  const payload=route.request().postDataJSON()
+  expect(payload.polygon.type).toBe('Polygon')
+  expect(payload.polygon.coordinates[0]).toHaveLength(5)
+  expect(payload.zone).toBe('barranca')
+  await route.fulfill({status:200,contentType:'application/json',
+   body:JSON.stringify({...comparison,
+     ai_weighted:true,
+     ai_analysis:{
+       status:'trained_and_verified',used_for_decision:true,
+       model_id:'biotex-barranca-hls-bare-v1',
+       source_sensor:'NASA HLS v2.0 (Landsat 8/9 + Sentinel-2, 30 m)',
+       observed_months:44,missing_months:27,
+       seasonal_bare_probability:probabilities,
+       holdout:{brier_model:.23408067,brier_train_prevalence_baseline:.48025712},
+       influenced_recommendation:true
+     }})})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await page.getByRole('button',{name:'Agregar cultivo'}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await page.getByRole('button',{name:'Ver mi plan'}).click()
+ await expect(page.getByRole('heading',{name:'¿Qué aprendió BIOTEX de esta chacra?'})).toBeVisible()
+ await expect(page.getByText('44 meses con imágenes útiles')).toBeHidden()
+ await page.locator('.b-ai-details summary').click()
+ await expect(page.getByText('44 meses con imágenes útiles')).toBeVisible()
+ await expect(page.locator('.b-ai-month')).toHaveCount(12)
+ await expect(page.getByRole('link',{name:'Ver procedimiento reproducible'})).toHaveAttribute('href',/BIOTEX_v026_IA_reproducible/)
+})

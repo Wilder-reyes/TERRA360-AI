@@ -120,11 +120,11 @@ test('missing NASA data never turns unknown rainfall into zero or invented plant
 test('BIOTEX release manifest identifies the updated farmer application',async({page})=>{
  await page.goto('/?vista=clima')
  await expect(page).toHaveTitle('BIOTEX | Tu chacra y tu plan de siembra')
- await expect(page.locator('meta[name="biotex-release"]')).toHaveAttribute('content','v0.25-evidence-first')
+ await expect(page.locator('meta[name="biotex-release"]')).toHaveAttribute('content','v0.26-hls-trained-ai')
  const release=await page.request.get('/release.json')
  expect(release.ok()).toBeTruthy()
  const payload=await release.json()
- expect(payload.release).toBe('v0.25-evidence-first-ux')
+ expect(payload.release).toBe('v0.26-hls-trained-ai-barranca')
  expect(payload.computer_vision_enabled).toBe(false)
  await page.getByRole('button',{name:'Cultivos para mi zona'}).click()
  await expect(page.locator('#terra-photo-input')).toHaveCount(0)
