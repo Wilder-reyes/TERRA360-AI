@@ -83,3 +83,7 @@
 }
 @media(prefers-reduced-motion:reduce){.c-app *{scroll-behavior:auto!important;transition:none!important}}
 @media print{.c-top,.c-progress,.c-footer,.c-action,.c-layer-controls,.c-warning,.c-map-actions,.c-footer-actions,.c-row-actions,.c-right-col,.c-inline-note{display:none!important}.c-main{padding:0}.c-plan-layout{display:block}.c-map{height:270px}.c-app{background:#fff;color:#111}.c-card{box-shadow:none;border:0}}
+
+.c-hls-evidence{border-top:1px solid #d9e5d7;margin-top:17px;padding-top:13px}.c-hls-evidence h4{font-size:.95rem;color:#245a3c;margin:0 0 10px}
+.c-hls-reading{background:#edf6ea;padding:10px;border-radius:9px;margin:10px 0}.c-hls-reading strong{font-size:1.2rem;color:#245a3d;margin-right:8px}.c-hls-reading span{font-size:.8rem;color:#3f684d}
+.c-eco-scene{border-bottom:1px solid #e4ecdf;overflow-wrap:anywhere;font-size:.7rem!important;margin:4px 0}

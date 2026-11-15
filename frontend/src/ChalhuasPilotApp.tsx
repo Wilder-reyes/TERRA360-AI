@@ -18,6 +18,8 @@ type Terrain={elevation_m:number;approximate_gradient_degrees:number;resolution_
 type Scenario={id:string;title_es:string;title_en:string;schedule:{campaign:number;year:number;crop_id:CropId;name_es:string;family:string;dates_verified:boolean}[];
  indicators:{botanical_families:number;adjacent_family_repetitions:number;legume_campaigns:number;potato_return_interval_campaigns:number[]|null};flags_es:string[];limitations_es:string[]}
 type Decision={status:string;strategies:Scenario[];automatic_recommendation:null;model_status:string;water_note_es:string;comparison_summary_es:string;start_year:number;end_year:number;source_records:{title:string;url:string}[]}
+type HLSHistory={sensor:string;months_with_data:number;months_total:number;months:{month:string;ndvi:number|null}[]}
+type EcoScenes={status:string;scenes?:{granule_name:string;acquisition_time:string;temperature_c:null;quality_verified:false}[];temperature_values_available:false;note_es:string}
 type Parcel={id:string;polygon:Shape}
 type Drawing='field'|'subplot'|null
 type Layer='image'|'vegetation'|'rain'
@@ -133,6 +135,12 @@ export default function ChalhuasPilotApp(){
  const [climate,setClimate]=useState<Climate|null>(null)
  const [evidenceBusy,setEvidenceBusy]=useState(false)
  const [evidenceError,setEvidenceError]=useState('')
+ const [hls,setHls]=useState<HLSHistory|null>(null)
+ const [hlsBusy,setHlsBusy]=useState(false)
+ const [hlsError,setHlsError]=useState('')
+ const [eco,setEco]=useState<EcoScenes|null>(null)
+ const [ecoBusy,setEcoBusy]=useState(false)
+ const [ecoError,setEcoError]=useState('')
  const [catalogueOk,setCatalogueOk]=useState<boolean|null>(null)
 
  useEffect(()=>{document.documentElement.lang=lang},[lang])
@@ -152,12 +160,13 @@ export default function ChalhuasPilotApp(){
   window.scrollTo({top:0,behavior:'auto'})
  }
  function selectDemo(){
+  setHls(null);setEco(null);setTerrain(null);setClimate(null)
   setField(demoShape);setSubplots(demoParcels);setIsDemo(true);setDrawing(null);setVertices([])
   setPlan(null);setOverrides({});setGeometryStatus(es?'Ejemplo sintético: sus límites no corresponden a un predio comprobado.':'Synthetic sketch: boundaries do not describe a verified property.')
   setSelectedParcel('A')
  }
  function startDraw(mode:Drawing){
-  if(mode==='field'){setField(null);setSubplots([]);setIsDemo(false);setPlan(null);setOverrides({})}
+  if(mode==='field'){setField(null);setSubplots([]);setIsDemo(false);setPlan(null);setOverrides({});setHls(null);setEco(null);setTerrain(null);setClimate(null)}
   setDrawing(mode);setVertices([]);setGeometryStatus('')
  }
  async function finishDraw(){
@@ -218,6 +227,36 @@ export default function ChalhuasPilotApp(){
   if(jobs.some(x=>x.status==='rejected')||(jobs[1].status==='fulfilled'&&jobs[1].value.status!=='available'))
    setEvidenceError(es?'Alguna fuente no respondió o no dispone de lecturas válidas. No asignamos valores inexistentes.':'Some sources unavailable or insufficient; no values inferred.')
   setEvidenceBusy(false)
+ }
+
+ async function loadHls(){
+  if(!field)return
+  setHlsBusy(true);setHlsError('');setHls(null)
+  try{
+   for(let attempt=0;attempt<18;attempt++){
+    const response=await fetch(API+'/api/rotation/history',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({polygon:field,start_year:2021})})
+    if(response.status===202){await new Promise(resolve=>setTimeout(resolve,5000));continue}
+    if(!response.ok)throw new Error(await httpErrorMessage(response,!es))
+    const data=await response.json() as HLSHistory
+    if(!Array.isArray(data.months))throw new Error('Invalid satellite response')
+    setHls(data);return
+   }
+   throw new Error(es?'La consulta de imágenes excedió el tiempo disponible. Intenta otra fecha.':'Satellite query timed out; retry later.')
+  }catch(e){setHlsError(e instanceof Error?e.message:'No hubo resultados HLS')}
+  finally{setHlsBusy(false)}
+ }
+ async function loadEco(){
+  if(!field)return
+  setEcoBusy(true);setEcoError('');setEco(null)
+  try{
+   const p=centre(field)
+   const response=await fetch(API+'/api/andes/ecostress-scenes?latitude='+p.lat+'&longitude='+p.lng)
+   if(!response.ok)throw new Error(await httpErrorMessage(response,!es))
+   setEco(await response.json() as EcoScenes)
+  }catch(e){setEcoError(e instanceof Error?e.message:'NASA CMR no disponible')}
+  finally{setEcoBusy(false)}
  }
  async function compare(){
   if(!field){setStatus(es?'Primero selecciona o dibuja un terreno.':'Select or draw a field first.');return}
@@ -307,11 +346,22 @@ export default function ChalhuasPilotApp(){
        {terrain&&<div className="c-science-value"><b>{terrain.approximate_gradient_degrees.toFixed(1)}°</b><span>{es?'Gradiente del entorno a 180 m, no pendiente del lote':'Neighbourhood gradient, not field slope'}</span></div>}
        {climate&&<><div className="c-science-value"><b>{climate.min_air_temperature_c?.toFixed(1)} °C</b><span>{es?'Mínima regional estimada de 2025':'2025 modelled regional minimum'}</span></div>
         <div className="c-science-value"><b>{climate.rainfall_sum_mm?.toFixed(0)} mm</b><span>{es?'Lluvia regional estimada de 2025':'2025 modelled regional precipitation'}</span></div></>}
+       <section className="c-hls-evidence"><h4>{es?'Historia de vegetación HLS (parcela marcada)':'HLS vegetation history (marked area)'}</h4>
+        <button type="button" className="c-action secondary" disabled={!field||hlsBusy} onClick={loadHls}>{hlsBusy?(es?'Buscando imágenes NASA HLS…':'Loading NASA HLS scenes…'):(es?'Consultar NDVI histórico':'Check historical NDVI')}</button>
+        {hls&&<div className="c-hls-reading"><strong>{hls.months_with_data}/{hls.months_total}</strong><span>{es?'Meses con lecturas válidas':'Months with valid readings'}</span>
+         {hls.months.filter(m=>m.ndvi!==null).slice(-1).map(x=><p key={x.month}>{x.month} · NDVI {x.ndvi?.toFixed(2)}. {es?'Solo verdor observado, no especie ni rendimiento.':'Vegetation signal only, not species or yield.'}</p>)}</div>}
+        {hlsError&&<p className="c-inline-note" role="status">{hlsError}</p>}
+       </section>
        {evidenceError&&<p role="status" className="c-inline-note">{evidenceError}</p>}
        {!(terrain||climate)&&!evidenceError&&<p className="c-muted">{es?'Sin consulta realizada: no se muestran cifras.':'No query made: no figures shown.'}</p>}
        <details><summary>{es?'Fuentes y otras capas':'Sources and other layers'}</summary>
         <p><a href="https://www.opentopodata.org/datasets/srtm/" target="_blank" rel="noreferrer">NASA/USGS SRTM 90 m</a> · <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noreferrer">ECMWF ERA5-Land</a></p>
         <p>{es?'ECOSTRESS V003: requiere imágenes y máscaras válidas para este lugar; todavía no habilitada. GLDAS: contexto regional en investigación.':'ECOSTRESS V003 needs valid local images and QA; not enabled. GLDAS is research-only regional context.'}</p>
+        <button type="button" className="c-action secondary" disabled={!field||ecoBusy} onClick={loadEco}>{ecoBusy?(es?'Buscando escenas NASA…':'Searching NASA scenes…'):(es?'Buscar escenas ECOSTRESS':'Search ECOSTRESS scenes')}</button>
+        {eco&&<p className="c-inline-note" role="status">{eco.status==='metadata_only_quality_unverified'?(es?'Se encontraron '+(eco.scenes?.length||0)+' escenas en el catálogo. Ninguna tiene temperatura validada todavía.':'Scene metadata found; none has validated temperature.'):
+          (es?'Sin escenas catalogadas en el periodo consultado.':'No catalogued scenes found for the requested period.')}</p>}
+        {eco?.scenes?.map(scene=><p className="c-eco-scene" key={scene.granule_name}>{scene.acquisition_time.slice(0,10)} · {scene.granule_name}</p>)}
+        {ecoError&&<p role="status" className="c-inline-note">{ecoError}</p>}
        </details>
       </div>
      </aside>
