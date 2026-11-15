@@ -10,15 +10,18 @@
     "NASA POWER + FAO-56 crop-water estimates and Lima crop catalogue",
     "Farmer-first result: crop order, sowing month, risks and visible AI evidence",
     "Optional science, soil and economic data behind expandable sections",
-    "Printable A4 with model provenance, mobile map and saved farm data"
+    "Printable A4 with model provenance, mobile map and saved farm data",
+    "Redesigned mobile-first farmer journey: field, crops, priorities, clear crop plan and optional NASA science"
   ],
   "computer_vision_enabled": false,
   "environment": "production",
   "source_branch": "main",
-  "primary_url": "https://terra360-ai-xi.vercel.app/",
+  "primary_url": "https://terra360-ai-eta.vercel.app/",
   "notes": "44 true NASA HLS monthly observations on one study polygon. The HLS model predicts a low-vegetation proxy, not crop identity or yield. It is only used for that exact demo polygon. GPM IMERG upper-basin historical archive, farm irrigation and agronomic field validation remain separate evidence gates.",
   "ai_model": "trained_nasa_hls_44_observations_barranca_1",
   "ai_model_status": "trained_chronological_holdout_11_observations",
   "ai_model_source": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
-  "ai_model_training": "33 chronological HLS observations for holdout evaluation; production fit on all 44"
+  "ai_model_training": "33 chronological HLS observations for holdout evaluation; production fit on all 44",
+  "ui_release": "v0.27-farmer-first-ux-pro-max",
+  "design_system": "UI UX Pro Max · Campo Claro"
 }
