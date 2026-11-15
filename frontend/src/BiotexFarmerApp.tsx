@@ -5,6 +5,7 @@ import {API,httpErrorMessage,readableApiError} from './network'
 import {approximatePolygonHectares,validatePolygon} from './geometry'
 import {TEAM_FIELDS,ZONES,type GeoPolygon} from './rotationZones'
 import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
+import {relativeMonthIndex,migrateSavedPlantings} from './rotationCalendar'
 import SatelliteEvidence from './SatelliteEvidence'
 import FarmDecisionEvidence,{type EconomicReport} from './FarmDecisionEvidence'
 import FarmerAIEvidence,{type AIEvidence} from './FarmerAIEvidence'
@@ -142,7 +143,6 @@ function labelCrop(id:string,lang:Lang){return (NAMES[id]||[id,id])[lang==='es'?
 function mon(i:number,lang:Lang){const m=(7+i)%12;return (lang==='es'?MONTHS_ES:MONTHS_EN)[m]}
 function monthYear(index:number,baseYear:number,lang:Lang){const d=new Date(Date.UTC(baseYear,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}
 function planMonth(index:number,lang:Lang,year?:number){if(year){const d=new Date(Date.UTC(year,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}return mon(index,lang)+' · '+(lang==='es'?'año ':'year ')+(index<12?'1':'2')}
-function ymNumber(s:string){return Number(s.slice(0,4))*12+Number(s.slice(5,7))-1}
 function recentAugust(){const now=new Date();const year=now.getUTCFullYear(),m=now.getUTCMonth()+1;return (m>=8?year:year-1)-2}
 function simpleDate(lang:Lang){return new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US',{year:'numeric',month:'long',day:'numeric'})}
 function fromGeo(p:GeoPolygon):Point[]{return p.coordinates[0].slice(0,-1).map(([lng,lat])=>({lat,lng}))}
@@ -236,8 +236,7 @@ export default function BiotexFarmerApp(){
  const baseYear=recentAugust()
  const point=field?centroid(field):centre
  const area=field?approximatePolygonHectares(fromGeo(field)):0
- const firstAugust=baseYear*12+7
- const confirmedOptions=[...new Set(plantings.map(p=>p.crop_id))]
+  const confirmedOptions=[...new Set(plantings.map(p=>p.crop_id))]
  const supported=coastalLima(point)
  const province=isBarranca(point)
  const sampleNote=isDemoField
@@ -251,7 +250,7 @@ export default function BiotexFarmerApp(){
   if(!field)return
   try{
    localStorage.setItem(SAVED_FARM_KEY,JSON.stringify({version:1,field,place,fieldLabel,isDemoField,
-    plantings,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear}))
+    plantings,baseYear,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear}))
    setSavedAvailable(true);setSavedNotice(lang==='es'?'Tus datos se guardaron en este dispositivo.':'Your details are saved on this device.')
   }catch{setSavedNotice(lang==='es'?'El navegador no permitió guardar los datos.':'Your browser could not save these details.')}
  }
@@ -261,7 +260,7 @@ export default function BiotexFarmerApp(){
    if(!data||data.version!==1||!data.field||!Array.isArray(data.plantings))throw new Error('bad saved farm')
    const vertices=fromGeo(data.field)
    if(!validatePolygon(vertices).valid||approximatePolygonHectares(vertices)<0.1||approximatePolygonHectares(vertices)>500)throw new Error('bad polygon')
-   const safe= (data.plantings as Planting[]).filter(v=>CROPS.includes(v.crop_id)&&Number.isInteger(v.start_index)&&v.start_index>=0&&v.start_index<24).slice(0,10)
+   const safe=migrateSavedPlantings((data.plantings as Planting[]).filter(v=>CROPS.includes(v.crop_id)),Number.isInteger(data.baseYear)?data.baseYear:null,baseYear).slice(0,10)
    resetAfterField()
    setField(data.field);setCentre(centroid(data.field));setFieldLabel(String(data.fieldLabel||''));setPlace(String(data.place||'Barranca'))
    setIsDemoField(Boolean(data.isDemoField));setPlantings(safe)
@@ -270,7 +269,7 @@ export default function BiotexFarmerApp(){
    setSoil(data.soil&&typeof data.soil==='object'?data.soil:{})
    setWaterAllowance(String(data.waterAllowance||''))
    if(Number.isInteger(data.planStartYear))setPlanStartYear(data.planStartYear)
-   setSavedNotice(lang==='es'?'Recuperamos tu chacra. Revisa los cultivos antes de continuar.':'Your field is restored. Please review the crops before continuing.')
+   setSavedNotice(lang==='es'?'Recuperamos tu chacra. Verifica las fechas; campañas fuera de la ventana actual no se importan.':'Your field is restored. Check dates; campaigns outside the current window were not imported.')
   }catch{setSavedNotice(lang==='es'?'No pudimos recuperar el terreno guardado.':'Unable to restore saved field.')}
  }
  function resetAfterField(){request.current++;setPlantings([]);setHistory(null);setHistoryBusy(false);setHintChoices({});setSatelliteAccepted(false);setManualEntered(false);setResult(null);setPlanBusy(false);setPlanError('');setHistoryError('')}
@@ -299,8 +298,8 @@ export default function BiotexFarmerApp(){
   setPlantings(x.current);setManualEntered(true);setEntryError('');setResult(null)}
  function recordSeason(c:Campaign){
   const id=hintChoices[c.start];if(!id)return
-  const start=ymNumber(c.start)-1-firstAugust
-  const idx=Math.max(0,Math.min(23,start))
+  const idx=relativeMonthIndex(c.start,baseYear)
+  if(idx<0||idx>=24){setEntryError(lang==='es'?'Temporada fuera de la ventana del historial.':'Season outside the history window.');return}
   const r=addPlantingToRotation(plantings,id,idx)
   if(r.status==='added'){setPlantings(r.current);setSatelliteAccepted(true);setEntryError('');setResult(null)}
   else setEntryError(r.status==='duplicate'?t.duplicate:t.limit)
@@ -319,7 +318,7 @@ export default function BiotexFarmerApp(){
   }catch(e){if(request.current===token)setHistoryError(readableApiError(e,lang==='en'))}
   finally{if(request.current===token)setHistoryBusy(false)}
  }
- const seasons=(history?.detection.campaigns||[]).filter(c=>{const n=ymNumber(c.start)-1-firstAugust;return n>=0&&n<=23}).slice(0,8)
+ const seasons=(history?.detection.campaigns||[]).filter(c=>{const n=relativeMonthIndex(c.start,baseYear);return n>=0&&n<=23}).slice(0,8)
  async function showPlan(){
   if(!current.length){setPlanError(t.missingPlan);return}
   if(!supported){setPlanError(t.unsupported);return}
@@ -532,7 +531,7 @@ export default function BiotexFarmerApp(){
        <p>{t.historyFound}</p>
        {seasons.length===0&&<p className="b-note">{t.noSeasons}</p>}
        <div className="b-season-grid">{seasons.map(c=><div className="b-season" key={c.start}>
-        <label>{t.possible} {monthYear(Math.max(0,ymNumber(c.start)-1-firstAugust),baseYear,lang)}?</label>
+        <label>{t.possible} {monthYear(relativeMonthIndex(c.start,baseYear),baseYear,lang)}?</label>
         <div className="b-season-row"><select value={hintChoices[c.start]||''} onChange={e=>setHintChoices(v=>({...v,[c.start]:e.target.value}))}>
          <option value="">{t.choose}</option>{CROPS.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select>
         <button type="button" className="b-btn b-btn-light" disabled={!hintChoices[c.start]} onClick={()=>recordSeason(c)}>{t.record}</button></div>
@@ -553,7 +552,7 @@ export default function BiotexFarmerApp(){
      <div className="b-input-row b-input-soft"><label>{t.income}<select value={confirmedOptions.includes(incomeCrop)?incomeCrop:''} onChange={e=>{setIncomeCrop(e.target.value);setResult(null)}}><option value="">{t.incomeAuto}</option>{confirmedOptions.map(id=><option key={id} value={id}>{labelCrop(id,lang)}</option>)}</select></label>
       <fieldset><legend>{t.scarcity}</legend><div className="b-choice-row">{(['escaso','normal','no_se'] as const).map(id=><button key={id} type="button" aria-pressed={scarcity===id} className={scarcity===id?'chosen':''} onClick={()=>{setScarcity(id);setResult(null)}}>{id==='escaso'?t.yes:id==='normal'?t.no:t.unknown}</button>)}</div></fieldset></div>
      <div className="b-year-control"><label>{lang==='es'?'¿En qué año empezarías el plan?':'Which year would you begin?'}
-      <select value={planStartYear} onChange={e=>setPlanStartYear(Number(e.target.value))}>{[0,1,2].map(offset=><option key={offset} value={new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}>{lang==='es'?'Agosto':'August'} {new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}</option>)}</select>
+      <select value={planStartYear} onChange={e=>{setPlanStartYear(Number(e.target.value));setResult(null)}}>{[0,1,2].map(offset=><option key={offset} value={new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}>{lang==='es'?'Agosto':'August'} {new Date().getUTCFullYear()+(new Date().getUTCMonth()>=7?1:0)+offset}</option>)}</select>
       </label><small>{lang==='es'?'El modelo empieza su ciclo en agosto; las fechas son aproximadas.':'The model cycle starts in August; dates are approximate.'}</small></div>
      <details className="b-farm-evidence"><summary>{lang==='es'?'¿Tienes datos de tu suelo o del agua de riego? (opcional)':'Do you have soil or irrigation records? (optional)'}</summary>
       <p>{lang==='es'?'Anota aquí solo los datos que conoces. Aparecerán en tu informe.':'Enter only values you know. They will appear in your report.'}</p>
