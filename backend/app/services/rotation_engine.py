@@ -621,72 +621,81 @@ def _strategy(key: str, plantings: list[dict], climate: dict, base: dict | None,
     }
 
 
-def highlight_for_farmer(strategies: list[dict], priorities: dict) -> dict:
-    """Highlight an evidence-supported alternative, never the first card by default.
+def highlight_for_farmer(strategies: list[dict], priorities: dict,
+                         water_turn: str = "no_se") -> dict:
+    """Highlight an evidence-supported option, not an agronomic prescription.
 
-    Scores use only transparent, relative crop-water and bare-month changes.
-    A highlighted alternative must improve the weighted objective; otherwise we
-    explicitly abstain. The score is not a probability or a model prediction.
+    1. Scarce irrigation: never promote an option with higher estimated dry-season
+       crop demand than the farmer's current plan.
+    2. Any irrigation regime: never promote a plan with >25% higher dry-season
+       demand; it stays visible as an alternative with its trade-offs.
+    3. Small differences are explicitly labelled; scoring is deterministic and
+       uses relative FAO-56 water estimates, bare months, and family repeats.
     """
     if not strategies:
         return {"recommended_strategy_id": None}
-    s0 = next((s for s in strategies if s["id"] == "S0"), None)
+    s0 = next((x for x in strategies if x["id"] == "S0"), None)
     if not s0:
         return {"recommended_strategy_id": None}
     base = s0["indicators"]
     water_weight = max(0, int(priorities.get("water", 1)))
     soil_weight = max(0, int(priorities.get("soil", 1)))
+    pests_weight = max(0, int(priorities.get("pests", 0)))
     candidates = []
     for strategy in strategies:
         if strategy["id"] == "S0":
             continue
         ind = strategy["indicators"]
-        water_gain = (base["water_low_river_mm"] - ind["water_low_river_mm"]) / max(
-            50.0, base["water_low_river_mm"])
+        base_water = base["water_low_river_mm"]
+        water_difference = (ind["water_low_river_mm"] - base_water) / max(1.0, base_water)
+        if water_turn == "escaso" and water_difference > 0.001:
+            continue
+        if water_difference > 0.25:
+            continue
+        water_gain = (base_water - ind["water_low_river_mm"]) / max(50.0, base_water)
         cover_gain = (base["bare_months"] - ind["bare_months"]) / 24.0
-        score = water_weight * water_gain + 2.0 * soil_weight * cover_gain
-        if score > 1e-6:
-            candidates.append((score, strategy["id"], water_gain, cover_gain))
+        pests_gain = (base.get("same_family_consecutive", 0)
+                      - ind.get("same_family_consecutive", 0)) / max(
+                          1.0, base.get("same_family_consecutive", 0))
+        score = water_weight * water_gain + 2 * soil_weight * cover_gain + 0.15 * pests_weight * pests_gain
+        # Exclude score-only noise that has no useful water, soil, or family benefit.
+        if score > 0.01 and (water_gain > 0.01 or cover_gain > 0 or pests_gain > 0):
+            candidates.append((score, strategy["id"], water_difference, cover_gain))
     if not candidates:
         return {
             "recommended_strategy_id": None,
-            "recommendation_reason_es": "Ninguna opción mejora lo suficiente tus prioridades actuales; revisa las demás posibilidades con un técnico.",
-            "recommendation_reason_en": "No option improves your current priorities enough; review the alternatives with a technician.",
+            "recommendation_reason_es": "Con lo que sabemos, ninguna opción ofrece una mejora suficientemente clara.",
+            "recommendation_reason_en": "Based on the available data, no option offers a sufficiently clear improvement.",
+            "recommendation_confidence": "insufficient",
         }
-    score, chosen, water_gain, cover_gain = max(candidates, key=lambda x: (x[0], -int(x[1][1:])))
-    pct = round(abs(water_gain) * 100)
+    _, chosen, water_difference, cover_gain = max(
+        candidates, key=lambda x: (x[0], -int(x[1][1:])))
+    pct = round(abs(water_difference) * 100)
     months = round(abs(cover_gain) * 24)
-    water_es = (
-        f"Se estima un {pct}% menos de agua para los cultivos en meses secos."
-        if water_gain > 0.001 else
-        f"Podría requerir cerca de {pct}% más agua para los cultivos en meses secos."
-        if water_gain < -0.001 else "La cantidad de agua estimada es similar a la actual."
-    )
-    water_en = (
-        f"Estimated crop-water demand in dry months is {pct}% lower."
-        if water_gain > 0.001 else
-        f"Estimated crop-water demand in dry months could be {pct}% higher."
-        if water_gain < -0.001 else "Estimated crop-water demand is similar to today."
-    )
-    bare_es = (
-        f"La tierra quedaría {months} meses menos sin cultivo."
-        if cover_gain > 0.001 else
-        f"La tierra quedaría {months} meses más sin cultivo."
-        if cover_gain < -0.001 else "El tiempo sin cultivo es similar."
-    )
-    bare_en = (
-        f"Soil would be without a crop for {months} fewer months."
-        if cover_gain > 0.001 else
-        f"Soil would be without a crop for {months} more months."
-        if cover_gain < -0.001 else "The time without a crop is similar."
-    )
+    if abs(water_difference) < 0.05:
+        water_es = f"La diferencia de agua estimada es pequeña (cerca del {pct} %)."
+        water_en = f"Estimated crop-water difference is small (about {pct}%)."
+        strength = "limited"
+    elif water_difference < 0:
+        water_es = f"Los cultivos podrían necesitar cerca del {pct} % menos de agua en meses secos."
+        water_en = f"Crops may need about {pct}% less water in dry months."
+        strength = "relative_evidence"
+    else:
+        water_es = f"Los cultivos podrían necesitar cerca del {pct} % más de agua en meses secos."
+        water_en = f"Crops may need about {pct}% more water in dry months."
+        strength = "relative_evidence"
+    if cover_gain > 0:
+        soil_es, soil_en = f"Tu terreno tendría cultivos {months} meses más.", f"Your field would carry crops for {months} more months."
+    elif cover_gain < 0:
+        soil_es, soil_en = f"Tu terreno quedaría {months} meses más sin cultivo.", f"Your field would be without crops for {months} more months."
+    else:
+        soil_es, soil_en = "El tiempo sin cultivos se mantiene.", "Time without crops stays the same."
     return {
         "recommended_strategy_id": chosen,
-        "recommendation_reason_es": water_es + " " + bare_es +
-            " Son estimaciones para comparar, no una promesa de ahorro.",
-        "recommendation_reason_en": water_en + " " + bare_en +
-            " These are comparisons, not guaranteed savings.",
-        "recommendation_method": "Weighted relative dry-season crop-water change and bare-month improvement; positive scores only.",
+        "recommendation_reason_es": water_es + " " + soil_es,
+        "recommendation_reason_en": water_en + " " + soil_en,
+        "recommendation_confidence": strength,
+        "recommendation_method": "Relative crop-water, crop coverage and family-repeat scores; scarce-water and +25% safety guards. No measured irrigation or economic predictions.",
     }
 
 
@@ -729,7 +738,7 @@ def compare(current: list[dict], climate: dict, *, priorities: dict | None = Non
             continue
         strategies.append(_strategy(key, plan, climate, base, history, water_turn, origin))
     seasons = load_catalog()["seasons"]
-    highlights = highlight_for_farmer(strategies, {"water": 1, "soil": 1, **priorities})
+    highlights = highlight_for_farmer(strategies, {"water": 1, "soil": 1, **priorities}, water_turn)
     return {
         **highlights,
         "status": status,
