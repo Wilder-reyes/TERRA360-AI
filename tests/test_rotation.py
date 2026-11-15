@@ -219,6 +219,32 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(len({x["source_url"] for x in z}), 1)
         self.assertEqual({x["sector"]["code"] for x in z}, {"15060105", "15020105"})
 
+    def test_optional_soil_and_irrigation_data_are_recorded_not_invented(self):
+        clim = coastal_climate()
+
+        async def fake(lat, lon, client=None, coastal=True):
+            return clim
+
+        with patch("app.api.rotation_routes.monthly_climate", fake):
+            response = self.client.post("/api/rotation/compare", json={
+                "zone": "barranca", "current": E.TEMPLATES["current"],
+                "soil": {"texture": "franca", "ph": 6.7, "organic_matter_percent": 2.1},
+                "irrigation_allowance_m3_ha_season": 2600,
+                "irrigation_source": "farmer_reported"
+            })
+        self.assertEqual(response.status_code, 200, response.text)
+        context = response.json()["farm_inputs"]
+        self.assertEqual(context["soil"]["ph"], 6.7)
+        self.assertEqual(context["status"], "provided_by_user_not_used_to_rank")
+        self.assertEqual(context["irrigation_allowance_m3_ha_season"], 2600)
+
+    def test_bad_soil_entries_are_rejected(self):
+        r = self.client.post("/api/rotation/compare", json={
+            "zone": "barranca", "current": E.TEMPLATES["current"],
+            "soil": {"ph": 18.0},
+        })
+        self.assertEqual(r.status_code, 422)
+
     def test_compare_abstains_without_current_rotation(self):
         r = self.client.post("/api/rotation/compare", json={"zone": "huaral", "current": []}).json()
         self.assertEqual(r["status"], "needs_current_rotation")
@@ -302,10 +328,34 @@ class FarmerRecommendationTests(unittest.TestCase):
         self.assertEqual(r["recommended_strategy_id"], "S1")
         self.assertIn("menos de agua", r["recommendation_reason_es"])
 
-    def test_soil_priority_prefers_coverage_and_mentions_water_cost(self):
+    def test_soil_priority_does_not_promote_extreme_water_penalty(self):
         r = E.highlight_for_farmer(self.plans, {"water": 0, "soil": 2})
-        self.assertEqual(r["recommended_strategy_id"], "S2")
-        self.assertIn("más agua", r["recommendation_reason_es"])
+        self.assertIsNone(r["recommended_strategy_id"])
+
+    def test_scarce_irrigation_rejects_higher_demand_even_with_more_coverage(self):
+        plans = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 300, "bare_months": 17}},
+            {"id": "S2", "indicators": {"water_low_river_mm": 320, "bare_months": 0}},
+        ]
+        result = E.highlight_for_farmer(plans, {"water": 0, "soil": 2}, "escaso")
+        self.assertIsNone(result["recommended_strategy_id"])
+
+    def test_minor_water_difference_is_explicitly_qualified(self):
+        plans = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 344, "bare_months": 14}},
+            {"id": "S1", "indicators": {"water_low_river_mm": 334, "bare_months": 12}},
+        ]
+        result = E.highlight_for_farmer(plans, {"water": 2, "soil": 2})
+        self.assertEqual(result["recommended_strategy_id"], "S1")
+        self.assertEqual(result["recommendation_confidence"], "limited")
+        self.assertIn("pequeña", result["recommendation_reason_es"])
+
+    def test_excessive_water_penalty_is_never_highlighted(self):
+        plans = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 344, "bare_months": 14}},
+            {"id": "S2", "indicators": {"water_low_river_mm": 1480, "bare_months": 0}},
+        ]
+        self.assertIsNone(E.highlight_for_farmer(plans, {"water": 0, "soil": 2})["recommended_strategy_id"])
 
     def test_both_priorities_do_not_hide_major_water_penalty(self):
         r = E.highlight_for_farmer(self.plans, {"water": 2, "soil": 2})
