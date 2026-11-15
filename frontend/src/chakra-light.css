@@ -19,3 +19,7 @@
 }
 .chakra-theme-toggle{min-width:42px;min-height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#e7e9e7;font-size:18px;line-height:1;cursor:pointer}
 .chakra-theme-toggle:hover{background:rgba(255,255,255,.08)}
+
+/* Narrow phones: the extra toggle must not cause horizontal overflow (375 px). */
+@media (max-width:520px){.b-app .b-header-tools{gap:6px}.chakra-theme-toggle{min-width:34px;min-height:34px;font-size:15px;padding:0}}
+@media (max-width:400px){.b-app .b-header-tools{gap:4px}.chakra-theme-toggle{min-width:30px;min-height:34px}.b-app .b-language button{width:36px}}
