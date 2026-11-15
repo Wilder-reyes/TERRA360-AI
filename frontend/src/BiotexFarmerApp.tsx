@@ -68,7 +68,7 @@ const NAMES:Record<string,[string,string]>={
  arveja_verde:['Arveja','Pea'],cebolla:['Cebolla','Onion'],zanahoria:['Zanahoria','Carrot'],
  brocoli_col:['Brócoli / col','Broccoli / cabbage'],alfalfa:['Alfalfa','Alfalfa']
 }
-const CROPS=Object.keys(NAMES)
+const CROPS=['maiz_amarillo_duro','camote','papa','frijol_grano_seco','frijol_castilla','vainita','pallar','cebolla','zanahoria']
 const MONTHS_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre']
 const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December']
 const LABELS={
@@ -317,7 +317,7 @@ export default function BiotexFarmerApp(){
  const area=field?approximatePolygonHectares(fromGeo(field)):0
  const subArea=subplots.reduce((total,z)=>total+approximatePolygonHectares(fromGeo(z.polygon)),0)
  const remArea=Math.max(0,area-subArea)
- const availableZones=[...(remArea>=.005?[{id:'rest',polygon:null as GeoPolygon|null,ha:remArea}]:[]),...subplots.map(z=>({id:z.id,polygon:z.polygon as GeoPolygon|null,ha:approximatePolygonHectares(fromGeo(z.polygon))}))]
+ const availableZones=subplots.length?subplots.map(z=>({id:z.id,polygon:z.polygon as GeoPolygon|null,ha:approximatePolygonHectares(fromGeo(z.polygon))})):[...(remArea>=.005?[{id:'rest',polygon:null as GeoPolygon|null,ha:remArea}]:[])]
  const selectedZone=availableZones.some(z=>z.id===activeZone)?activeZone:(availableZones[0]?.id||'rest')
  const assignedCount=availableZones.filter(z=>Boolean(zoneCrops[z.id])).length
  const monthChoices=Array.from({length:36},(_,i)=>i).filter(i=>new Date(Date.UTC(recentAugust(),7+i,1)).getTime()<=Date.now())
@@ -353,27 +353,27 @@ export default function BiotexFarmerApp(){
  }
  function navigate(s:Step){
   if(s===1&&field&&subplots.length===0&&Object.keys(zoneCrops).length===0){
-   const initial=suggestedZones(field,[],2)
-   if(initial.length){setSubplots(initial);setActiveZone('rest')}
+   const initial=suggestedZones(field,[],3)
+   if(initial.length){setSubplots(initial);setActiveZone(initial[0].id)}
   }
   setStep(s);window.scrollTo({top:0,behavior:'smooth'})
  }
  function zoneTitle(id:string){
   if(id==='rest')return subplots.length?(lang==='es'?'Zona A · parte restante':'Area A · remaining land'):(lang==='es'?'Zona A · todo el terreno':'Area A · whole field')
-  const index=subplots.findIndex(z=>z.id===id)+(remArea>=.005?1:0)
+  const index=subplots.findIndex(z=>z.id===id)
   return (lang==='es'?'Zona ':'Area ')+String.fromCharCode(65+Math.min(25,Math.max(0,index)))
  }
  function updateZonePolygon(id:string,polygon:GeoPolygon){
   if(!field)return
   const updated=subplots.map(zone=>zone.id===id?{...zone,polygon}:zone)
   const check=validateSubplotLayout(fromGeo(field),updated.map(z=>({id:z.id,points:fromGeo(z.polygon)})))
-  if(!check.valid){setFieldError(lang==='es'?'Mueve o ajusta el rectángulo dentro del terreno, sin cruzar otra zona.':'Move or resize the rectangle inside the field, without overlapping areas.');return}
+  if(!check.valid){setFieldError(lang==='es'?'Mueve los vértices del polígono dentro del terreno, sin cruzar otras zonas.':'Move or resize the rectangle inside the field, without overlapping areas.');return}
   setSubplots(updated);setFieldError('');setSpatialError('');setSpatialPlan(null)
  }
  function addEditableZone(){
   if(!field||subplots.length>=20)return
   const next=suggestedZones(field,subplots,1)
-  if(!next.length){setFieldError(lang==='es'?'No encontramos espacio para otro rectángulo. Ajusta los que ya tienes.':'No space for a new rectangle. Adjust existing areas.');return}
+  if(!next.length){setFieldError(lang==='es'?'No hay espacio para otro polígono. Ajusta los que ya tienes.':'No space for a new rectangle. Adjust existing areas.');return}
   setSubplots(current=>[...current,...next]);setActiveZone(next[0].id);setPendingCrop(null);setFieldError('');setSpatialPlan(null)
  }
  function saveFarm(){
@@ -724,7 +724,7 @@ export default function BiotexFarmerApp(){
  return <div className={'b-app chakra-farmer-clean '+(new URLSearchParams(window.location.search).get('research')==='1'?'chakra-research ':'')+(spatialPlan?'chakra-has-zone-print':'')}>
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
   <header className="b-header"><div className="b-header-inner">
- <button type="button" className="b-brand" aria-label={lang==='es'?'Inicio CHAKRA':'CHAKRA home'} onClick={()=>{showPage(null);navigate(0);setLanding(true)}}><span className="b-brand-mark"><ChakraMark/></span><div><b>chakra</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></button>
+ <button type="button" className="b-brand" aria-label={lang==='es'?'Inicio CHAKRA X':'CHAKRA X home'} onClick={()=>{showPage(null);navigate(0);setLanding(true)}}><span className="b-brand-mark"><ChakraMark/></span><div><b>CHAKRA X</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></button>
  <nav className="chakra-nav" aria-label={lang==='es'?'Navegación principal':'Main navigation'}>
  <a href="/como-funciona" onClick={e=>{e.preventDefault();showPage('how')}}>{lang==='es'?'Cómo funciona':'How it works'}</a>
  <a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a>
@@ -769,8 +769,8 @@ export default function BiotexFarmerApp(){
        </details>
       <label className="b-low-bandwidth"><input type="checkbox" checked={saveMobileData} onChange={e=>{setSaveMobileData(e.target.checked);if(e.target.checked)setMapLayer('photo')}}/> {lang==='es'?'Ahorrar datos móviles (mapa sencillo)':'Save mobile data (simple map)'}</label>
       {(drawing||drawingSubplot)&&<div className="b-map-guide"><strong>{drawingSubplot?(lang==='es'?'Dibuja una zona dentro de tu terreno':'Draw an area inside your field'):(lang==='es'?'Marca tu chacra en 3 pasos':'Mark your field in 3 steps')}</strong><ol><li>{lang==='es'?'Acerca el mapa.':'Zoom in.'}</li><li>{lang==='es'?'Toca cada esquina del terreno.':'Tap each field corner.'}</li><li>{drawingSubplot?(lang==='es'?'Pulsa «Guardar subparcela».':'Tap Save subplot.'):(lang==='es'?'Pulsa «Terminar terreno».':'Tap Finish field.')}</li></ol></div>}
-      <div className="b-map-frame" data-bio-target="bio-map"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
-       <TileLayer key={saveMobileData?'streets':mapLayer==='terrain'?'terrain':'satellite'} attribution={saveMobileData?'© OpenStreetMap contributors':'Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors'}
+      <div className="b-map-frame" data-bio-target="bio-map"><MapContainer maxZoom={21} className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
+       <TileLayer maxNativeZoom={17} maxZoom={21} key={saveMobileData?'streets':mapLayer==='terrain'?'terrain':'satellite'} attribution={saveMobileData?'© OpenStreetMap contributors':'Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors'}
         url={saveMobileData?'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png':mapLayer==='terrain'?'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}/>
        {!saveMobileData&&isScienceLayer(mapLayer)&&<WMSTileLayer key={mapLayer+mapDate} url={GIBS_WMS}
         layers={GIBS_LAYERS[mapLayer].wmsLayer}
@@ -837,17 +837,17 @@ export default function BiotexFarmerApp(){
    {step===1&&field&&<section className="b-form-page chakra-zone-page">
     <div className="b-intro"><span className="b-eyebrow">{lang==='es'?'PASO 2 DE 3':'STEP 2 OF 3'}</span>
      <h1>{lang==='es'?'Muéstranos qué sembraste':'Show what you planted'}</h1>
-     <p>{lang==='es'?'Elige un cultivo y márcalo en la parte del terreno donde creció. Si sembraste productos distintos, divide la parcela en zonas.':'Choose a crop and mark where it grew. Divide your field into areas if you planted different crops.'}</p></div>
+     <p>{lang==='es'?'Marca únicamente las zonas que tienen cultivos actualmente. Ajusta sus vértices para que sigan el contorno real de cada área sembrada.':'Only mark areas currently planted. Adjust polygon vertices to match each cultivated area.'}</p></div>
     <div className="chakra-zone-map-wrap" data-bio-target="bio-zone-map">
-     <div className="chakra-zone-map-frame" id="chakra-zone-map"><MapContainer center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
+     <div className="chakra-zone-map-frame" id="chakra-zone-map"><MapContainer maxZoom={21} center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
       <ZoneDropBridge field={field} subplots={subplots} onAssign={assignZoneCrop}/>
       <ChakraZoneHandles field={field} zones={subplots} selected={selectedZone} onMove={updateZonePolygon} onInvalid={message=>setFieldError(message)}/>
-      <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
+      <TileLayer maxNativeZoom={17} maxZoom={21} attribution="Imagery © Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
       <FlyTo point={point} polygon={mapPolygon}/>
       <DrawLayer enabled={drawingSubplot} points={points} onPoint={p=>{setPoints(q=>[...q,p]);setFieldError('')}} onFinish={finish}/>
       <Polygon positions={(mapPolygon||[]).map(v=>[v.lat,v.lng] as [number,number])} interactive={!drawingSubplot}
-       eventHandlers={{click:()=>{if(pendingCrop)assignZoneCrop('rest',pendingCrop);else setActiveZone('rest')}}}
-       pathOptions={{color:'#D6F866',weight:5,fillColor:cropVisual(zoneCrops.rest?.crop_id).color,fillOpacity:zoneCrops.rest?.crop_id?0.45:0.15}}>
+       eventHandlers={{click:()=>{if(!subplots.length){if(pendingCrop)assignZoneCrop('rest',pendingCrop);else setActiveZone('rest')}}}}
+       pathOptions={{color:'#D6F866',weight:5,fillColor:cropVisual(zoneCrops.rest?.crop_id).color,fillOpacity:subplots.length?0:zoneCrops.rest?.crop_id?0.45:0.15}}>
        {zoneCrops.rest&&subplots.length===0&&<Tooltip permanent direction="center" className="chakra-crop-map-label">{cropVisual(zoneCrops.rest.crop_id).icon} {labelCrop(zoneCrops.rest.crop_id,lang)}</Tooltip>}
       </Polygon>
       {subplots.map(z=><Polygon key={z.id} positions={fromGeo(z.polygon).map(v=>[v.lat,v.lng] as [number,number])}
@@ -862,9 +862,9 @@ export default function BiotexFarmerApp(){
        <button className="b-btn b-btn-primary" type="button" disabled={points.length<3} onClick={finish}>{lang==='es'?'Guardar zona':'Save zone'}</button>
        <button className="b-btn b-btn-light" type="button" onClick={()=>{setDrawingSubplot(false);setPoints([])}}>{t.cancel}</button></>:<>
        {selectedZone!=='rest'&&<button className="b-btn b-btn-light" type="button" onClick={()=>deleteSubplot(selectedZone)}>{lang==='es'?'Quitar zona elegida':'Remove selected area'}</button>}
-       <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={addEditableZone}>{lang==='es'?'+ Añadir rectángulo':'+ Add rectangle'}</button></>}
+       <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={addEditableZone}>{lang==='es'?'+ Añadir polígono':'+ Add polygon'}</button></>}
      </div>
-     <p className="chakra-zone-map-note">{lang==='es'?'Toca una zona para registrar su cultivo. Para ajustarla, mueve el botón central o sus esquinas.':'Tap an area to record its crop. Move its center or corners to adjust the rectangle.'}</p>
+     <p className="chakra-zone-map-note">{lang==='es'?'Toca una zona para registrar su cultivo. Para ajustarla, arrastra el centro o cualquiera de sus vértices para cambiar su forma.':'Tap an area to record its crop. Drag its center or any vertex to reshape the polygon.'}</p>
     </div>
     {fieldError&&<p className="b-error" role="alert">{fieldError}</p>}
     <div className="chakra-zones-heading"><h2>{lang==='es'?'Mis zonas':'My areas'}</h2><span>{assignedCount}/{availableZones.length} {lang==='es'?'zonas registradas':'areas recorded'}</span></div>
@@ -873,10 +873,10 @@ export default function BiotexFarmerApp(){
      <span>{zoneTitle(z.id)}</span><small>{z.ha.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2})} {lang==='es'?'hectáreas':'hectares'}</small>
      <strong>{zoneCrops[z.id]?labelCrop(zoneCrops[z.id].crop_id,lang):(lang==='es'?'Por registrar':'To register')}</strong></button>)}</div>
     <section className="chakra-crop-section" data-bio-target="bio-crops"><h2>{lang==='es'?'Elige tus cultivos':'Choose your crops'}</h2>
-     <p className="chakra-zone-drag-hint">{lang==='es'?'Selecciona el mes, toca un cultivo y marca su lugar en el mapa de al lado. También puedes arrastrarlo.':'Choose the month, select a crop and tap its place on the map beside it. You can also drag it.'}</p>
-     <div className="chakra-crop-planting-month" data-bio-target="bio-plant-month"><label>{lang==='es'?'¿Cuándo sembraste este cultivo por última vez?':'When did you last plant this crop?'}
+     <p className="chakra-zone-drag-hint">{lang==='es'?'Indica qué está sembrado ahora, cuándo lo sembraste y en qué polígono crece. Puedes tocar o arrastrar la tarjeta.':'Select the current crop and its planting date, then tap or drag it onto its polygon.'}</p>
+     <div className="chakra-crop-planting-month" data-bio-target="bio-plant-month"><label>{lang==='es'?'¿Cuándo sembraste lo que está creciendo ahora en esta zona?':'When did you plant the crop currently growing in this area?'}
       <select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{monthChoices.map(i=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label>
-      <p className="chakra-month-why">{lang==='es'?'El mes nos ayuda a saber cuándo terminó el cultivo anterior y cuándo puedes volver a sembrar.':'The month helps us estimate when the previous crop ended and when you could plant again.'}</p>
+      <p className="chakra-month-why">{lang==='es'?'Indica la fecha de siembra actual de esta zona; no necesitas registrar campañas antiguas. La usamos para estimar cuándo termina el ciclo.':'Enter when the current crop was planted, not historical campaigns. It helps us estimate when its cycle ends.'}</p>
      </div>
      <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" draggable onDragStart={event=>{event.dataTransfer.setData('application/x-chakra-crop',id);event.dataTransfer.effectAllowed='copy';setPendingCrop(id);setCrop(id)}} key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>{setCrop(id);setPendingCrop(id);if(window.innerWidth<=960)document.getElementById('chakra-zone-map')?.scrollIntoView({behavior:'smooth',block:'center'})}}>
       <span className="chakra-crop-art" aria-hidden="true">{({maiz_amarillo_duro:'🌽',maiz_chala:'🌽',camote:'🍠',papa:'🥔',frijol_grano_seco:'🫘',frijol_castilla:'🫘',vainita:'🫛',pallar:'🫘',arveja_verde:'🫛',cebolla:'🧅',zanahoria:'🥕',brocoli_col:'🥦',alfalfa:'🌿'} as Record<string,string>)[id]}</span>
@@ -893,7 +893,7 @@ export default function BiotexFarmerApp(){
      {history&&<SatelliteEvidence months={history.months} polygon={field} lang={lang} sensor={history.sensor} monthsWithData={history.months_with_data} monthsTotal={history.months_total}/>}
     </details>
     <details className="chakra-zone-help chakra-farmer-extra"><summary>{lang==='es'?'Administrar zonas':'Manage areas'}</summary>
-     <p>{lang==='es'?'Dibuja zonas dentro del terreno para registrar otros cultivos. El resto se calcula automáticamente.':'Draw zones inside the field to record other crops. Remaining area is calculated automatically.'}</p>
+     <p>{lang==='es'?'Delimita únicamente las áreas sembradas con polígonos. El terreno exterior a esas áreas no cuenta como zona de cultivo.':'Outline planted areas as polygons. Land outside these polygons is not counted as a crop zone.'}</p>
      {subplots.map(z=><button type="button" className="b-btn b-btn-light" key={z.id} onClick={()=>deleteSubplot(z.id)}>{lang==='es'?'Quitar ':'Remove '}{z.id}</button>)}</details>
     <div className="b-next between" data-bio-target="bio-next">
      <button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}>{t.back}</button>
