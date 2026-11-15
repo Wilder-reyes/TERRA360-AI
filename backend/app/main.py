@@ -12,11 +12,13 @@ from app.api.smap_routes import router as smap_router
 from app.api.gaez_routes import router as gaez_router
 from app.api.rotation_routes import router as rotation_router
 from app.api.andes_routes import router as andes_router
+from app.api.scientific_sources_routes import router as scientific_sources_router
+from app.api.ai_evidence_routes import router as ai_evidence_router
 
 app = FastAPI(
-    title="BIOTEX API",
+    title="CHAKRA API",
     description="Earth observation and agricultural decision support for user-selected coordinates worldwide.",
-    version="0.23.0",
+    version="0.5.0-preview",
 )
 app.add_middleware(
     CORSMiddleware,
@@ -37,3 +39,6 @@ app.include_router(smap_router)
 app.include_router(gaez_router)
 app.include_router(rotation_router)
 app.include_router(andes_router)
+app.include_router(scientific_sources_router)
+
+app.include_router(ai_evidence_router)

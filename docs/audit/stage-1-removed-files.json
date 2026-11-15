@@ -1,0 +1,122 @@
+[
+  {
+    "path": "frontend/src/App.tsx",
+    "previous_sha256": "8ad3cbbaf7fed00761662358f67cad89f7c0b26070645df39a907e7d1fd98bcf",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/FarmerApp.tsx",
+    "previous_sha256": "b01d11e59ed152abe5840587d903a0df3d3c19a09b7acea2a409ce8f680d3777",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/FarmerMap.tsx",
+    "previous_sha256": "81809c27896abc7d732fec2b1dced4c79b4addebccd60ba369157d398feaf0bf",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/GeoWorkspace.tsx",
+    "previous_sha256": "c5fcc8f110594c098fc6beef13425059fec65af004631394d96e4e66d6534133",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/RotationApp.tsx",
+    "previous_sha256": "d854732b0524b6f24cbc286c170d6198803660d213765b3f0b608b996a129f2b",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/ChalhuasPilotApp.tsx",
+    "previous_sha256": "488a425552594f19ce75e221b2dab37a188f5aaada18a9798291010ed74029d7",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/farmer-app.css",
+    "previous_sha256": "d6dc3c4b6616acfa398e21b5fb38d11d7cfaf7125d3bdcbed82e3757d4675592",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/geo-workspace.css",
+    "previous_sha256": "01a6b0ce22c47e33334332fdb13995c09d351ef4e8dc87b7261b2f66e9f262b3",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/rotation.css",
+    "previous_sha256": "ef760c4d7ff0327e259235d326797550b64ee13a4d611c49fc85efac4c853d4a",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/chalhuas-pilot.css",
+    "previous_sha256": "2f495c55c0efcbda5d84a39b37514e2ae656142b9aa366aecab16f267c76952f",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/biotex-v027.css",
+    "previous_sha256": "8ea3a498422e96bbf06ddbbf625c496fa862ba32cbfaf62f02170a8828e52f0a",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/crop-search.css",
+    "previous_sha256": "87e0c6ab0f7100965cd4d73b613e9b5c409bf93d542c56233e2514bc76f9f68d",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/copy.ts",
+    "previous_sha256": "5b9c64bb1655b7898e50ccdeba094553cf7a8105768404f8a85d7eaccbfbe66c",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/pilot.ts",
+    "previous_sha256": "744c8ad7070d2692aa3c49f55919cac6dc89559d69376f3262758ffe7b4c3e2c",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "frontend/src/i18n/index.ts",
+    "previous_sha256": "0a09fe5bcff48ae3996b3f71e812b579317fba73bc1093c0cab6c0b01f3ded42",
+    "reason": "Historical page/style or dictionary outside the single-shell import graph; retained functions moved to FieldEvidence, AndesRotation, or shared shell. Tests migrated by capability."
+  },
+  {
+    "path": "vercel.json",
+    "previous_sha256": "c60d2a240e7a81041ea7593ddbd8eb91be79bd1bf7787dfd426273a446fdc74f",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  },
+  {
+    "path": ".vercelignore",
+    "previous_sha256": "7a39301bfe240376bc0a4164d87485482c01314ab51c273db12726718d1ed3db",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  },
+  {
+    "path": "render.yaml",
+    "previous_sha256": "244aff728f3017322182576f1d2b2665717bb649e74e1d1aa6675db38baac3c8",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  },
+  {
+    "path": ".github/workflows/pages.yml",
+    "previous_sha256": "825f2da4a904158a62083353423024fd49decbd1b4b52e83d1ebcf3eaec35d8c",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  },
+  {
+    "path": ".github/workflows/smoke-production.yml",
+    "previous_sha256": "69351e18bd2a69eddd7dc50f2cd8f5902d5bef3234f420604a64766577c345f9",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  },
+  {
+    "path": "scripts/smoke_public_demo.py",
+    "previous_sha256": "908a896a5de5d9b1b266200c0ef76b9b1ee0d07230842774028484b87b0b19bb",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  },
+  {
+    "path": "scripts/smoke_chalhuas_public.py",
+    "previous_sha256": "6a6358100a5e202a280f1ce06f11a531bf226334c83c80dbcdfb59db9f41f3bc",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  },
+  {
+    "path": "docs/cloudflare-pages-render.md",
+    "previous_sha256": "484a46ed0fe3091a8e1b34a1de937a23383e80a6c5b40ed276f1fdfb8f853c4a",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  },
+  {
+    "path": "docs/hosting-and-domain.md",
+    "previous_sha256": "0c30031ab90cb21aa56998e5791d14a3586c7fd0953d09aad2a753df68d07f45",
+    "reason": "Old provider/site configuration or smoke script; superseded by frontend/vercel.json, manual deployment guide and explicit-URL smoke script."
+  }
+]

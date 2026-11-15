@@ -1,4 +1,4 @@
-name: TERRA360 quality checks
+name: NSPACE BIOTEX quality checks
 on:
   push:
     branches: [main]
@@ -45,7 +45,7 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v5
-      - name: Build the exact Render Docker context and verify native dependencies
+      - name: Build the exact backend Docker context and verify native dependencies
         run: docker build -f backend/Dockerfile -t terra360-backend:ci backend
       - name: Exercise the API health and Sentinel-2 routes inside the container
         run: |
@@ -60,5 +60,5 @@ jobs:
           assert client.post('/api/environment/gaez-v5/selected-layer/raw-cell', json={}).status_code == 422
           assert client.post('/api/environment/smap/regional-daily', json={}).status_code == 422
           assert client.post('/api/environment/gpm-imerg/polygon-daily', json={}).status_code == 422
-          print('Render image starts and Sentinel-2 route is reachable')
+          print('Backend image starts and Sentinel-2 route is reachable')
           "

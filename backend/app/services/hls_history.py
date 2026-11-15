@@ -58,7 +58,7 @@ _LOCK = asyncio.Lock()
 # polygon, same start year, same last month). Never shared as "fresh" data:
 # the response keeps its own computed_at timestamp.
 # On Vercel only /tmp is writable.
-CACHE_DIR = Path(os.getenv("TERRA360_CACHE_DIR") or ("/tmp/terra360" if os.getenv("VERCEL") else Path(__file__).resolve().parents[2] / ".cache")) / "hls_history"
+CACHE_DIR = Path(os.getenv("TERRA360_CACHE_DIR") or (Path(__file__).resolve().parents[2] / ".cache")) / "hls_history"
 
 
 def _disk_path(key: str) -> Path:

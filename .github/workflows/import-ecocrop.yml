@@ -1,10 +1,6 @@
 name: Import pinned FAO ECOCROP data
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/import_ecocrop.py'
-      - '.github/workflows/import-ecocrop.yml'
+  # Re-import official reference data only by deliberate manual action.
   workflow_dispatch:
 permissions:
   contents: write

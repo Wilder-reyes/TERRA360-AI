@@ -1,0 +1,303 @@
+/** BIOTEX Stage 2 · Agricultural Dark Mode.
+ * Final screen design tokens are shared across four steps and regional panels.
+ * Scientific rasters, provider legends, imagery and the existing white A4 print
+ * implementation are intentionally NOT recolored. All rules below are screen-only.
+ */
+:root {
+  color-scheme: dark;
+  --bg-primary: #0B0E0C;
+  --bg-surface: #141A16;
+  --bg-interactive: #1E2620;
+  --text-primary: #F0F4F1;
+  --text-secondary: #A3B2A8;
+  --accent-primary: #4CD964;
+  --accent-warning: #F59E0B;
+  --border-subtle: #35453A;
+  --radius-card: 16px;
+  --radius-button: 12px;
+  --touch-min: 48px;
+}
+@media screen {
+  html,body,#root {background:var(--bg-primary);color:var(--text-primary)}
+  .b-app {
+    --ink:var(--text-primary);--forest:var(--text-primary);--forest-2:var(--accent-primary);
+    --leaf:var(--bg-interactive);--paper:var(--bg-surface);--canvas:var(--bg-primary);
+    --border:var(--border-subtle);--muted:var(--text-secondary);
+    --sun:var(--accent-warning);--error:#FFB4A8;--surface:var(--bg-surface);
+    --b-wheat:#322817;--b-line:var(--border-subtle);
+    --b-shadow:0 12px 30px rgba(0,0,0,.13);
+    background:var(--bg-primary);color:var(--text-primary);font-family:Inter,'Segoe UI',system-ui,sans-serif;
+  }
+  .b-app :is(h1,h2,h3,h4,p,strong,legend){color:inherit}
+  .b-app :is(h1,h2,h3,h4){color:var(--text-primary)}
+  .b-app :is(p,small){line-height:1.55}
+  .b-app :is(a,.b-eyebrow,.b-section-kicker,.b-sample-label,.c-small){color:#92F4A5}
+  .b-app :is(a,button,summary,select,input,textarea):focus-visible{outline:3px solid var(--accent-warning);outline-offset:3px}
+  .b-app :is(button,input,select,textarea,a,summary){-webkit-tap-highlight-color:transparent}
+  .b-app :is(button,select,input,textarea){font:inherit}
+  .b-app :is(button,summary){touch-action:manipulation}
+  .b-app :is(button,.b-btn,.c-action){min-height:var(--touch-min);border-radius:var(--radius-button)}
+  .b-app :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea){
+    color:var(--text-primary);background:var(--bg-interactive);border:1.5px solid #5A715F;
+    border-radius:var(--radius-button);min-height:var(--touch-min);padding:10px 13px;
+  }
+  .b-app input::placeholder,.b-app textarea::placeholder{color:#BAC9BE;opacity:1}
+  .b-app :is(input[type=checkbox],input[type=radio],input[type=range]){accent-color:var(--accent-primary);min-width:20px;min-height:20px}
+  .b-app :is(button:disabled,select:disabled){opacity:.55}
+  .b-app :is(.b-header,.b-footer){background:#101A13;color:var(--text-primary);box-shadow:none}
+  .b-app .b-header{border-bottom:1px solid var(--border-subtle)}
+  .b-app .b-header-context,.b-app .b-brand small,.b-app .b-footer span{color:var(--text-secondary)}
+  .b-app .b-brand-mark{background:var(--accent-primary);color:#102414;border-radius:14px;box-shadow:none}
+  .b-app .b-brand b,.b-app .b-footer strong{color:var(--text-primary)}
+  .b-app .b-header-dot{background:var(--accent-primary);box-shadow:0 0 0 4px #4cd96420}
+  .b-app .b-language{background:var(--bg-interactive);border:1px solid var(--border-subtle)}
+  .b-app .b-language button{color:var(--text-primary);min-height:var(--touch-min);min-width:var(--touch-min)}
+  .b-app .b-language button.on{background:var(--accent-primary);color:#0B170F}
+  .b-app .b-progress-wrap{background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);box-shadow:none}
+  .b-app .b-progress-label{border-color:var(--border-subtle)}
+  .b-app .b-progress-label :is(span,strong){color:var(--text-secondary)}
+  .b-app .b-progress button{color:var(--text-secondary);min-height:var(--touch-min)}
+  .b-app .b-progress button.active{background:var(--bg-interactive);color:var(--text-primary);box-shadow:inset 0 0 0 1px #597A5F}
+  .b-app .b-progress button.done{color:#9FE9AB}
+  .b-app .b-step-number{background:var(--bg-interactive);border-color:#5A715F;color:var(--text-primary)}
+  .b-app .b-progress button.active .b-step-number{background:var(--accent-primary);border-color:var(--accent-primary);color:#0D2312}
+  .b-app .b-progress button.done .b-step-number{background:#265D35;border-color:#468E57;color:#D7FFE0}
+  .b-app .b-main{background:transparent}
+  .b-app .b-hero-intro{background:transparent}
+  .b-app .b-hero-copy>p,.b-app .b-intro>p,.b-app .b-hero-promise span,.b-app .b-form-hint,
+  .b-app .b-card-heading p,.b-app .b-muted,.b-app .b-map-label,.b-app .b-next-context,
+  .b-app .b-story-item small,.b-app .b-goal-description,.b-app .b-result-reading-order span,
+  .b-app .b-planting-list small,.b-app .b-keyfigures span,.b-app .b-sequence-foot,
+  .b-app .b-satellite-content>p,.b-app .b-technical-inner ul,.b-app .b-location-summary span,
+  .b-app .b-ai-farmer-context,.b-app .b-ai-details-content>p{color:var(--text-secondary)}
+  .b-app .b-hero-spark{background:var(--accent-primary);box-shadow:0 0 0 5px #4cd96420}
+  .b-app :is(.b-card,.b-hero-story,.b-satellite,.b-technical,.b-farm-econ,.b-evidence-sources,
+    .b-ai-farmer,.b-recommend,.b-other,.b-next-emphasized,.c-card){
+    background:var(--bg-surface);border-color:var(--border-subtle);box-shadow:none;
+    color:var(--text-primary);border-radius:var(--radius-card);
+  }
+  .b-app .b-hero-story:before{border-color:var(--border-subtle)}
+  .b-app .b-hero-story-label{color:#EEC37A}
+  .b-app .b-story-item{border-color:var(--border-subtle)}
+  .b-app .b-story-item>span,.b-app :is(.b-sample-label,.b-section-kicker){color:#8EECA4}
+  .b-app .b-story-item>span{background:#234C30}
+  .b-app :is(.b-btn-solid,.b-btn-primary,.c-action.primary,.satellite-load){
+    background:var(--accent-primary);border-color:var(--accent-primary);color:#102414;box-shadow:none;
+  }
+  .b-app :is(.b-btn-solid,.b-btn-primary,.c-action.primary,.satellite-load):hover:not(:disabled){background:#72EB82;border-color:#72EB82;color:#102414}
+  .b-app :is(.b-btn-light,.c-action.secondary,.c-action,.b-compare-trigger){
+    background:var(--bg-interactive);border-color:#55725A;color:var(--text-primary);box-shadow:none;
+  }
+  .b-app :is(.b-btn-light,.c-action.secondary,.c-action,.b-compare-trigger):hover:not(:disabled){background:#2B3830;border-color:#91BA9A;color:var(--text-primary)}
+  .b-app :is(.b-place-results,.b-farm-recovery,.b-empty,.b-satellite-content,.b-season,.b-sequence-step,
+    .b-planting-list li,.b-field-mini,.b-location-summary,.b-keyfigures,.b-kpi,.b-other,
+    .b-result-reading-order span,.b-farm-evidence,.b-econ-crops fieldset,.b-ai-farmer-finding,
+    .b-ai-bar-track,.b-mini-kpis span,.b-count,.b-goal,.b-goal-icon,.b-goal.chosen .b-goal-icon){
+    background:var(--bg-interactive);color:var(--text-primary);border-color:var(--border-subtle);
+  }
+  .b-app .b-goal{border-color:#526B56}
+  .b-app .b-goal.chosen{border-color:var(--accent-primary);background:#213F29;box-shadow:inset 0 0 0 1px #4cd964}
+  .b-app .b-goal strong,.b-app .b-goal-icon,.b-app .b-planting-list strong,
+  .b-app .b-sequence-step strong,.b-app .b-field-mini strong{color:var(--text-primary)}
+  .b-app .b-radio{border-color:#7B9D82;background:transparent}
+  .b-app .b-goal.chosen .b-radio{background:var(--accent-primary);border-color:#102414;box-shadow:0 0 0 2px var(--accent-primary)}
+  .b-app .b-place-results button{background:var(--bg-interactive);color:var(--text-primary)}
+  .b-app .b-place-results button:hover{background:#2D4333}
+  .b-app .b-place-results svg{color:#B4F4BE}
+  .b-app .b-map-frame,.b-app .c-map-box{border-color:#54705B;background:#1C2820;box-shadow:none}
+  .b-app .b-map-actions{background:transparent}
+  .b-app .b-map-actions .b-btn{box-shadow:0 3px 12px #0009}
+  .b-app .b-map-view button,.b-app .c-layer-buttons button{background:var(--bg-interactive);border:1px solid var(--border-subtle);color:var(--text-primary)}
+  .b-app .b-map-view button[aria-pressed=true],.b-app .c-layer-buttons button[aria-pressed=true]{background:#275C34;color:#E5FFE9;border-color:var(--accent-primary)}
+  .b-app .b-map-evidence{color:var(--text-secondary);border-color:var(--accent-primary)}
+  .b-app .b-map-evidence :is(span,small){color:var(--text-secondary)}
+  .b-app .b-map-guide{background:#253324;border-color:#59765B;color:var(--text-primary)}
+  .b-app .b-map-guide :is(strong,ol){color:var(--text-primary)}
+  .b-app .b-field-ready{background:#193C24;border-color:#418552;color:#DFFFE5}
+  .b-app .b-field-ready :is(strong,span){color:#DFFFE5}
+  .b-app :is(.b-note,.b-caution,.b-water-caution,.b-decision-check,.b-small-change,.c-inline-note,.c-flag){
+    background:#302718;border-color:#795A2D;color:#FFE2B0;
+  }
+  .b-app .b-note :is(svg,p),.b-app .b-decision-check :is(h2,p),.b-app .b-decision-check a{color:#FFE2B0}
+  .b-app :is(.b-error,.c-error,.satellite-error){background:#361D1A;border-color:#A3594E;color:#FFBBAF}
+  .b-app .b-examples{background:#1A2920;border:1px solid #47614D;box-shadow:none}
+  .b-app .b-examples h2{color:var(--text-primary)}
+  .b-app .b-examples .b-muted,.b-app .b-examples p{color:var(--text-secondary)!important}
+  .b-app .b-sample-foot{border-color:var(--border-subtle)}
+  .b-app .b-example-choice{background:#294A32;border-color:#63816A;color:var(--text-primary)}
+  .b-app .b-example-choice:hover{background:#335F3B;border-color:#8AD99A}
+  .b-app .b-example-choice :is(strong,small,svg){color:var(--text-primary)}
+  .b-app .b-example-index{background:var(--accent-primary);color:#102414}
+  .b-app .b-satellite>summary,.b-app .b-technical>summary,
+  .b-app .b-farm-evidence>summary,.b-app .b-evidence-sources>summary,
+  .b-app .b-farm-econ>summary,.b-app .b-ai-details>summary{color:var(--text-primary)}
+  .b-app .b-satellite>summary strong,.b-app .b-ai-farmer-heading h3{color:#9CEDAC}
+  .b-app .b-satellite-content,.b-app .b-ai-details,.b-app .b-benefits-grid,
+  .b-app .b-input-soft,.b-app .b-farm-evidence,.b-app .b-year-control{border-color:var(--border-subtle)}
+  .b-app :is(.b-goal-options,.b-crop-list,.b-econ-result) strong{color:var(--text-primary)}
+  .b-app .b-choice-row button,.b-app .b-farm-recovery button,
+  .b-app .b-planting-list button{background:var(--bg-interactive);color:var(--text-primary);border-color:#5B735F}
+  .b-app .b-choice-row button.chosen{background:#285D37;border-color:var(--accent-primary);color:#F0FFF3}
+  .b-app .b-recommend-top{background:#223729;color:var(--text-primary)}
+  .b-app .b-recommend-top :is(h2,p),.b-app .b-recommend-topline .b-eyebrow{color:var(--text-primary)}
+  .b-app .b-decision-label{background:#392B17;border-color:#8C6A35;color:#FFE6AC}
+  .b-app .b-kpi strong,.b-app .b-mini-kpis span,.b-app .b-sequence-num,.b-app .b-ai-farmer-finding strong{color:#C8FAD0}
+  .b-app .b-kpi.positive{background:#1D3A27;border-color:#4B9360}
+  .b-app .b-kpi.risk{background:#38261A;border-color:#93623F}
+  .b-app .b-kpi.risk strong{color:#FFD199}
+  .b-app .b-sequence-num{background:#235A32}
+  .b-app .b-ai-mark{background:#235A32;color:#D3FFDD}
+  .b-app .b-ai-bar{background:var(--accent-primary)}
+  .b-app .b-econ-result{border-color:var(--border-subtle)}
+  .b-app .b-econ-result strong{color:#B7F4C2}
+  .b-app .b-result-reading-order b{background:#275C37;color:#E9FFEC}
+  .b-app .b-low-bandwidth,.b-app .b-form-hint,.b-app .b-input-soft legend{color:var(--text-secondary)}
+  .b-app .b-footer a{color:#B9F7C5!important}
+  .b-app .bio-tour{background:#17231A;border:1px solid #5B8062;box-shadow:0 16px 55px #000B;color:var(--text-primary)}
+  .b-app .bio-tour :is(strong,p){color:var(--text-primary)}
+  .b-app .bio-tour p{color:var(--text-secondary)}
+  .b-app .bio-kicker{color:#9CF3AF}
+  .b-app .bio-dots span{background:#445549}
+  .b-app .bio-dots span.active{background:var(--accent-primary)}
+  .b-app :is(.bio-forward,.bio-back,.bio-skip){min-height:var(--touch-min)}
+  .b-app .bio-forward{background:var(--accent-primary);color:#102414}
+  .b-app .bio-back{background:#2A3A2D;color:var(--text-primary)}
+  .b-app .bio-skip{color:var(--text-secondary);background:transparent}
+  .b-app .bio-repeat{background:#253629;border-color:#527A5A;color:var(--text-primary)}
+  .b-app .b-footer .bio-repeat span{color:var(--text-primary)}
+  .b-app .bio-spotlight{outline-color:var(--accent-warning)!important;z-index:2}
+  .b-app .c-app{background:transparent;color:var(--text-primary);min-height:auto}
+  .b-app .c-app :is(h1,h2,h3){color:var(--text-primary)}
+  .b-app .c-card :is(p,small),.b-app .c-inline-note,.b-app .c-crop-select,
+  .b-app .c-year-start,.b-app .c-plot-editor label,.b-app .c-confirm label,
+  .b-app .c-checks label{color:var(--text-secondary)}
+  .b-app :is(.c-year-buttons button,.c-tabs button,.c-goals button,.c-crop-select select,.c-year-start select,.c-plot-editor select){
+    background:var(--bg-interactive);border-color:#506A55;color:var(--text-primary);min-height:var(--touch-min)
+  }
+  .b-app :is(.c-year-buttons button.on,.c-tabs button[aria-pressed=true],.c-goals button.chosen){
+    background:#255B34;border-color:var(--accent-primary);color:var(--text-primary)
+  }
+  .b-app .c-goals button span{color:var(--text-secondary)}
+  .b-app .c-stats>div,.b-app .c-sequence-card,.b-app .c-plot-editor,.b-app .c-crop-legend{background:var(--bg-interactive);border-color:var(--border-subtle);color:var(--text-primary)}
+  .b-app .c-map-draw-message,.b-app .c-tile-error{background:#332719;color:#FFDFB1}
+  .b-app .c-action.primary{background:var(--accent-primary);color:#102414}
+  .b-app .c-action.secondary{background:var(--bg-interactive);color:var(--text-primary)}
+  .b-app .b-coordinate-search,.b-app .b-parcel-tools{border:1px solid var(--border-subtle);border-radius:var(--radius-card);padding:15px;margin:14px 0;background:var(--bg-interactive)}
+  .b-app .b-coordinate-search summary{cursor:pointer;font-weight:720;min-height:var(--touch-min);display:flex;align-items:center;color:var(--text-primary)}
+  .b-app .b-coordinate-fields{display:flex;gap:11px;align-items:end;flex-wrap:wrap;margin:8px 0}
+  .b-app .b-coordinate-fields label{display:flex;flex:1 1 130px;min-width:0;flex-direction:column;gap:5px;color:var(--text-secondary)}
+  .b-app .b-coordinate-fields input{width:100%}
+  .b-app .b-coordinate-fields button{flex:0 1 auto}
+  .b-app .b-parcel-tools-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .b-app .b-parcel-tools-head strong{color:var(--text-primary)}
+  .b-app .b-parcel-tools-head span{font-size:.82rem;color:var(--text-secondary)}
+  .b-app .b-parcel-actions,.b-app .b-vertex-choices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .b-app .b-vertex-editor p{color:var(--text-secondary);margin:12px 0}
+  .b-app .b-vertex-choices button{padding:8px 12px;background:#263729;border:1px solid #627C67;color:var(--text-primary)}
+  .b-app .b-vertex-choices button[aria-pressed=true]{border-color:var(--accent-primary);background:#275F34}
+  .b-app .b-subplot-list{padding:0;margin:12px 0;list-style:none;display:grid;gap:8px}
+  .b-app .b-subplot-list li{display:flex;gap:8px;align-items:center;justify-content:space-between;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:11px;padding:8px 12px}
+  .b-app .b-subplot-list li span{display:grid;gap:1px}
+  .b-app .b-subplot-list small{color:var(--text-secondary)}
+  .b-app .b-subplot-list button{background:#392A28;color:#FFD6D0;border:1px solid #926D69;padding:8px 14px}
+  .b-app .b-skip{background:var(--bg-interactive);color:var(--text-primary)}
+  /* Readable non-raster satellite panels, without changing observational colors. */
+  .b-app :is(.satellite-panel,.terra-crop-camera,.terra-ndvi-reading,.terra-ndvi-result,
+    .terra-ndvi-series,.terra-ndvi-series-result,.terra-smap-regional,.terra-smap-result,
+    .terra-gpm-polygon,.terra-gpm-result,.terra-gaez-raw,.terra-gaez-raw-result){
+    background:var(--bg-surface);border-color:var(--border-subtle);color:var(--text-primary)
+  }
+  .b-app .satellite-panel :is(h3,p,small,span),.b-app .b-field-evidence :is(p,small){color:var(--text-secondary)}
+  .b-app .satellite-panel-heading h3,.b-app .b-field-evidence h3{color:var(--text-primary)}
+  @media(max-width:640px){
+    .b-app .b-progress-wrap{position:fixed;left:0;right:0;bottom:0;z-index:900;border-top:1px solid var(--border-subtle);border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -8px 22px #0005}
+    .b-app .b-progress-shell{padding:5px 8px}
+    .b-app .b-progress-label{display:none}
+    .b-app .b-progress button{min-height:60px;gap:3px;line-height:1.2;padding:4px 2px;font-size:.69rem}
+    .b-app .b-main{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+    .b-app .b-footer{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+    .b-app .bio-tour{bottom:calc(76px + env(safe-area-inset-bottom,0px));max-height:calc(100dvh - 100px);overflow-y:auto}
+    .b-app .b-map-actions{background:var(--bg-interactive);border-top:1px solid var(--border-subtle)}
+    .b-app .b-map-view{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    .b-app .b-map-view button{min-height:48px}
+    .b-app .b-parcel-actions .b-btn,.b-app .b-coordinate-fields button{flex:1 1 100%}
+  }
+}
+/* Stage 3: provenance and provider-owned scientific color legends. */
+@media screen {
+ .b-app .b-map-evidence{display:block;padding:14px 16px;border:1px solid var(--border-subtle);border-left:3px solid var(--accent-primary);border-radius:12px;background:var(--bg-surface);color:var(--text-secondary)}
+ .b-app .b-map-evidence-controls{display:flex;align-items:end;gap:14px;flex-wrap:wrap}
+ .b-app .b-map-evidence-controls label{display:grid;gap:6px;color:var(--text-secondary);font-weight:650}
+ .b-app .b-map-evidence-controls input[type="date"]{max-width:100%;width:auto}
+ .b-app .b-map-evidence-controls input[type="range"]{width:min(210px,65vw)}
+ .b-app .b-map-provenance{display:flex;align-items:baseline;gap:8px 15px;flex-wrap:wrap;margin-top:12px}
+ .b-app .b-map-provenance>strong{color:var(--text-primary);width:100%}
+ .b-app .b-map-provenance>span{font-size:.82rem}
+ .b-app .b-map-provenance>p{width:100%;margin:3px 0;color:var(--text-secondary)}
+ .b-app .b-map-provenance>a,.b-app .b-map-legend a{color:#B9F7C5;text-decoration:underline;text-underline-offset:2px}
+ .b-app .b-map-provenance>a{margin-left:0;font-weight:650}
+ .b-app .b-map-legend{width:100%;border-top:1px solid var(--border-subtle);padding:8px 0}
+ .b-app .b-map-legend summary{cursor:pointer;min-height:var(--touch-min);display:flex;align-items:center;color:var(--text-primary);font-weight:700}
+ .b-app .b-map-legend img{display:block;max-width:100%;max-height:280px;object-fit:contain;margin:8px 0;background:#FFF;border:1px solid #879988;border-radius:6px}
+ .b-app .b-observation-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:16px 0}
+ .b-app .b-observation-card{background:var(--bg-interactive);padding:14px;border:1px solid var(--border-subtle);border-radius:var(--radius-card);display:grid;gap:5px;align-content:start}
+ .b-app .b-observation-card strong{color:var(--text-primary);font-size:1.18rem}
+ .b-app .b-observation-card span,.b-app .b-observation-card small{color:var(--text-secondary)}
+ .b-app .b-observation-card a{color:#B9F7C5}
+ .b-app .b-source-registry a{color:#B9F7C5;display:inline-block;margin:4px 12px 4px 0}
+ .b-app .b-source-warning{padding:10px 12px;border:1px solid #927B43;border-radius:10px;color:#FFE4A3;background:#30291B}
+}
+@media screen {
+ .b-app .b-ai-scoped-metrics{margin:14px 0;padding:14px;border:1px solid var(--border-subtle);border-radius:var(--radius-card);background:var(--bg-interactive)}
+ .b-app .b-ai-scoped-metrics h4{font-size:.94rem;margin:0 0 6px}
+ .b-app .b-ai-scoped-metrics p{color:var(--text-secondary);font-size:.84rem;margin:6px 0}
+ .b-app .b-ai-metrics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+ .b-app .b-ai-metrics-grid>div{border:1px solid #516A56;border-radius:10px;padding:10px 12px;display:grid;gap:5px}
+ .b-app .b-ai-metrics-grid span{font-size:.73rem;color:var(--text-secondary)}
+ .b-app .b-ai-metrics-grid strong{font-size:1.18rem;color:var(--text-primary)}
+}
+
+/* Barranca: one map-first workspace and a compact, readable observation key. */
+@media screen {
+ .b-hero-intro{display:block!important;padding:16px 0!important}
+ .b-hero-copy h1{font-size:clamp(1.65rem,3.2vw,2.6rem)!important;max-width:850px}
+ .b-hero-promise{display:none!important}
+ .b-farm-grid{display:flex!important;flex-direction:column;gap:16px}
+ .b-examples{width:100%;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(220px,340px);gap:8px 24px;align-items:center;padding:20px!important}
+ .b-examples .b-sample-graphic,.b-examples .b-example-index{display:none!important}
+ .b-examples h2{font-size:1.25rem!important;margin:0!important}
+ .b-examples .b-example-choice{grid-column:2;grid-row:1/5;width:100%;margin:0!important}
+ .b-examples p,.b-examples .b-sample-label{margin:0!important}
+ .b-search-card{width:100%;min-width:0}
+ .b-map{height:clamp(360px,55vh,620px)!important}
+ .b-map-view{display:flex;flex-wrap:wrap;gap:8px}
+ .b-map-view button{min-height:48px}
+ .b-hls-legend{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:16px;padding:18px;margin:16px 0;color:var(--text-primary)}
+ .b-hls-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-bottom:12px}
+ .b-hls-heading span,.b-hls-scale small{color:var(--text-secondary)}
+ .b-hls-legend label{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+ .b-hls-legend select{min-height:48px;max-width:100%}
+ .b-hls-value{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+ .b-hls-value>span,.b-hls-scale i{display:inline-block;flex-shrink:0;width:24px;height:24px;border:1px solid #b2bcb5;border-radius:5px}
+ .b-hls-scale{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:0;list-style:none}
+ .b-hls-scale li{display:flex;align-items:center;gap:8px}
+ .b-hls-scale b,.b-hls-scale small{display:block}
+ .b-hls-legend p{font-size:.95rem;line-height:1.5}
+ .b-hls-legend details p{overflow-wrap:anywhere}
+ .b-layer-reading{font-weight:600;line-height:1.5}
+ .b-map-legend img{max-width:100%;background:#fff;border-radius:8px;padding:8px}
+ @media(max-width:640px){
+  .b-examples{display:flex!important;flex-direction:column;align-items:stretch}
+  .b-examples .b-example-choice{margin-top:12px!important}
+  .b-hls-scale{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .b-map{height:390px!important}
+ }
+}
+@media screen and (max-width:640px){
+ .b-hero-copy h1{font-size:1.45rem!important;line-height:1.2!important}
+ .b-hero-copy>p{font-size:1rem!important;margin:8px 0!important}
+ .b-examples{padding:16px!important;gap:6px!important}
+ .b-examples h2{font-size:1.1rem!important}
+ .b-examples p{font-size:.9rem!important;line-height:1.4!important}
+ .b-examples .b-sample-graphic{display:none!important}
+}

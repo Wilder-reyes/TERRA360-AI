@@ -1,51 +1,66 @@
-# BIOTEX v0.26 · NSPACE BIOTEX — NASA Space Apps Challenge 2026
+# NSPACE BIOTEX · plataforma agrícola con evidencia
 
-> **Hoja de ruta vigente (15/11/2026):** [BIOTEX — piloto propuesto de rotación de cultivos en Chalhuas, Junín](docs/BIOTEX_HOJA_DE_RUTA_ACTUAL_CHALHUAS.md). La plataforma desplegada continúa en Barranca hasta completar la validación geoespacial, científica y agronómica del nuevo piloto.
+Aplicación React/TypeScript/Vite/Leaflet y backend Python/FastAPI independientes. Estado actual: **candidato de entrega NSPACE BIOTEX — etapas 0–8 integradas en ZIP**, sin despliegue nuevo y con build/Playwright y backend externo todavía por verificar.
 
-**Demostración:** https://terra360-ai-eta.vercel.app/  
-**API científica:** https://terra360-api.onrender.com/api/health  
-**Versión verificable:** https://terra360-ai-eta.vercel.app/release.json  
-**Contrato público Chalhuas:** `python scripts/smoke_chalhuas_public.py` (Vercel + Render)
+Una aplicación, cuatro pasos: **Mi terreno → Mis cultivos → Mis prioridades → Mi plan agrícola**. Permite dibujar o importar una parcela, registrar cultivos, consultar información científica opcional y comparar opciones dentro del ámbito disponible. Las antiguas vistas por `?vista=` o `?pilot=` ya no son páginas independientes.
 
-BIOTEX compara la rotación de cultivos actual con opciones que priorizan agua y cobertura vegetal para una **parcela de estudio de ~2,24 hectáreas en Barranca (Pativilca/Supe), Perú**. Permite marcar la parcela en el mapa, revisar las observaciones NASA, registrar el historial agrícola y obtener un plan comprensible para el agricultor.
+La costa de Lima conserva el comparador relativo de 24 meses. El Valle del Mantaro conserva una comparación exploratoria de cuatro campañas dentro del mismo recorrido. El ejemplo de Chalhuas es sintético y no acredita propiedad ni aptitud. No se aplica a Junín el calendario ni el modelo de Barranca.
 
-## Nueva experiencia UI UX Pro Max · v0.27
+## Ciencia y reproducibilidad
 
-La interfaz se rediseñó para que el agricultor entienda el resultado antes de leer índices: **parcela → cultivos → prioridades → propuesta**, con ejemplo listo de Barranca, móvil accesible, comparación de agua/cobertura y advertencias antes de sembrar. Los cálculos y el modelo científico siguen siendo **v0.26**. Consulta [el diseño y la investigación UX](docs/BIOTEX_UX_v027_diseno_agricultor.md) para principios, fuentes y límites de validación.
+- Se conservan los siete historiales HLS, catálogos y evidencia originales versionados, los conectores y los scripts científicos.
+- El modelo HLS de una parcela Barranca utiliza 44 observaciones válidas, entrenamiento temporal 33/11 y Brier reproducido 0.23408067 frente a 0.48025712. Sobre el holdout de 11 meses: accuracy 63.64%, precision 100%, recall 55.56%, F1 71.43% (muestra pequeña; no validez espacial externa). Es un proxy de vegetación baja, no identidad de cultivo, rendimiento, ahorro de agua ni precisión de Chalhuas.
+- POWER, IMERG, SMAP, SRTM y ERA5 son productos con resolución y límites propios. No representan instrumentos dentro de la parcela. ECOSTRESS conserva metadatos sin inventar temperaturas.
+- La foto opcional permanece en el dispositivo; no se sube ni se interpreta automáticamente. BIO es el tutorial, no un chatbot.
 
-
-### Piloto exploratorio Chalhuas (Junín) · desarrollo v0.28
-
-**Vista aislada para pruebas:** [/?pilot=chalhuas](https://terra360-ai-eta.vercel.app/?pilot=chalhuas). El ejemplo de parcela es deliberadamente **sintético**. Incluye: catálogo de cultivos, comparación de cuatro campañas sin prescrición, mapa con capas NASA GIBS y subparcelas propuestas, relieve SRTM desde el conector existente, reanálisis histórico ERA5-Land vía Open-Meteo cuando responda, y guía de introducción **BIO**.
-
-**Lo que NO significa:** no se ha entrenado una IA con una parcela de Chalhuas, no se han validado los calendarios de siembra, la propiedad de los terrenos ni la disponibilidad de agua. ECOSTRESS queda pendiente de escenas con QA. El modelo reproducible de Barranca v0.26 sigue siendo independiente.
-
-**Criterio de publicación final:** datos de parcela georreferenciados/validados, modelo entrenado y probado, agronomía local revisada, usabilidad con agricultores y cobertura de capas verificadas. Hasta entonces el piloto es una experiencia de investigación y Barranca conserva la ruta pública estable.
-
-## IA real y evidencia
-
-- **NASA HLS v2.0:** 44 meses con NDVI válido entre 2021 y noviembre de 2026; 27 meses sin observación válida, nunca inventados.
-- **Modelo supervisado reproducible:** regresión logística para clasificar un *indicador de vegetación baja* (NDVI mediano inferior a 0,20) en esa parcela.
-- **Evaluación cronológica:** 33 observaciones de entrenamiento y 11 posteriores de prueba. Brier del modelo: **0,234**; referencia: **0,480** (reducción relativa: **51,3 %**).
-- **Recomendación:** el riesgo estacional aprendido pondera alternativas de cobertura; NASA POWER, FAO-56, agua disponible declarada y prioridades del agricultor preservan las restricciones agronómicas.
-- **Límite científico:** el modelo **no** predice rendimientos, precios, especies cultivadas ni calidad de suelo, y se abstiene fuera del polígono de estudio. La evaluación no equivale a validación agronómica en campo.
-
-**Metodología y reproducción:** [docs/BIOTEX_v026_IA_reproducible.md](docs/BIOTEX_v026_IA_reproducible.md)
-
-```bash
+```sh
 python scripts/reproduce_field_shift_ai.py --check
-python -m unittest discover -s tests -p 'test_field_shift_ai.py'
+python docs/audit/reproduce_classification.py
 ```
 
-## Arquitectura ligera de publicación
+## Despliegue de prueba en el repositorio ACTUAL
 
-- **Vercel:** exclusivamente frontend estático React + Vite (sin Python, Functions ni modelos empaquetados).
-- **Render:** FastAPI, fuentes NASA, cálculos y modelo entrenado.
-- **Proxy:** `/api/*` se reescribe desde Vercel a Render, manteniendo la misma procedencia para el navegador.
-- **GitHub Actions:** pruebas de backend, frontend, navegador, Docker y reproducibilidad de NASA HLS.
+**Repositorio GitHub de prueba: `Wilder-reyes/TERRA360-AI`**. La identidad pública de producto seguirá siendo **NSPACE BIOTEX**. En esta fase no se creará un repositorio nuevo: se publicará el paquete de las etapas 0–8 sobre el `main` actual, conservando el historial. Después se importará ese mismo repositorio en un **proyecto nuevo de Vercel**. La publicación preserva además el archivo IMERG añadido a `main` en el PR #41 después de crear el ZIP original; su estado de revisión científica sigue siendo el declarado en los metadatos.
 
-**Despliegue:** [docs/vercel-deployment.md](docs/vercel-deployment.md). El proyecto Vercel debe tener **Root Directory = `frontend`**. Se incluye configuración compatible desde la raíz del repositorio como respaldo. No configurar Functions en Vercel ni trasladar allí secretos NASA.
+- [Guía operativa de publicación, pruebas, limpieza segura de ramas y Vercel](docs/CURRENT_REPOSITORY_DEPLOY.md).
+- `scripts/publish_current_repo.ps1` clona el repositorio y ejecuta pruebas antes de `git push`.
+- `scripts/prune_legacy_branches.ps1` respalda las refs remotas, preserva ramas protegidas y limpia las históricas cuando la publicación esté comprobada.
 
-**Verificación:** `/release.json` debe indicar `v0.26-hls-trained-ai-barranca` y `/api/rotation/ai-demo` debe responder JSON desde Render.
+**No se ha subido todavía el paquete a GitHub ni se ha iniciado el despliegue.** Las pruebas integrales pendientes impiden declararlo certificado para producción.
 
-Esta es una demostración científica reproducible; ninguna recomendación sustituye la comprobación de suelo, disponibilidad real de riego y asesoramiento agronómico local.
+## Trabajo local y comprobaciones
+
+Frontend, dentro de frontend:
+
+```sh
+npm ci
+npm test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+Backend, desde la raíz con un entorno virtual:
+
+```sh
+python -m pip install -r backend/requirements.txt
+# PowerShell: $env:PYTHONPATH='backend'
+# POSIX: export PYTHONPATH=backend
+python -m unittest discover -s tests -p 'test_*.py' -v
+python -m pip check
+python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
+```
+
+Las dependencias Node y Playwright están fijadas en package-lock.json. Python 3.12 y Node 22 son los entornos declarados en CI; la laptop utilizada se documenta en el estado de implementación. Los entrenadores opcionales que usan scikit-learn/joblib mantienen `scripts/requirements-ml.txt` separado de producción.
+
+## Documentación vigente
+
+- [Arquitectura y responsabilidades](docs/BIOTEX_ARCHITECTURE.md).
+- [Estado, pruebas, cambios y bloqueos](docs/BIOTEX_IMPLEMENTATION_STATUS.md).
+- [Preparación del despliegue manual y revisión de integraciones](docs/vercel-deployment.md).
+- [Modelo histórico HLS](docs/BIOTEX_v026_IA_reproducible.md).
+- [Reglas permanentes](AGENTS.md).
+
+La única configuración estática está en frontend/vercel.json. Usar **Root Directory = frontend** y `VITE_API_URL` para el origen público de un backend nuevo. No hay direcciones de despliegues antiguos como requisito. Las guías roadmap y matrices v0.x se conservan como documentos históricos, no como instrucciones de publicación vigentes.
+
+La publicación en el repositorio actual está autorizada por el propietario; no se ha podido ejecutar desde el entorno aislado de este asistente. Eliminar archivos locales no desvincula integraciones autorizadas en cuentas externas.

@@ -91,7 +91,7 @@ pluviómetros locales.
   o NaN, unidades no válidas, acceso sin archivo y API.
 - `frontend/e2e/farmer.spec.ts` simula respuestas con y sin datos para
   verificar la claridad de la interfaz. **Son pruebas UX simuladas**.
-- `scripts/smoke_public_demo.py` verifica que la producción no invente
+- El contrato local de pruebas verifica que el backend no invente
   valores cuando no existe archivo NASA preparado.
 
 **No afirmar que se verificaron valores numéricos NASA reales en producción

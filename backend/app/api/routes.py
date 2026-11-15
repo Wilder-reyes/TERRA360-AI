@@ -9,6 +9,8 @@ from app.services.environment_metrics import (
     aggregate_gpm_imerg,
 )
 
+from app.quality.evidence import daily_coverage
+
 from app.connectors.nasa_power import (
     fetch_daily_point,
     normalize_daily,
@@ -19,7 +21,7 @@ from app.connectors.gpm_imerg import (
     GPMIMERGError,
 )
 
-router = APIRouter(prefix="/api", tags=["TERRA360"])
+router = APIRouter(prefix="/api", tags=["CHAKRA"])
 
 PILOT_NAME = "Huando, Huaral, Lima, Perú"
 PILOT_LATITUDE = -11.47918514
@@ -69,7 +71,7 @@ def determine_source_status(
 async def health():
     return {
         "status": "ok",
-        "application": "TERRA360",
+        "application": "CHAKRA",
         "version": "0.10.0",
     }
 
@@ -128,6 +130,9 @@ async def nasa_power_daily(
             "start": start.isoformat(),
             "end": end.isoformat(),
         }
+        result["quality"] = daily_coverage(result["records"], start, end)
+        result["dataset"] = "NASA POWER daily agroclimatic point data"
+        result["used_as_field_station_measurement"] = False
 
         return result
 

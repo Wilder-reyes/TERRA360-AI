@@ -1,4 +1,6 @@
 import {test,expect} from '@playwright/test'
+import history from '../src/data/barrancaHls.json' with {type:'json'}
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
 
 const message=(text:string)=>({es:[text],en:[text]})
 const sections={
@@ -33,7 +35,7 @@ const comparison={
 
 test('Barranca-focused farmer landing starts in ordinary Spanish and moves through crops',async({page})=>{
  await page.goto('/')
- await expect(page.getByRole('heading',{name:'Cultiva mejor, cuidando tu agua y tu tierra.'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:/Conoce tu tierra/})).toBeVisible()
  await expect(page.getByRole('button',{name:/Explorar parcela de Barranca/})).toBeVisible()
  await expect(page.getByText('Pegar o subir GeoJSON')).toHaveCount(0)
  await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
@@ -87,7 +89,7 @@ test('Recommendation is presented as a clear plan and A4 print report, not S1/S2
 test('Mobile farmer flow keeps controls and map inside the viewport',async({page})=>{
  await page.setViewportSize({width:390,height:844})
  await page.goto('/')
- await expect(page.getByRole('heading',{name:'Cultiva mejor, cuidando tu agua y tu tierra.'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:/Conoce tu tierra/})).toBeVisible()
  await expect(page.locator('.b-map')).toBeVisible()
  await expect(page.getByRole('button',{name:'Buscar lugar'})).toBeVisible()
  const width=await page.evaluate(()=>document.documentElement.scrollWidth)
@@ -107,22 +109,16 @@ test('Only one Barranca sample is visible and satellite imagery is accessible',a
 })
 
 test('Satellite clues display acquisition dates, mapped NASA imagery and original HLS scene link',async({page})=>{
- await page.route('**/api/rotation/history',route=>route.fulfill({
-  status:200,contentType:'application/json',body:JSON.stringify({
-   status:'available',sensor:'NASA HLS v2.0 (30 m)',period:{start:'2021-01-01',end:'2026-11-14'},
-   months_with_data:48,months_total:70,detection:{campaigns:[]},
-   months:[{month:'2026-08',ndvi:0.62,best_scene:{date:'2026-08-16',collection:'hls2-l30',scene_id:'HLS.L30.T18LYL.2026228T153532.v2.0',valid_pixels:35}}]
-  })
- }))
  await page.goto('/')
  await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
  await page.getByRole('button',{name:'Continuar'}).click()
  await page.getByText('¿No recuerdas alguna siembra?').click()
  await page.getByRole('button',{name:'Buscar pistas con imágenes del terreno'}).click()
  await expect(page.getByText('Así se veía la zona desde el espacio')).toBeVisible()
- await expect(page.locator('.b-satellite-gallery select')).toHaveValue('2026-08')
+ const latest=[...history.months].reverse().find(m=>m.ndvi!==null)!
+ await expect(page.locator('.b-satellite-gallery select')).toHaveValue(latest.month)
  await expect(page.getByRole('link',{name:'Consultar la imagen HLS utilizada'})).toHaveAttribute('href',/planetarycomputer\.microsoft\.com/)
- await expect(page.getByText('0.62')).toBeVisible()
+ await expect(page.locator('.b-satellite-gallery')).toContainText(latest.ndvi!.toFixed(2))
 })
 
 test('Farmers can save and restore their marked field without an account',async({page})=>{
@@ -200,21 +196,21 @@ test('NASA trained AI influences the farmer workflow and evidence stays optional
  await page.getByRole('button',{name:'Agregar cultivo'}).click()
  await page.getByRole('button',{name:'Continuar'}).click()
  await page.getByRole('button',{name:'Ver mi plan'}).click()
- await expect(page.getByRole('heading',{name:'¿Qué aprendió BIOTEX de esta chacra?'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'¿Qué aprendió CHAKRA de esta chacra?'})).toBeVisible()
  await expect(page.getByText('44 meses con imágenes útiles')).toBeHidden()
  await page.locator('.b-ai-details summary').click()
  await expect(page.getByText('44 meses con imágenes útiles')).toBeVisible()
  await expect(page.locator('.b-ai-month')).toHaveCount(12)
- await expect(page.getByRole('link',{name:'Ver procedimiento reproducible'})).toHaveAttribute('href',/BIOTEX_v026_IA_reproducible/)
+ await expect(page.getByRole('link',{name:'Ver procedimiento reproducible'})).toHaveAttribute('href',/CHAKRA_NASA/)
 })
 
 
 test('UX Pro Max journey keeps the farmer and clear next action first',async({page})=>{
  await page.goto('/')
- await expect(page.getByText('AGRICULTURA CON EVIDENCIA NASA')).toBeVisible()
+ await expect(page.getByText('DATOS NASA · PARCELA DE ESTUDIO')).toBeVisible()
  await expect(page.getByText('Paso 1 de 4')).toBeVisible()
- await expect(page.getByRole('link',{name:/Vista para especialistas/})).toHaveAttribute('href','/?vista=tecnica')
- await expect(page.getByText('INICIO RÁPIDO')).toBeVisible()
+ await expect(page.getByRole('link',{name:/Vista para especialistas/})).toHaveCount(0)
+ await expect(page.getByText('BARRANCA',{exact:true})).toBeVisible()
  await expect(page.getByText('La IA entrenada solo se aplica a esta parcela;')).toBeVisible()
  await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
  await expect(page.getByText('Terreno seleccionado. Sigue para registrar tus cultivos.')).toBeVisible()
@@ -224,7 +220,7 @@ test('UX Pro Max journey keeps the farmer and clear next action first',async({pa
  await page.getByRole('button',{name:'Agregar cultivo'}).click()
  await page.getByRole('button',{name:'Continuar'}).click()
  await expect(page.getByText('ELIGE LO QUE MÁS TE IMPORTA',{exact:true})).toBeVisible()
- await expect(page.getByText('Equilibrar las dos necesidades en la comparación.')).toBeVisible()
+ await expect(page.getByText('Buscar un equilibrio entre agua y tierra.')).toBeVisible()
 })
 
 test('mobile redesign offers sample before map and never overflows',async({page})=>{
@@ -232,7 +228,7 @@ test('mobile redesign offers sample before map and never overflows',async({page}
  await page.goto('/')
  await expect(page.getByRole('button',{name:/Explorar parcela de Barranca/})).toBeVisible()
  const positions=await page.evaluate(()=>{
-  const example=document.querySelector('.b-examples')!.getBoundingClientRect()
+  const example=document.querySelector('.chakra-hero')!.getBoundingClientRect()
   const search=document.querySelector('.b-search-card')!.getBoundingClientRect()
   return {exampleTop:example.top,searchTop:search.top,width:document.documentElement.scrollWidth}
  })
@@ -245,10 +241,11 @@ test('mobile redesign offers sample before map and never overflows',async({page}
 
 test('release keeps science v0.26 and makes visual redesign identifiable',async({page})=>{
  await page.goto('/')
- await expect(page.locator('meta[name="biotex-ui-release"]')).toHaveAttribute('content','v0.27-farmer-first-ux-pro-max')
+ await expect(page.locator('meta[name="chakra-ui-release"]')).toHaveAttribute('content','chakra-glass-lime')
  const res=await page.request.get('/release.json')
  const data=await res.json()
- expect(data.release).toBe('v0.26-hls-trained-ai-barranca')
- expect(data.ui_release).toBe('v0.27-farmer-first-ux-pro-max')
- expect(data.primary_url).toBe('https://terra360-ai-eta.vercel.app/')
+ expect(data.release).toBe('chakra-barranca-premium')
+ expect(data.ui_release).toBe('chakra-glass-lime')
+ expect(data.primary_url).toBeUndefined()
+ expect(data.regional_profiles.barranca).toBe('single_public_pilot_exact_parcel_hls_ai');expect(data.regional_profiles.mantaro).toBeUndefined()
 })

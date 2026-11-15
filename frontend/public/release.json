@@ -1,36 +1,39 @@
 {
-  "application": "BIOTEX · NSPACE BIOTEX",
-  "release": "v0.26-hls-trained-ai-barranca",
+  "application": "CHAKRA",
+  "release": "chakra-barranca-premium",
   "pilot": "Barranca · Pativilca / Supe",
   "features": [
-    "One Barranca study parcel with NASA imagery and historical vegetation readings",
-    "Trained and reproducible NASA HLS seasonal low-vegetation machine learning model",
-    "Chronological 33 train/11 test evaluation, frozen coefficients and source SHA verification",
-    "NASA HLS model influences crop-cover timing in rotation ranking while respecting farmer water constraints",
-    "NASA POWER + FAO-56 crop-water estimates and Lima crop catalogue",
-    "Farmer-first result: crop order, sowing month, risks and visible AI evidence",
-    "Optional science, soil and economic data behind expandable sections",
-    "Printable A4 with model provenance, mobile map and saved farm data",
-    "Redesigned mobile-first farmer journey: field, crops, priorities, clear crop plan and optional NASA science"
+    "Barranca-only four-step farmer workflow",
+    "Same-origin /api proxy to verified Render backend",
+    "Authentic HLS monthly observations and interpreted map legend",
+    "Historical NASA HLS model scoped to exact Barranca study parcel"
   ],
   "computer_vision_enabled": false,
-  "environment": "production",
+  "environment": "github_candidate_no_deployment",
   "source_branch": "main",
-  "primary_url": "https://terra360-ai-eta.vercel.app/",
-  "notes": "44 true NASA HLS monthly observations on one study polygon. The HLS model predicts a low-vegetation proxy, not crop identity or yield. It is only used for that exact demo polygon. GPM IMERG upper-basin historical archive, farm irrigation and agronomic field validation remain separate evidence gates.",
+  "notes": "No production deployment verified. Geographic scope is explicit; only Barranca validated HLS model is trained. Chalhuas has no locally evaluated AI, no guaranteed yields, water savings, soil fertility or identified crops.",
   "ai_model": "trained_nasa_hls_44_observations_barranca_1",
-  "ai_model_status": "trained_chronological_holdout_11_observations",
+  "ai_model_status": "barranca_hls_chronological_holdout_11_only",
   "ai_model_source": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
   "ai_model_training": "33 chronological HLS observations for holdout evaluation; production fit on all 44",
-  "ui_release": "v0.27-farmer-first-ux-pro-max",
-  "design_system": "UI UX Pro Max · Campo Claro",
-  "experimental_pilots": [
-    {
-      "id": "chalhuas",
-      "url": "https://terra360-ai-eta.vercel.app/?pilot=chalhuas",
-      "status": "exploratory_no_local_ai_model",
-      "parcel": "synthetic_example_or_user_drawn",
-      "scientific_claims": "no_local_agronomic_recommendation"
-    }
-  ]
+  "ui_release": "chakra-glass-lime",
+  "design_system": "Agricultural Dark Mode",
+  "regional_profiles": {
+    "barranca": "single_public_pilot_exact_parcel_hls_ai"
+  },
+  "deployment_ready": false,
+  "deployment_readiness_reason": "Production deployment is not authorized. Configure a new backend HTTPS origin and verify live scientific sources before production.",
+  "ai_barranca_holdout": {
+    "test_observations": 11,
+    "accuracy_percent": 63.6364,
+    "precision_percent": 100.0,
+    "recall_percent": 55.5556,
+    "f1_percent": 71.4286,
+    "brier_model": 0.2340806663
+  },
+  "planned_new_repository": "not_applicable_to_current_preview",
+  "backend_required": true,
+  "target_repository": "Wilder-reyes/TERRA360-AI",
+  "latest_remote_main_reviewed": "28359f896e305e1656884e99cef664b92a775b3b",
+  "remote_seed_to_preserve": "backend/app/data/imerg_basin_seed.json"
 }

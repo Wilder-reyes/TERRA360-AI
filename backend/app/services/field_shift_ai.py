@@ -137,6 +137,31 @@ def exact_parcel_match(polygon: dict) -> bool:
         return False
 
 
+
+def evaluated_holdout() -> dict:
+    """Public model card: test probabilities use ONLY training-month coefficients."""
+    from app.ml.holdout_metrics import binary_holdout_metrics
+    proof = validated_barranca_model()
+    artifact, observed = proof['artifact'], proof['observed']
+    cutoff = artifact['training']['train_observations']
+    test = observed[cutoff:]
+    y = [int(row['ndvi'] < THRESHOLD) for row in test]
+    probabilities = [_probability(row['month'], artifact['evaluation']['test_coefficients']) for row in test]
+    prevalence = sum(int(row['ndvi'] < THRESHOLD) for row in observed[:cutoff]) / cutoff
+    metrics = binary_holdout_metrics(y, probabilities, baseline_probability=prevalence)
+    if abs(metrics['brier_model'] - artifact['evaluation']['brier_model']) > 1e-8:
+        raise ValueError('Holdout evaluation does not agree with source artifact')
+    return {
+        'model_id': artifact['model_id'],
+        'target': 'NASA HLS NDVI mensual < 0.20; señal de vegetación baja, no identificación de cultivo',
+        'scope': 'Solo polígono HLS validado de Barranca (barranca-1); no extrapolar a Chalhuas',
+        'source_git_blob_sha': artifact['source_git_blob_sha'],
+        'source_sensor': artifact['source_sensor'],
+        'training_observations': cutoff,
+        'holdout': metrics,
+        'public_inference_for_other_fields': False,
+    }
+
 def assess_strategies(polygon: dict | None, strategies: list[dict]) -> dict:
     """Return real-model evidence, or an explicit abstention for other fields."""
     if polygon is None or not exact_parcel_match(polygon):
@@ -177,6 +202,7 @@ def assess_strategies(polygon: dict | None, strategies: list[dict]) -> dict:
         "missing_months": artifact["missing_months"],
         "source_git_blob_sha": artifact["source_git_blob_sha"],
         "holdout": artifact["evaluation"],
+        "holdout_classification": evaluated_holdout()["holdout"],
         "seasonal_bare_probability": {str(i+1): probabilities[i] for i in range(12)},
         "weighted_uncovered_exposure": risks,
         "seasonal_explanations": [

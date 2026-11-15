@@ -1,0 +1,7 @@
+{
+  "files_considered": 319,
+  "credential_candidates": [],
+  "broken_relative_frontend_imports": [],
+  "python_syntax_errors": [],
+  "limits": "Static patterns only; not a credential revocation, account/integration review or guarantee that no secret exists in Git history. Ignored local caches/environments are excluded."
+}

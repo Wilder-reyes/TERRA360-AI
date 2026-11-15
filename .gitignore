@@ -34,3 +34,7 @@ Thumbs.db
 .env*
 !.env.example
 !frontend/.env.production.example
+
+# Local browser verification artifacts
+frontend/test-results/
+frontend/playwright-report/

@@ -1,18 +1,17 @@
-/** TERRA360 API errors: never leak raw browser "Failed to fetch" in the UI.
- * Production requests go through the same-origin Vercel /api rewrite to Render; the
- * developer API origin is configurable ONLY in local Vite development.
+import {apiOrigin} from './apiConfig'
+
+/** VITE_API_URL is a public origin, configurable for development AND production.
+ * An empty production value is same-origin, for a deliberately configured proxy.
  */
-export const API = (
-  import.meta.env.DEV ? (import.meta.env.VITE_API_URL || 'http://localhost:8000') : ''
-).replace(/\/$/, '')
+export const API=apiOrigin(import.meta.env.VITE_API_URL,import.meta.env.DEV)
 
 export function readableApiError(error: unknown, en: boolean): string {
  const e=error instanceof Error?error:null
  const msg=e?.message||''
  const network=(e instanceof TypeError || /failed to fetch|networkerror|network request failed|load failed|fetch failed|connection refused/i.test(msg))
  if(network)return en
-  ? 'Could not connect to BIOTEX. Check your connection and try again; the server may be starting.'
-  : 'No se pudo conectar con BIOTEX. Comprueba tu conexión e inténtalo de nuevo; el servidor podría estar iniciándose.'
+  ? 'Could not connect to CHAKRA. Check your connection and try again; the server may be starting.'
+  : 'No se pudo conectar con CHAKRA. Comprueba tu conexión e inténtalo de nuevo; el servidor podría estar iniciándose.'
  if(e?.name==='TimeoutError')return en
   ? 'The request took too long. Try again in a moment.'
   : 'La consulta tardó demasiado. Inténtalo nuevamente en un momento.'
@@ -22,7 +21,7 @@ export function readableApiError(error: unknown, en: boolean): string {
   : 'No pudimos completar la consulta. Inténtalo de nuevo.'
 }
 
-/** A 502–504 response can mean Render Free is waking up; do not retry POST
+/** A 502–504 response can mean a backend is starting; do not retry POST
  * automatically, since science raster reads and calculations are expensive.
  */
 export async function httpErrorMessage(response: Response, en: boolean): Promise<string> {
@@ -30,8 +29,8 @@ export async function httpErrorMessage(response: Response, en: boolean): Promise
   ? 'The server or satellite provider is temporarily unavailable. Please retry shortly.'
   : 'El servidor o proveedor satelital no está disponible temporalmente. Vuelve a intentarlo en un momento.'
  if(response.status===404)return en
-  ? 'This feature is not yet available on the deployed server.'
-  : 'Esta función todavía no está disponible en el servidor publicado.'
+  ? 'CHAKRA could not find this API route. Please retry; if it continues, the server connection needs attention.'
+  : 'CHAKRA no encontró esta consulta en el servidor. Reintenta; si continúa, hay que revisar la conexión del servicio.'
  if(response.status===429)return en
   ? 'The server is handling too many requests. Please retry shortly.'
   : 'El servidor está procesando demasiadas consultas. Vuelve a intentarlo en un momento.'

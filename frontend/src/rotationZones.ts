@@ -32,17 +32,4 @@ const load=(list:RawField[],es:string,en:string):ExampleField[]=>list.filter(f=>
 /** Team-drawn fields (edit exampleFields.json). */
 export const TEAM_FIELDS:ExampleField[]=load(fields.team_fields as RawField[],TEAM_NOTE_ES,TEAM_NOTE_EN)
 export const TEST_FIELDS:ExampleField[]=load(fields.test_fields as RawField[],TEST_NOTE_ES,TEST_NOTE_EN)
-/** Parse pasted/uploaded GeoJSON (Polygon, Feature, FeatureCollection). */
-export function parseGeoJSONPolygon(text:string):GeoPolygon|null{
- try{
-  let v=JSON.parse(text)
-  if(v?.type==='FeatureCollection')v=(v.features||[]).find((f:any)=>f?.geometry?.type==='Polygon'||f?.geometry?.type==='MultiPolygon')
-  if(v?.type==='Feature')v=v.geometry
-  if(v?.type==='MultiPolygon'&&Array.isArray(v.coordinates)&&v.coordinates.length===1)v={type:'Polygon',coordinates:v.coordinates[0]}
-  if(v?.type!=='Polygon'||!Array.isArray(v.coordinates?.[0]))return null
-  const ring=(v.coordinates[0] as unknown[]).filter((p):p is number[]=>Array.isArray(p)&&p.length>=2&&p.every(n=>typeof n==='number'&&Number.isFinite(n))).map(p=>[p[0],p[1]])
-  if(ring.length<3)return null
-  if(ring[0][0]!==ring[ring.length-1][0]||ring[0][1]!==ring[ring.length-1][1])ring.push([...ring[0]])
-  return {type:'Polygon',coordinates:[ring]}
- }catch{return null}
-}
+export {parseGeoJSONPolygon} from './geometry'

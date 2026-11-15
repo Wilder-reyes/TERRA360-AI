@@ -13,3 +13,8 @@
 @media(max-width:640px){.bio-tour{bottom:8px;right:8px;left:8px;width:auto;padding:14px}.bio-tour-top .bio-mascot{width:65px;height:94px}.bio-tour-top strong{font-size:1.06rem}.bio-tour-top p{font-size:.8rem;margin:5px 0 0}.bio-repeat{bottom:10px;right:8px}}
 @media(prefers-reduced-motion:reduce){.bio-tour *,.bio-repeat *{animation:none!important;transition:none!important}}
 @media print{.bio-tour,.bio-repeat{display:none!important}}
+
+/* Replay belongs to the footer, so it never covers a map or field-selection control. */
+.b-footer .bio-repeat{position:static;min-height:48px;margin-top:12px;box-shadow:none;max-width:190px}.b-footer .bio-repeat .bio-mascot{width:28px;height:38px}
+
+.b-footer .bio-repeat,.b-footer .bio-repeat span{color:#173d2f}

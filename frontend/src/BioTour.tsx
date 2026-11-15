@@ -3,14 +3,16 @@ import './bio-tour.css'
 
 type Lang='es'|'en'
 const STEPS=[
- {target:'bio-hero',title:{es:'¡Bienvenido a BIOTEX!',en:'Welcome to BIOTEX!'},
-  body:{es:'¡Holis! Soy BIO. Te enseñaré a explorar un terreno y preparar opciones de rotación de cultivos.',en:"Hello! I'm BIO. I will guide you through exploring a field and planning possible crop rotations."}},
+ {target:'bio-hero',title:{es:'¡Bienvenido a CHAKRA!',en:'Welcome to CHAKRA!'},
+  body:{es:'Hola, soy BIO. Primero veremos el terreno. Después anotarás tus cultivos y compararás opciones para sembrar.',en:"Hello! I'm BIO. I will guide you through exploring a field and planning possible crop rotations."}},
  {target:'bio-map',title:{es:'Ubica tu terreno',en:'Find your field'},
-  body:{es:'Puedes dibujar los límites en el mapa o probar nuestro terreno sintético de ejemplo. El punto del sector no representa una parcela real.',en:'Draw your field on the map or try a synthetic example. The sector marker is not a verified field.'}},
+  body:{es:'Elige la parcela de estudio de Barranca o marca otra de la zona. El ejemplo solo se selecciona cuando tú lo eliges.',en:'Choose the Barranca study field or mark another field nearby. The example is selected only when you choose it.'}},
  {target:'bio-layers',title:{es:'Explora las capas NASA',en:'Explore NASA layers'},
   body:{es:'Elige vegetación o lluvia y consulta su leyenda. Los datos regionales no son mediciones exactas de una chacra.',en:'Choose vegetation or rain and read the legend. Regional data are not exact farm measurements.'}},
- {target:'bio-next',title:{es:'Conoce tu plan',en:'Discover your plan'},
-  body:{es:'Después registrarás tus cultivos, elegirás prioridades y compararás cuatro campañas. Al final verás dónde podría ir cada cultivo.',en:'Next, record crops, choose priorities and compare four campaigns. You will see proposed crop placement on the map.'}}
+ {target:'bio-steps',title:{es:'Tus cultivos y prioridades',en:'Your crops and priorities'},
+  body:{es:'Después de marcar tu parcela, anota lo que sembraste y elige si priorizas agua, suelo o ambos. Cada paso aparece en este recorrido.',en:'After selecting the field, enter previous crops and choose whether water, soil or both matter most. Follow the steps shown here.'}},
+ {target:'bio-next',title:{es:'Prepara tu plan',en:'Build your plan'},
+  body:{es:'Pulsa «Continuar» después de marcar el terreno. Al final podrás comparar opciones y revisar riesgos y fuentes.',en:'Tap Continue after marking your field. At the end you can compare options and review risks and evidence.'}}
 ] as const
 const KEY='biotex-bio-intro-v1'
 

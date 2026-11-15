@@ -1,3 +1,5 @@
+> Documento histórico: no configura ni publica la versión actual. Consulte `docs/BIOTEX_ARCHITECTURE.md` y `docs/vercel-deployment.md`.
+
 # TERRA360 AI v0.7 — Informe de calidad reproducible
 
 Fecha de trabajo: 2026-11-13. Entorno de comprobación: Linux, Python 3.13.5 y Node 22.16; el usuario usa Python 3.12 y Windows en su máquina.

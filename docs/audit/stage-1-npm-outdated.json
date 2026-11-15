@@ -1,0 +1,8 @@
+{
+  "@playwright/test": {
+    "current": "1.58.0",
+    "wanted": "1.58.0",
+    "latest": "1.65.1",
+    "dependent": "frontend"
+  }
+}
