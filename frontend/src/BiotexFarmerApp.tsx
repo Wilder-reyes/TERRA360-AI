@@ -82,7 +82,7 @@ const LABELS={
  undo:'Deshacer esquina',cancel:'Cancelar',area:'Área aproximada',changeField:'Cambiar terreno',
  examples:'Conoce CHAKRA en Barranca',exampleNote:'Parcela seleccionada para mostrar cómo se analizan imágenes de satélite.',
  pick:'Usar este ejemplo',fieldReady:'Tu terreno está marcado',fieldMissing:'Primero marca un terreno en el mapa.',
- locationUnavailable:'No pudimos buscar lugares. Intenta de nuevo.',invalidArea:'Marca entre 0,1 y 500 hectáreas.',
+ locationUnavailable:'No pudimos buscar lugares. Intenta de nuevo.',invalidArea:'Marca un terreno de entre 0,1 y 10 000 hectáreas.',
  invalidShape:'Revisa las esquinas: el terreno no debe cruzarse ni repetirse.',
  next:'Continuar',back:'Volver',
  historyTitle:'¿Qué cultivos sembraste?',historyLead:'Elige un cultivo y el mes en que lo sembraste. Si no recuerdas todo, empieza con uno.',
@@ -126,7 +126,7 @@ const LABELS={
  undo:'Undo corner',cancel:'Cancel',area:'Approximate area',changeField:'Change field',
  examples:'Explore CHAKRA in Barranca',exampleNote:'Selected field showing how satellite imagery is analysed.',
  pick:'Use this example',fieldReady:'Your field is marked',fieldMissing:'First mark a field on the map.',
- locationUnavailable:'We could not search places. Please try again.',invalidArea:'Mark an area from 0.1 to 500 hectares.',
+ locationUnavailable:'We could not search places. Please try again.',invalidArea:'Mark a field between 0.1 and 10,000 hectares.',
  invalidShape:'Check the corners: field edges cannot cross or repeat.',
  next:'Continue',back:'Back',
  historyTitle:'What have you planted?',historyLead:'Add any crops you remember from the last two seasons.',
@@ -389,7 +389,7 @@ export default function BiotexFarmerApp(){
    if(!data||data.version!==1||!data.field||!Array.isArray(data.plantings))throw new Error('bad saved farm')
    // A saved polygon can be restored anywhere; the trained NASA model still remains geographically scoped.
    const vertices=fromGeo(data.field)
-   if(!validatePolygon(vertices).valid||approximatePolygonHectares(vertices)<0.1||approximatePolygonHectares(vertices)>500)throw new Error('bad polygon')
+   if(!validatePolygon(vertices).valid||approximatePolygonHectares(vertices)<0.1||approximatePolygonHectares(vertices)>10000)throw new Error('bad polygon')
    const safe=migrateSavedPlantings(((data.plantings||[]) as Planting[]).filter(v=>CROPS.includes(v.crop_id)),Number.isInteger(data.baseYear)?data.baseYear:null,baseYear).slice(0,10)
    const restoredRaw:Array<Subplot>=Array.isArray(data.subplots)?data.subplots:[]
    const seenZones=new Set<string>()
