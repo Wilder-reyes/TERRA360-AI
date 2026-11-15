@@ -1,3 +1,5 @@
+> **Day-of-delivery handoff (2026-11-15): read [docs/HANDOFF_CODEX.md](docs/HANDOFF_CODEX.md) first** — open PRs #47/#48, remaining tasks and rules.
+
 # BIOTEX — Development guidelines for coding agents
 
 ## Requisitos permanentes vigentes (etapa 1, 2026-11-15)
