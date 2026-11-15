@@ -22,6 +22,7 @@ class R2ArchiveTests(unittest.TestCase):
 
     def test_quota_abstains_without_writing(self):
         fake=MagicMock()
+        fake.ls.return_value=[R.BUCKET]
         fake.du.return_value=R.BUDGET_BYTES-10
         fake.exists.return_value=False
         with patch.dict(os.environ,{"BIOTEX_R2_ENABLED":"1"}):
@@ -31,6 +32,7 @@ class R2ArchiveTests(unittest.TestCase):
 
     def test_single_verified_private_write(self):
         fake=MagicMock()
+        fake.ls.return_value=[R.BUCKET]
         fake.du.return_value=1200
         fake.exists.return_value=False
         fake.info.return_value={"size":self.source.stat().st_size}
@@ -43,11 +45,30 @@ class R2ArchiveTests(unittest.TestCase):
 
     def test_existing_object_is_not_reuploaded(self):
         fake=MagicMock()
+        fake.ls.return_value=[R.BUCKET]
         fake.du.return_value=1400
         fake.exists.return_value=True
         with patch.dict(os.environ,{"BIOTEX_R2_ENABLED":"1"}):
             result=R.archive_original(self.source,fs=fake)
         self.assertEqual(result["status"],"already_archived")
+        fake.put_file.assert_not_called()
+
+    def test_other_bucket_usage_is_counted_before_upload(self):
+        fake=MagicMock()
+        fake.ls.return_value=[R.BUCKET,"other-r2-bucket"]
+        fake.du.side_effect=lambda bucket,total: (1000 if bucket==R.BUCKET else R.BUDGET_BYTES-1000)
+        fake.exists.return_value=False
+        with patch.dict(os.environ,{"BIOTEX_R2_ENABLED":"1"}):
+            with self.assertRaises(R.ArchiveUnavailable):
+                R.archive_original(self.source,fs=fake)
+        fake.put_file.assert_not_called()
+
+    def test_no_bucket_inventory_never_uploads(self):
+        fake=MagicMock()
+        fake.ls.return_value=[]
+        with patch.dict(os.environ,{"BIOTEX_R2_ENABLED":"1"}):
+            with self.assertRaises(R.ArchiveUnavailable):
+                R.archive_original(self.source,fs=fake)
         fake.put_file.assert_not_called()
 
     def test_unrecognised_file_is_rejected(self):

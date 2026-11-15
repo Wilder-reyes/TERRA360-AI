@@ -1,0 +1,21 @@
+{
+  "source_kind": "published_historical_reference",
+  "agency": "Autoridad Nacional del Agua (ANA)",
+  "document": "Plan Operativo Institucional 2025, Tomo II, Administración Local de Agua Barranca",
+  "document_date": "2024-12",
+  "reference_url": "https://www.ana.gob.pe/sites/default/files/file_content/POI%20consistente%20con%20PIA%202025%20-%20detallado%20-%20Tomo%20II%20-%20parte%201.pdf",
+  "location": "Cuencas de Pativilca y Supe; ALA Barranca",
+  "statistics": [
+    {
+      "river": "Pativilca",
+      "average_flow_m3_s": 47.58
+    },
+    {
+      "river": "Supe",
+      "average_flow_m3_s": 2.23
+    }
+  ],
+  "period_covered": "El documento no especifica en el pasaje citado los años de la serie de promedios",
+  "disclaimer_es": "Promedios históricos publicados por ANA; no son el caudal actual ni el agua asignada a tu chacra.",
+  "notes_es": "ANA identifica menor disponibilidad superficial fuera de la temporada de avenidas (enero a marzo), pero el calendario y los turnos reales deben confirmarse para la comisión de usuarios."
+}

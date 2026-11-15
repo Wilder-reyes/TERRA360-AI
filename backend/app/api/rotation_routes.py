@@ -90,6 +90,27 @@ class FieldSoil(BaseModel):
     source: Literal["farmer_reported", "lab_report"] = "farmer_reported"
 
 
+class CropBudget(BaseModel):
+    crop_id: str
+    yield_kg_ha: float = Field(ge=0, le=300000)
+    price_soles_kg: float = Field(ge=0, le=10000)
+    cost_soles_ha: float = Field(ge=0, le=1000000)
+
+
+class BudgetPlanting(BaseModel):
+    crop_id: str
+
+
+class BudgetStrategy(BaseModel):
+    id: Literal["S0", "S1", "S2"]
+    plantings: list[BudgetPlanting] = Field(max_length=12)
+
+
+class EconomicsRequest(BaseModel):
+    strategies: list[BudgetStrategy] = Field(min_length=1, max_length=3)
+    crop_budgets: list[CropBudget] = Field(min_length=1, max_length=16)
+
+
 class CompareRequest(BaseModel):
     zone: Literal["huaral", "barranca"] | None = None
     latitude: float | None = Field(None, ge=-60, le=60)
@@ -101,9 +122,26 @@ class CompareRequest(BaseModel):
     current_source: Literal["farmer_declared", "satellite_confirmed", "team_demo"] = "farmer_declared"
     income_crop_id: str | None = None
     soil: FieldSoil | None = None
+    crop_budgets: list[CropBudget] = Field(default_factory=list, max_length=16)
     irrigation_source: Literal["farmer_reported", "water_users_board"] | None = None
     irrigation_allowance_m3_ha_season: float | None = Field(None, ge=0, le=1000000)
     use_team_templates_as_fallback: bool = False
+
+
+@router.post("/economics")
+def estimate_economics(req: EconomicsRequest):
+    """No NASA fetch, no assumed farmgate prices, fully user-supplied inputs."""
+    from app.services.agro_evidence import crop_economic_comparison
+    expected = set(engine.load_catalog()["crops"])
+    crop_ids = [p.crop_id for strategy in req.strategies for p in strategy.plantings]
+    budget_ids = [p.crop_id for p in req.crop_budgets]
+    if (any(cid not in expected for cid in crop_ids+budget_ids)
+            or len(set(budget_ids)) != len(budget_ids)
+            or len({s.id for s in req.strategies}) != len(req.strategies)):
+        raise HTTPException(422, "Hay cultivos repetidos o no reconocidos.")
+    return crop_economic_comparison(
+        [s.model_dump() for s in req.strategies],
+        [item.model_dump() for item in req.crop_budgets])
 
 
 @router.get("/zones")
@@ -141,6 +179,13 @@ async def _climate(zone: str | None, lat: float | None, lon: float | None) -> di
 @router.get("/upper-basin-rain")
 def upper_basin_rain(zone: Literal["huaral", "barranca"]):
     return basin_context(zone)
+
+
+@router.get("/evidence-sources")
+def evidence_sources():
+    """Official source availability, not automatically a current observation."""
+    from app.services.agro_evidence import public_evidence_summary
+    return public_evidence_summary()
 
 
 @router.get("/climate")
@@ -231,6 +276,29 @@ async def compare(req: CompareRequest):
         "note_es": "Datos anotados para revisar. Falta validar reglas locales antes de usarlos para recomendar o descartar cultivos.",
         "note_en": "Recorded for review. Local validation is required before these values can rank or exclude crops.",
     }
+    # Never label public portals as live station measurements or prices.
+    from app.services.agro_evidence import (crop_economic_comparison,
+                                            soil_checks, public_evidence_summary)
+    used_ids = sorted({p["crop_id"] for strategy in result["strategies"]
+                       for p in strategy["plantings"]})
+    budget_input = [p.model_dump() for p in req.crop_budgets]
+    result["economic_comparison"] = crop_economic_comparison(result["strategies"], budget_input)
+    result["soil_assessment"] = soil_checks(
+        req.soil.model_dump(exclude_none=True) if req.soil else None, used_ids)
+    result["official_evidence"] = public_evidence_summary()
+    # Only an expert-reviewed agronomic rule can exclude a crop option.
+    # Absence of curated ranges must never become a positive soil suitability claim.
+    if result["soil_assessment"]["status"] == "screened_with_expert_reviewed_reference":
+        blocked = {item["crop_id"] for item in result["soil_assessment"].get("alerts", [])}
+        valid = [strategy for strategy in result["strategies"]
+                 if strategy["id"] == "S0" or
+                 not any(p["crop_id"] in blocked for p in strategy["plantings"])]
+        if result.get("recommended_strategy_id") and not any(
+                x["id"] == result["recommended_strategy_id"] for x in valid):
+            chosen = engine.highlight_for_farmer(
+                valid, {**req.priorities.model_dump()}, req.water_turn)
+            result.update(chosen)
+            result["soil_reranked"] = True
     result["upper_basin_rain"] = basin
     if basin["status"] == "available":
         for month in result["window"]["context"]:

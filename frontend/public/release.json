@@ -1,20 +1,22 @@
 {
   "application": "BIOTEX · NSPACE BIOTEX",
-  "release": "v0.24-barranca-evidence-ux",
+  "release": "v0.25-evidence-first-ux",
   "pilot": "Barranca · Pativilca / Supe",
   "features": [
-    "Una parcela para explorar Barranca con imágenes NASA",
-    "Mapa con capas de vegetación MODIS y lluvia GPM regional",
-    "Fechas y lecturas de imágenes HLS realmente consultadas",
-    "Secuencia comprensible de cultivos con inicio de ciclo en agosto",
-    "Recomendación conservadora ante escasez de agua o cambios marginales",
-    "Datos opcionales de suelo y agua declarados por el agricultor",
-    "Guardar y recuperar chacra en este dispositivo; compartir por WhatsApp",
-    "Informe A4 con mapa esquemático, tablas y gráficos"
+    "Vista del agricultor enfocada en qué sembrar, cuándo y qué confirmar",
+    "Comparaciones de rotación basadas en NASA POWER y calendario costero de Lima",
+    "Checklist simple del suelo, agua de riego y avisos oficiales SENAMHI",
+    "Consulta opcional de fuentes oficiales ANA/MIDAGRI/SENAMHI con estado de disponibilidad",
+    "Referencia hidrológica histórica ANA Pativilca/Supe sin confundirla con agua disponible",
+    "Cálculo opcional de ingresos menos costos por hectárea usando solo datos del agricultor",
+    "Rangos de suelo aplicables solo con análisis y reglas firmadas por expertos",
+    "Entrenador ML candidato bloqueado hasta obtener 200 campañas verificadas y 30 parcelas",
+    "Cloudflare R2 privado con guardia de 8GB a nivel de cuenta y apagado por defecto",
+    "Informe A4, mapa NASA, guardado local y compartir por WhatsApp"
   ],
   "computer_vision_enabled": false,
   "environment": "production",
   "source_branch": "main",
   "primary_url": "https://terra360-ai-xi.vercel.app/",
-  "notes": "El motor usa calendarios aproximados de la costa de Lima; los datos de suelo y agua declarados aún no se usan para validar compatibilidad. Climatología IMERG de cuenca y caudal ANA siguen pendientes de evidencia externa."
+  "notes": "No hay flujo ANA vigente validado ni asignación de riego parcelaria; los datos de ANA son referencias históricas. No existe un modelo ML agrícola entrenado ni pruebas de campo reales. La climatología GPM IMERG de cuenca y claves R2 requieren accesos privados, ingestión y revisión. No confundir datos faltantes con cero ni prometer rentabilidad."
 }

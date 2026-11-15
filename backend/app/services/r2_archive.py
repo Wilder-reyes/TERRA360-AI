@@ -57,16 +57,33 @@ def archive_original(local_path: str | Path, *, fs=None) -> dict:
     if bucket!=BUCKET:
         raise ArchiveUnavailable("Unexpected bucket; only terra360-nasa-archive is allowed.")
     dest=f"{bucket}/{remote_key(path,kind)}"
-    used=int(fs.du(bucket,total=True))
-    if used<0 or used>BUDGET_BYTES:
-        raise ArchiveUnavailable("Cannot verify bucket usage within the 8 GB guard.")
+    # Free GB-month is account-wide. Refuse uploads unless usage of EVERY
+    # bucket can be measured. This still cannot inspect Cloudflare operation
+    # charges or other concurrent writers and is not a billing guarantee.
+    try:
+        buckets=[str(x).strip("/") for x in fs.ls("",detail=False)]
+        if not buckets or bucket not in buckets or len(buckets)>10:
+            raise ArchiveUnavailable("R2 bucket inventory unavailable or too large to review safely.")
+        sizes={name:int(fs.du(name,total=True)) for name in buckets}
+    except ArchiveUnavailable:
+        raise
+    except Exception as exc:
+        raise ArchiveUnavailable("Cannot verify account-wide R2 usage; no upload performed.") from exc
+    if any(v<0 for v in sizes.values()):
+        raise ArchiveUnavailable("Invalid account usage; no upload performed.")
+    account_used=sum(sizes.values())
+    if account_used>BUDGET_BYTES:
+        raise ArchiveUnavailable("All R2 buckets together exceed the 8 GB guard.")
     if fs.exists(dest):
         return {"status":"already_archived","key":dest,"object_bytes":size,
-                "bucket_used_bytes":used,"private":True}
-    if used+size>BUDGET_BYTES:
-        raise ArchiveUnavailable("R2 safety budget exceeded; no upload performed.")
+                "bucket_used_bytes":sizes[bucket],"account_used_bytes":account_used,"private":True}
+    if account_used+size>BUDGET_BYTES:
+        raise ArchiveUnavailable("Account-wide R2 safety budget exceeded; no upload performed.")
+    # R2 Cloudflare still separately charges Class A/B requests. Enable only
+    # after checking the billing dashboard and credentials privately.
     fs.put_file(str(path),dest)
     if int(fs.info(dest).get("size",-1))!=size:
         raise ArchiveUnavailable("Remote size differs from the local source.")
     return {"status":"archived","key":dest,"object_bytes":size,
-            "bucket_used_bytes":used+size,"private":True}
+            "bucket_used_bytes":sizes[bucket]+size,
+            "account_used_bytes":account_used+size,"private":True}
