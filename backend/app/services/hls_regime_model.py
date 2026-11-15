@@ -13,8 +13,7 @@ Training reproducibility: see scripts/train_hls_regimes.py.
 """
 from __future__ import annotations
 from collections import defaultdict
-from datetime import datetime, timezone
-from hashlib import sha1, sha256
+from hashlib import sha1
 from pathlib import Path
 from statistics import mean
 import json
@@ -69,7 +68,7 @@ def fit_centroids(values: list[float], k: int = 3) -> list[float]:
     if len(values) < 20:
         raise ValueError("Not enough observed NASA HLS NDVI values")
     ordered = sorted(values)
-    seeds = [ordered[round((len(ordered)-1)*q)] for q in (0.15, 0.50, 0.85)]
+    seeds = [ordered[math.floor((len(ordered)-1)*q + 0.5)] for q in (0.15, 0.50, 0.85)]
     if len(set(seeds)) != k:
         raise ValueError("Observed NDVI values do not support three distinct regimes")
     centers = seeds
