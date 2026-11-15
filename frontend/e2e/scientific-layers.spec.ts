@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test'
-test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
 
 test('regional NASA imagery keeps its provenance and native provider color scale',async({page})=>{
  await page.goto('/')

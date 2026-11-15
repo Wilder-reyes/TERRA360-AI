@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs'
 // Playwright runs this spec in Node, where imported JSON needs an import attribute.
 const BARRANCA_HISTORY=JSON.parse(readFileSync(new URL('../src/data/barrancaHls.json',import.meta.url),'utf8')) as {months:{month:string;ndvi:number|null}[]}
 
-test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
 
 test('Barranca is the only public study example and users may outline another place',async({page})=>{
  await page.goto('/?vista=chalhuas')
@@ -54,13 +54,14 @@ test('previously saved polygons outside Barranca restore and remain editable',as
  await expect(page.locator('.chakra-zone-map')).toBeVisible()
 })
 
-test('the optional BIO tutorial is skippable and manually replayable',async({page})=>{
+test('the animated BIO guide can be replayed and dismissed without blocking the map',async({page})=>{
  await page.goto('/')
- await expect(page.getByRole('dialog',{name:'Tutorial de BIO'})).toHaveCount(0)
- await page.getByRole('button',{name:'Repetir tutorial de BIO'}).click()
- await expect(page.getByRole('dialog',{name:'Tutorial de BIO'})).toBeVisible()
- await page.getByRole('button',{name:'Omitir'}).click()
- await expect(page.getByRole('dialog',{name:'Tutorial de BIO'})).toHaveCount(0)
+ await expect(page.getByRole('region',{name:'BIO, tu guía'})).toHaveCount(0)
+ await page.getByRole('button',{name:'Abrir guía de BIO'}).click()
+ await expect(page.getByRole('region',{name:'BIO, tu guía'})).toBeVisible()
+ await expect(page.getByText('¡Hola! Soy BIO')).toBeVisible()
+ await page.getByRole('button',{name:'No mostrar más'}).click()
+ await expect(page.getByRole('region',{name:'BIO, tu guía'})).toHaveCount(0)
 })
 
 test('desktop and mobile show three accessible steps without horizontal overflow',async({page})=>{

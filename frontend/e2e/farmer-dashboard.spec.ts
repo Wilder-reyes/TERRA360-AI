@@ -27,7 +27,7 @@ const guidance={
  source_urls:['https://power.larc.nasa.gov/','https://cgiar-climate-data-hub.github.io/catalog/ecocrop/']
 }
 test.beforeEach(async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))
  await page.route('**/api/environment/nasa-power/daily**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify(daily)}))
  await page.route('**/api/environment/terrain?**',r=>r.fulfill({contentType:'application/json',body:'{"elevation_m":120,"approximate_gradient_degrees":1.2}'}))
  await page.route('**/api/rotation/climate?**',r=>r.fulfill({contentType:'application/json',body:'{"annual_et0_mm":900}'}))
@@ -67,7 +67,8 @@ test('zone-by-zone PDF uses the native print entry point and a geometric map',as
  await selectedField(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await page.getByRole('button',{name:'Guardar cultivo de esta zona'}).click()
- await page.getByRole('button',{name:'Preparar mi plan'}).click()
+ await page.getByRole('button',{name:'Continuar a mi plan'}).click()
+ await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await page.getByRole('button',{name:'Imprimir mapa y plan PDF'}).click()
  await expect.poll(()=>page.evaluate(()=>(window as any).__printed)).toBe(1)
  await page.emulateMedia({media:'print'})

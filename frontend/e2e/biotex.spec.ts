@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test'
 import {prepared,preparedZone,savedField,testField,testSubplot} from './chakra-fixtures'
 
-test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
 
 test('map-first CHAKRA landing keeps the journey short and science optional',async({page})=>{
  await page.goto('/')
@@ -49,7 +49,8 @@ test('per-zone PDF includes map, acreage, crop, date and four preparation action
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await page.getByRole('button',{name:'Guardar cultivo de esta zona'}).click()
- await page.getByRole('button',{name:'Preparar mi plan'}).click()
+ await page.getByRole('button',{name:'Continuar a mi plan'}).click()
+ await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await expect(page.getByText('enero de 2027',{exact:true})).toBeVisible()
  expect(payload?.zones).toEqual([expect.objectContaining({id:'rest',crop_id:'camote'})])
  await page.emulateMedia({media:'print'})
@@ -82,7 +83,8 @@ test('subdivided fields preserve individual zones and crops',async({page})=>{
  await page.getByRole('button',{name:'Recuperar mi chacra guardada'}).click()
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await expect(page.locator('.chakra-zone-choice')).toHaveCount(2)
- await page.getByRole('button',{name:'Preparar mi plan'}).click()
+ await page.getByRole('button',{name:'Continuar a mi plan'}).click()
+ await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await expect(page.getByRole('heading',{name:/Tu próxima siembra/})).toBeVisible()
  expect(payload?.zones).toHaveLength(2)
  expect(payload?.zones).toEqual(expect.arrayContaining([
