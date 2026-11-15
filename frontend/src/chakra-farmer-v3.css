@@ -32,3 +32,82 @@
 @media(max-width:640px){.bio-guide-root{inset:auto 10px 92px auto!important}.bio-tour.bio-guided-card{max-width:min(350px,calc(100vw - 20px));max-height:210px}.bio-tour.bio-guided-top{top:10px;right:10px;max-height:195px}.bio-tour .bio-tour-top svg{max-width:68px;max-height:100px}.bio-tour .bio-tour-top p{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.bio-mascot *{animation:none!important}}
 @media print{.chakra-information,.bio-guide-root{display:none!important}}
+
+/* Step one: map first. Remove the lab panels from the farmer journey, not the data or map attribution. */
+@media screen {
+ .chakra-farmer-clean #chakra-field :is(.chakra-study-strip,.b-coordinate-search,.b-map-view,.b-map-provenance,.b-map-evidence,.b-hls-legend,.b-map-legend,.b-map-label,.b-farm-recovery,.b-technical,.b-parcel-tools,.b-sample-label,.b-observation-card,.b-field-evidence,.b-farm-official,.b-evidence-technical,.b-satellite-details){display:none!important}
+ .chakra-farmer-clean #chakra-field .b-muted{display:none!important}
+ .chakra-farmer-clean .chakra-study-note{display:none}
+ .chakra-farmer-clean .chakra-farmer-extra{display:none!important}
+ .chakra-farmer-clean #chakra-field .b-intro{padding:20px 0 6px!important}
+ .chakra-farmer-clean #chakra-field .b-hero-copy h1{font-size:clamp(28px,3.3vw,44px)!important}
+ .chakra-farmer-clean #chakra-field .b-field-ready{display:flex!important;align-items:center!important;gap:12px;padding:11px 18px!important;border-color:#D6F86644!important;margin:10px 0!important}
+ .chakra-farmer-clean #chakra-field .b-field-ready strong{font-size:17px}
+ .chakra-farmer-clean #chakra-field .b-map-frame{border:4px solid #D6F866!important;border-radius:19px!important}
+ .chakra-farmer-clean #chakra-field .b-map{min-height:390px!important}
+ .chakra-farmer-clean #chakra-field .b-search-card{padding:18px!important}
+ .chakra-farmer-clean #chakra-field .b-search-card .b-card-heading{margin:0 0 10px}
+ .chakra-farmer-clean #chakra-field .b-search-card .b-card-heading p{font-size:14px}
+ .chakra-farmer-clean #chakra-field .b-next{margin-top:15px}
+ /* Keep Leaflet/OpenStreetMap/Esri credits legible as legally required. */
+ .chakra-farmer-clean .leaflet-control-attribution{font-size:10px!important;background:rgba(10,22,13,.86)!important;color:#edf3e8!important;padding:2px 6px!important}
+ .chakra-farmer-clean .leaflet-control-attribution a{color:#D6F866!important}
+ /* Agricultural crop zone panels share a single view on large screens. */
+ .chakra-farmer-clean .chakra-zone-page{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.17fr);column-gap:18px;row-gap:12px;max-width:1400px!important;align-items:start}
+ .chakra-zone-page>.b-intro{grid-column:1/-1;grid-row:1;padding:15px 0!important}
+ .chakra-zone-page>.chakra-zones-heading{grid-column:1;grid-row:2;margin:2px 0 0}
+ .chakra-zone-page>.chakra-zone-choices{grid-column:1;grid-row:3}
+ .chakra-zone-page>.chakra-crop-section{grid-column:1;grid-row:4;min-width:0}
+ .chakra-zone-page>.chakra-zone-map-wrap{grid-column:2;grid-row:2 / span 3;position:sticky!important;top:104px;min-width:0;padding:10px!important}
+ .chakra-zone-page>.b-next{grid-column:1/-1;grid-row:5;margin-top:9px}
+ .chakra-zone-page>.b-error,.chakra-zone-page>p[role="status"]{grid-column:1/-1}
+ .chakra-zone-page .chakra-zone-choices{grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:9px}
+ .chakra-zone-page .chakra-zone-choice{min-height:74px!important;padding:10px 12px!important;border:1px solid #ffffff22}
+ .chakra-zone-page .chakra-zone-choice strong{font-size:14px!important}
+ .chakra-zone-page .chakra-crop-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .b-app .chakra-zone-page .chakra-crop-card{min-height:90px!important;padding:9px 5px!important;gap:5px;border-radius:14px!important}
+ .chakra-zone-page .chakra-crop-art{font-size:28px;line-height:1.1}
+ .chakra-zone-page .chakra-crop-card>span:nth-child(2){font-size:12px;line-height:1.2;text-align:center}
+ .chakra-zone-page .chakra-crop-section{padding:17px!important;border:1px solid #ffffff2a;border-radius:21px;background:rgba(19,32,22,.93)}
+ .chakra-zone-page .chakra-crop-section h2{font-size:22px}
+ .chakra-zone-page .chakra-zone-drag-hint{font-size:14px;line-height:1.5;padding:11px 13px;margin:8px 0 12px}
+ .chakra-zone-page .chakra-crop-when{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:11px;align-items:end;margin-top:13px}
+ .chakra-zone-page .chakra-crop-when label{font-size:14px}
+ .chakra-zone-page .chakra-crop-when select{min-height:48px!important}
+ .chakra-zone-page .chakra-zone-map-frame{min-height:515px!important}
+ .chakra-zone-page .chakra-zone-map{height:515px!important;min-height:515px!important}
+ .chakra-zone-page .chakra-zone-map-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 4px}
+ .chakra-zone-page .chakra-zone-map-actions .b-btn{font-size:13px;min-height:45px!important}
+ .chakra-zone-page .chakra-zone-map-note{font-size:13px;color:#c7d9c0;margin:9px 4px}
+ .chakra-zone-page .chakra-zone-choices .chakra-zone-choice.chosen{background:#D6F86617;border-color:#D6F866!important}
+ .chakra-farmer-clean .chakra-more-science{display:none!important}
+ /* Keep the on-screen result calm: the print report still contains provenance. */
+ .chakra-farmer-clean .chakra-strategy-status{font-size:13px}
+ .chakra-farmer-clean .chakra-zone-result .chakra-result-heading h1{font-size:clamp(26px,3.4vw,42px)}
+ .chakra-farmer-clean .chakra-plan-sketch{border-color:#D6F86644}
+ /* Dedicated pages must also be accessible from smaller screens. */
+ .chakra-farmer-clean .chakra-nav{display:flex!important;gap:12px}
+ .chakra-farmer-clean .chakra-nav a{font-size:13px;white-space:nowrap}
+}
+@media screen and (max-width:960px){
+ .chakra-farmer-clean .chakra-zone-page{grid-template-columns:minmax(0,1fr)!important;display:flex!important;flex-direction:column;gap:13px}
+ .chakra-zone-page>.b-intro{order:0;width:100%}
+ .chakra-zone-page>.chakra-zones-heading{order:1;width:100%}
+ .chakra-zone-page>.chakra-zone-choices{order:2;width:100%}
+ .chakra-zone-page>.chakra-crop-section{order:3;width:100%}
+ .chakra-zone-page>.chakra-zone-map-wrap{order:4;width:100%;position:relative!important;top:auto!important}
+ .chakra-zone-page>.b-next{order:5;width:100%}
+ .chakra-zone-page>.b-error,.chakra-zone-page>p[role="status"]{order:6;width:100%}
+ .chakra-zone-page .chakra-zone-map-frame,.chakra-zone-page .chakra-zone-map{height:370px!important;min-height:370px!important}
+ .chakra-zone-page .chakra-crop-when{grid-template-columns:1fr}
+ .chakra-zone-page .chakra-crop-when button{width:100%}
+}
+@media screen and (max-width:580px){
+ .chakra-zone-page .chakra-crop-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px}
+ .b-app .chakra-zone-page .chakra-crop-card{min-height:86px!important;font-size:12px}
+ .chakra-farmer-clean .chakra-nav{display:none!important}
+ .chakra-zone-page .chakra-zone-choices{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .chakra-zone-page .chakra-zone-map-actions button{flex:1}
+ .chakra-farmer-clean #chakra-field .b-map{min-height:320px!important}
+ .chakra-farmer-clean #chakra-field .b-search-card{padding:12px!important}
+}
