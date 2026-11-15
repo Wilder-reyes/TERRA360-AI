@@ -71,7 +71,7 @@ export default function ChakraRotationTimeline({plan,lang,monthIndex,onMonth}:{
       <span className="chakra-quarter-period">{quarterName(quarter,lang)}</span>
       {qMonths.length===0?<span className="chakra-quarter-muted">—</span>:values.length?values.map(c=>{const visual=cropVisual(c.crop_id);return <div key={c.when} className="chakra-quarter-crop" style={{background:visual.color}}>
        <span>{visual.icon}</span><strong>{es?c.label:c.label_en}</strong><small>{c.continues?(es?'Continúa':'Ongoing'):displayMonth(c.when,lang).replace('.','')}</small>
-      </div>}):<div className="chakra-quarter-empty">{es?'Entre campañas':'Between seasons'}<small>{es?'Último: ':'Last: '}{es?zone.current_crop:zone.current_crop_en||zone.current_crop}</small></div>}
+      </div>}):<div className="chakra-quarter-empty">{es?'Sin siembra programada':'No planting scheduled'}<small>{es?'Verifica la fecha de cosecha y la ventana de siembra local.':'Check harvest date and local sowing window.'}</small></div>}
      </div>
     })}
    </div>)}
