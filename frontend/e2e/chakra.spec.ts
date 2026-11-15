@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test'
+import {registerAllCropZones} from './chakra-fixtures'
 
 test.beforeEach(async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))
@@ -45,7 +46,8 @@ test('crop cards and spatial plan produce a zone-specific printable map',async({
  await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
- await expect(page.locator('.chakra-zone-choice')).toContainText(['Camote'])
+ await expect(page.locator('.chakra-zone-choice').first()).toContainText('Camote')
+ await registerAllCropZones(page)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await expect(page.getByRole('heading',{name:/¿Para cuántos meses/})).toBeVisible()
  await page.getByRole('slider',{name:'Personaliza la duración'}).fill('18')
@@ -54,7 +56,7 @@ test('crop cards and spatial plan produce a zone-specific printable map',async({
  await expect(page.getByRole('heading',{name:/Mi plan de cultivos/})).toBeVisible()
  await expect(page.getByText('Vainita',{exact:true}).first()).toBeVisible()
  await expect(page.getByText('enero de 2027',{exact:true})).toBeVisible()
- expect(submitted).toMatchObject({zones:[{id:'rest',crop_id:'camote'}]})
+ expect(submitted).toMatchObject({zones:expect.arrayContaining([expect.objectContaining({id:'rest',crop_id:'camote'})])})
  await expect(page.getByRole('button',{name:'Guardar mi plan'})).toBeVisible()
  await page.emulateMedia({media:'print'})
  await expect(page.locator('.chakra-spatial-print')).toBeVisible()
@@ -70,7 +72,7 @@ test('any area can start delineation and the app retains large controls on phone
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1)
   await expect(page.locator('.b-map')).toBeVisible()
  }
- await page.getByRole('button',{name:'Delimitar otro terreno'}).click()
+ await page.getByRole('button',{name:'Dibujar mi terreno'}).click()
  await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeDisabled()
  await expect(page.getByRole('button',{name:'Cancelar',exact:true})).toBeVisible()
 })

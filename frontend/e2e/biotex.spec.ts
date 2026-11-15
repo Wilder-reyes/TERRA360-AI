@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test'
-import {prepared,preparedZone,savedField,testField,testSubplot} from './chakra-fixtures'
+import {prepared,preparedZone,savedField,testField,testSubplot,registerAllCropZones} from './chakra-fixtures'
 
 test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
 
@@ -8,8 +8,8 @@ test('map-first CHAKRA landing keeps the journey short and science optional',asy
  await expect(page.getByRole('heading',{name:/Conoce tu terreno/})).toBeVisible()
  await expect(page.locator('.b-map')).toBeVisible()
  await expect(page.locator('.b-progress button')).toHaveCount(3)
- await expect(page.getByRole('button',{name:'Explorar parcela de Barranca'})).toBeVisible()
- await expect(page.getByRole('button',{name:'Delimitar otro terreno'})).toBeVisible()
+ await expect(page.getByRole('button',{name:'Ver un ejemplo'})).toBeVisible()
+ await expect(page.getByRole('button',{name:'Dibujar mi terreno'})).toBeVisible()
  await expect(page.getByText('Cómo se obtuvo esta lectura')).toBeVisible()
  expect(await page.locator('body').innerText()).not.toContain('BIOTEX')
 })
@@ -36,7 +36,7 @@ test('any imported polygon can be assigned a crop without losing its geometry',a
  await expect(page.locator('.b-field-ready')).toBeVisible()
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
- await expect(page.locator('.chakra-zone-choice')).toHaveCount(1)
+ await expect(page.locator('.chakra-zone-choice')).toHaveCount(3)
 })
 
 test('per-zone PDF includes map, acreage, crop, date and four preparation actions',async({page})=>{
@@ -49,10 +49,12 @@ test('per-zone PDF includes map, acreage, crop, date and four preparation action
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
+ await registerAllCropZones(page)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await expect(page.getByText('enero de 2027',{exact:true})).toBeVisible()
- expect(payload?.zones).toEqual([expect.objectContaining({id:'rest',crop_id:'camote'})])
+ expect(payload?.zones).toEqual(expect.arrayContaining([expect.objectContaining({id:'rest',crop_id:'camote'})]))
+ expect(payload?.zones).toHaveLength(3)
  await page.emulateMedia({media:'print'})
  const report=page.locator('.chakra-spatial-print')
  await expect(report).toBeVisible()
@@ -83,6 +85,7 @@ test('subdivided fields preserve individual zones and crops',async({page})=>{
  await page.getByRole('button',{name:'Recuperar mi chacra guardada'}).click()
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await expect(page.locator('.chakra-zone-choice')).toHaveCount(2)
+ await registerAllCropZones(page)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await expect(page.getByRole('heading',{name:/Mi plan de cultivos/})).toBeVisible()
@@ -104,7 +107,7 @@ test('saved zone decisions can be recovered after a reload',async({page})=>{
  await page.reload()
  await page.getByRole('button',{name:'Recuperar mi chacra guardada'}).click()
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
- await expect(page.locator('.chakra-zone-choice')).toContainText(['Camote'])
+ await expect(page.locator('.chakra-zone-choice').first()).toContainText('Camote')
 })
 
 test('regional GIBS rain keeps its real source and an optional provider legend',async({page})=>{

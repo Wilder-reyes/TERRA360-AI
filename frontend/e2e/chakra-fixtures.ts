@@ -1,3 +1,4 @@
+import type {Page} from '@playwright/test'
 /** Deterministic NASA-agnostic fixture: only test scaffolding, never production evidence. */
 export const testField={type:'Polygon' as const,coordinates:[[
  [-77.7395,-10.702],[-77.7375,-10.702],[-77.7375,-10.700],
@@ -26,3 +27,17 @@ export const savedField=(opts?:{zoneCrops?:Record<string,{crop_id:string;planted
  fieldLabel:'Terreno delimitado',isDemoField:false,baseYear:2024,
  plantings:[],subplots:opts?.subplots||[],zoneCrops:opts?.zoneCrops||{}
 })
+
+/** Fill only unrecorded crop zones. The three farmer areas are deliberately
+ * distinct, so old one-zone tests must register each before proceeding. */
+export async function registerAllCropZones(page:Page){
+ const zones=page.locator('.chakra-zone-choice')
+ const count=await zones.count()
+ for(let i=0;i<count;i++){
+  const zone=zones.nth(i)
+  if((await zone.innerText()).includes('Por registrar')||(await zone.innerText()).includes('To register')){
+   await zone.click()
+   await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
+  }
+ }
+}

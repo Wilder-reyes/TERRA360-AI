@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test'
+import {registerAllCropZones} from './chakra-fixtures'
 
 const plan={
  status:'prepared',parcel_area_ha:2.25,scope:'barranca_reference',
@@ -58,6 +59,7 @@ test('the farmer has a readable quarter calendar and last crop when no campaign 
  await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
+ await registerAllCropZones(page)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await expect(page.getByRole('heading',{name:/¿Para cuántos meses/})).toBeVisible()
  await page.getByRole('slider',{name:'Personaliza la duración'}).fill('18')
