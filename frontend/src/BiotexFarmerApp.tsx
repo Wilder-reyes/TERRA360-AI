@@ -24,7 +24,7 @@ type Strategy={
  sections:{why:{es:string[];en:string[]};benefits:{es:string[];en:string[]};gaps:{es:string[];en:string[]};risks:{es:string[];en:string[]};evidence:{es:string[];en:string[]}}
 }
 type FieldSoil={texture?:'arenosa'|'franca'|'arcillosa';ph?:number;salinity_ds_m?:number;organic_matter_percent?:number;drainage?:'bueno'|'regular'|'malo'}
-type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};
+type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};upper_basin_rain?:{status:string;last_season?:{season:string;percent_of_normal:number};note_es?:string;note_en?:string};
  recommendation_reason_es?:string;recommendation_reason_en?:string;
  climate?:{period:string;annual_et0_mm:number;cell_adjustment?:{reason_es:string;reason_en:string}|null};
  income_crop?:string;disclaimer_es?:string;disclaimer_en?:string;method?:Record<string,unknown>}
@@ -358,7 +358,11 @@ export default function BiotexFarmerApp(){
  function cropsLine(s:Strategy){return schedule(s).map(p=>labelCrop(p.crop_id,lang)).join(' · ')}
  function technical(s:Strategy){return <details className="b-technical"><summary>{t.details}</summary>
   <div className="b-technical-inner"><h4>{t.evidence}</h4><ul>{s.sections.evidence[lang].map((a,i)=><li key={i}>{a}</li>)}</ul>
-   <h4>{t.verify}</h4><ul>{s.sections.gaps[lang].map((a,i)=><li key={i}>{a}</li>)}</ul></div>
+   <h4>{t.verify}</h4><ul>{s.sections.gaps[lang].map((a,i)=><li key={i}>{a}</li>)}</ul>
+   {result?.farm_inputs?.soil&&<p>{lang==='es'?'Datos del suelo anotados por ti (todavía no utilizados para descartar cultivos):':'Your recorded soil data (not yet used to exclude crops):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+' '+v).join(' · ')}</p>}
+   {result?.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por ti (sin comprobar contra necesidades reales de riego):':'Water volume you entered (not yet compared with actual irrigation needs):'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha</p>}
+   {result?.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season} · {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de la lluvia habitual en cabecera de cuenca; no equivale al caudal del canal.':'of normal rainfall in the upper basin; not canal flow.'}</p>}
+   </div>
  </details>}
  function strip(s:Strategy){const crops=schedule(s)
   return <div className="b-sequence" aria-label={t.planSchedule}>{crops.length?crops.map((p,i)=><div className="b-sequence-step" key={p.start_index+'-'+p.crop_id}>
@@ -385,9 +389,19 @@ export default function BiotexFarmerApp(){
  }
  function printable(){if(!result)return null;
   const maxWater=Math.max(1,...result.strategies.map(x=>x.indicators.water_low_river_mm));
+  const corners=field?fromGeo(field):[]
+  const xs=corners.map(p=>p.lng),ys=corners.map(p=>p.lat)
+  const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys)
+  const sketch=corners.length>=3?corners.map(p=>{
+   const x=10+100*(p.lng-minX)/Math.max(1e-7,maxX-minX)
+   const y=80-60*(p.lat-minY)/Math.max(1e-7,maxY-minY)
+   return x.toFixed(1)+','+y.toFixed(1)
+  }).join(' '):'';
   return <div className="b-print-report" aria-hidden={step!==3}>
   <div className="b-print-header"><div><strong className="b-print-logo">BIOTEX</strong><p>{t.printFooter}</p></div><div className="b-print-date">{simpleDate(lang)}</div></div>
-  <h1>{t.planTitle}</h1><div className="b-print-meta"><span><b>{t.where}:</b> {place}</span><span><b>{t.areaPrint}:</b> {area.toFixed(2)} ha</span>
+  <h1>{t.planTitle}</h1>
+  {sketch&&<figure className="b-print-sketch"><svg viewBox="0 0 120 100" role="img" aria-label={lang==='es'?'Croquis del terreno marcado':'Outline of marked field'}><rect x="1" y="1" width="118" height="98" rx="5" fill="#f4f7f4" stroke="#d5e3d8"/><polygon points={sketch} fill="#dbeee1" stroke="#236147" strokeWidth="2.3"/><text x="102" y="13" fill="#42654e" fontSize="9">N ↑</text></svg><figcaption>{lang==='es'?'Contorno aproximado de la chacra':'Approximate field outline'}</figcaption></figure>}
+  <div className="b-print-meta"><span><b>{t.where}:</b> {place}</span><span><b>{t.areaPrint}:</b> {area.toFixed(2)} ha</span>
   <span><b>{t.when}:</b> {simpleDate(lang)}</span></div>
   <p className="b-print-intro">{t.warning} {sampleNote?t.exampleNote:''}</p>
   {preferred?<><h2>{t.recommended}: {strategyName(preferred)}</h2><p>{result[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']}</p>
@@ -406,7 +420,10 @@ export default function BiotexFarmerApp(){
   <div className="b-print-small"><h3>{t.sources}</h3>
   <p>NASA POWER (2001–2025); {history?(lang==='es'?'NASA HLS v2.0 (imágenes consultadas; cultivos confirmados por una persona)':'NASA HLS v2.0 (images consulted; crops confirmed by a person)'):(lang==='es'?'historial de cultivos declarado por la persona (sin análisis HLS)':'farmer-declared crop history (no HLS analysis)')}; FAO-56; DRA Lima/MIDAGRI 2024–2025.</p>
   <p>{lang==='es'?'Solo se utiliza un calendario agrícola aproximado de Lima; no se conoce el análisis de suelo, turno real de riego o precio futuro. Los cálculos son comparaciones relativas, no recomendaciones garantizadas.':'Uses an approximate Lima sowing calendar. Soil test, actual irrigation allocation and future prices are not known. Results are relative comparisons, not guarantees.'}</p>
-  <p>{sampleNote?(lang==='es'?'Terreno mostrado para la demostración. Los cultivos registrados se proporcionaron durante esta sesión.':'Demonstration field. The recorded crops were provided during this session.'):''}</p></div></div>}
+  {result.farm_inputs?.soil&&<p>{lang==='es'?'Suelo declarado (sin validación de laboratorio):':'Reported soil (without laboratory verification):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+': '+v).join(' · ')}</p>}
+  {result.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por el usuario, todavía no usada como restricción:':'Reported irrigation water, not yet a hard constraint:'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha.</p>}
+  {result.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season}, {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de precipitación habitual en la cabecera; no es caudal del río.':'of usual upper-basin precipitation; not river discharge.'}</p>}
+  <p>{sampleNote?(lang==='es'?'Terreno mostrado para demostración; los cultivos registrados fueron proporcionados durante esta sesión.':'Field used for demonstration; crop inputs were supplied during this session.'):''}</p></div></div>}
  return <div className="b-app">
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
   <header className="b-header"><div className="b-header-inner"><div className="b-brand"><span className="b-brand-mark"><Icon name="leaf" size={25}/></span><div><b>BIOTEX</b><small>NSPACE BIOTEX</small></div></div>
