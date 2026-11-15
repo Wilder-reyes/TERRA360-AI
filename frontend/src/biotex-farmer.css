@@ -267,3 +267,51 @@
  .b-print-bar-track{height:4.3mm;background:#edf2ed;overflow:hidden;border-radius:2mm}
  .b-print-bar-fill{height:100%;background:#327b59;border-radius:2mm}
 }
+
+
+/* v0.24: farmer-first evidence and recommendations. UI UX Pro Max applied:
+   clear hierarchy, meaningful visual proof, large controls, progressive details. */
+.b-map-view{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 9px}
+.b-map-view button{background:#f5f9f6;color:#1a563b;border:1px solid #c4dace;border-radius:99px;min-height:46px;padding:10px 16px;font-size:.92rem;font-weight:740}
+.b-map-view button[aria-pressed="true"]{background:#1c654a;color:#fff;border-color:#1c654a}
+.b-map-evidence{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0;color:#466151;font-size:.83rem}
+.b-map-evidence a{font-weight:760;margin-left:auto}
+.b-satellite-gallery{background:#f6faf5;border:1px solid #d7e6d8;border-radius:17px;padding:16px;margin:18px 0}
+.b-satellite-gallery-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.b-satellite-gallery-head strong{font-size:1.08rem;color:#1d5039}
+.b-satellite-gallery-head label{font-size:.87rem;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.b-satellite-gallery-head select{min-height:45px;border:1px solid #a9c9b0;background:#fff;border-radius:10px;padding:7px 10px;color:#1f4532}
+.b-satellite-image{border-radius:13px;overflow:hidden;position:relative;min-height:310px;border:1px solid #abcbb7;background:#e1e9e1}
+.b-satellite-photo{height:310px;width:100%}
+.b-satellite-image-notice{position:absolute;bottom:6px;left:6px;right:6px;padding:8px 10px;border-radius:8px;background:#f7f4e7e8;color:#4c4639;font-size:.84rem;z-index:450}
+.b-satellite-summary{display:flex;gap:15px;flex-wrap:wrap;margin:14px 0 7px}
+.b-satellite-summary span{background:#e8f3e9;border-radius:11px;padding:9px 12px;font-size:.89rem}
+.b-satellite-summary b{display:block;font-size:.76rem;color:#577162}
+.b-satellite-honesty{font-size:.89rem;color:#526457;margin:9px 0;max-width:710px}
+.b-satellite-links{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0}
+.b-satellite-links a{font-size:.89rem;text-decoration:underline;text-underline-offset:3px;font-weight:730}
+.b-sequence{margin-top:12px;display:grid;gap:9px}
+.b-sequence-step{display:flex;gap:14px;align-items:start;background:#f7fbf6;border:1px solid #dfebdf;border-radius:13px;padding:13px 16px;break-inside:avoid}
+.b-sequence-num{display:flex;width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#dceee1;color:#1d6143;align-items:center;justify-content:center;font-weight:850}
+.b-sequence-step strong{display:block;font-size:1.025rem;color:#1e4a36}
+.b-sequence-step span:not(.b-sequence-num){display:block;font-size:.91rem;color:#526457}
+.b-sequence-foot{font-size:.88rem;color:#586b5d;margin:8px 0}
+.b-small-change{display:block;background:#fff6de;color:#72500f;border:1px solid #efd99e;padding:10px 12px;margin-top:13px!important;border-radius:10px;font-weight:650}
+.b-water-caution{background:#fff0e7;border:1px solid #ebc3aa;color:#7f3b21;border-radius:12px;padding:15px 17px;margin:13px 0}
+.b-mini-kpis .b-water-high{background:#fff0e7;color:#973b17}
+.b-demo-status{font-size:.83rem;font-weight:690;color:#496253;margin:8px 0 16px}
+.b-year-control{margin-top:22px;border-top:1px solid #e2ede5;padding-top:17px;display:flex;gap:15px;align-items:center;flex-wrap:wrap}
+.b-year-control label{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.b-year-control select{min-height:44px;border:1px solid #aac9b6;border-radius:10px;padding:8px;color:#183b2c;background:#fff}
+.b-year-control small{color:#526659;display:block;max-width:345px}
+@media(max-width:640px){
+ .b-map-view{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .b-map-view button{font-size:.8rem;padding:8px 5px;min-width:0;overflow-wrap:break-word}
+ .b-satellite-image,.b-satellite-photo{min-height:265px;height:265px}
+ .b-satellite-gallery{padding:12px}
+ .b-sequence-step{padding:12px}
+ .b-year-control{display:block}
+}
+@media print{
+ .b-sequence,.b-satellite-gallery,.b-map-view,.b-year-control{display:none!important}
+}
