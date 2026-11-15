@@ -1,0 +1,31 @@
+import {test,expect} from '@playwright/test'
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
+test('CHAKRA landing applies the requested identity without losing the farmer journey',async({page})=>{
+ await page.goto('/')
+ await expect(page).toHaveTitle('CHAKRA | Tu tierra. Tu próxima siembra.')
+ await expect(page.getByRole('heading',{name:/Conoce tu tierra/})).toBeVisible()
+ await expect(page.locator('.chakra-values article')).toHaveCount(3)
+ await expect(page.locator('.chakra-hero h1 em')).toHaveText('siembra.')
+ await expect(page.locator('.b-brand b')).toHaveText('chakra')
+ expect(await page.locator('body').innerText()).not.toMatch(/BIOTEX/)
+ await page.getByRole('button',{name:'Explorar parcela de Barranca',exact:true}).click()
+ await expect(page.locator('.chakra-landing')).toHaveCount(0)
+ await expect(page.getByRole('region',{name:'Vegetación observada en Barranca'})).toBeVisible()
+ await page.getByRole('button',{name:'Continuar',exact:true}).click()
+ await expect(page.getByRole('heading',{name:'¿Qué cultivos sembraste?'})).toBeVisible()
+ expect(await page.locator('body').innerText()).not.toMatch(/BIOTEX/)
+})
+test('landing and workspace fit phones and desktops with readable contrast and fonts',async({page})=>{
+ for(const width of [375,768,1440]){
+  await page.setViewportSize({width,height:900});await page.goto('/')
+  await page.locator('.chakra-background img').waitFor()
+  await page.evaluate(()=>document.fonts.ready)
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1)
+  const styles=await page.locator('.chakra-hero>p').evaluate(e=>({size:parseFloat(getComputedStyle(e).fontSize),font:getComputedStyle(e).fontFamily}))
+  expect(styles.size).toBeGreaterThanOrEqual(18);expect(styles.font).toContain('Inter')
+  await page.screenshot({path:`test-results/chakra-landing-${width}.png`,fullPage:true})
+  await page.getByRole('button',{name:'Explorar parcela de Barranca',exact:true}).click()
+  await expect(page.getByRole('heading',{name:'Tu terreno en Barranca'})).toBeVisible()
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width+1)
+ }
+})

@@ -21,7 +21,7 @@ from app.connectors.gpm_imerg import (
     GPMIMERGError,
 )
 
-router = APIRouter(prefix="/api", tags=["TERRA360"])
+router = APIRouter(prefix="/api", tags=["CHAKRA"])
 
 PILOT_NAME = "Huando, Huaral, Lima, Perú"
 PILOT_LATITUDE = -11.47918514
@@ -71,7 +71,7 @@ def determine_source_status(
 async def health():
     return {
         "status": "ok",
-        "application": "TERRA360",
+        "application": "CHAKRA",
         "version": "0.10.0",
     }
 

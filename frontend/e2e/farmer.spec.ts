@@ -12,7 +12,7 @@ async function selectEvidence(page:Page){
 test('historical URLs load the same single farmer application',async({page})=>{
  for(const url of ['/?vista=tecnica','/?vista=clima','/?vista=comparador-tecnico','/?pilot=chalhuas']){
   await page.goto(url)
-  await expect(page.getByRole('heading',{name:/Tu parcela en el mapa/})).toBeVisible()
+  await expect(page.getByRole('heading',{name:/Conoce tu tierra/})).toBeVisible()
   await expect(page.locator('.b-progress button')).toHaveCount(4)
   await expect(page.locator('a[href*="vista="]')).toHaveCount(0)
  }
@@ -24,7 +24,7 @@ test('place search and crop reference lookup are inside the shared journey',asyn
  await page.getByRole('button',{name:'Buscar lugar'}).click()
  await page.getByRole('button',{name:/Calca.*Cusco/}).click()
  await expect(page.getByText('Calca, Cusco, Perú',{exact:true})).toBeVisible()
- await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await page.getByRole('button',{name:'Usar parcela de Barranca',exact:true}).click()
  await page.getByRole('button',{name:'Continuar',exact:true}).click()
  await expect(page.getByRole('heading',{name:'¿Qué cultivos sembraste?'})).toBeVisible()
  await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click()
@@ -203,7 +203,7 @@ test('network failure in crop catalogue can retry without refresh',async({page})
  await page.route('**/api/arie/crops?**',async r=>{attempts++;if(attempts===1){await r.abort('failed');return}await r.fulfill({contentType:'application/json',body:'{"items":[{"id":"maize","name":"Maíz","scientific_name":"Zea mays"}]}'})})
  await page.goto('/');await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click();await page.getByRole('button',{name:'Continuar',exact:true}).click()
  await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('maíz');await page.getByRole('button',{name:'Buscar en catálogo'}).click()
- await expect(page.getByText(/No se pudo conectar con BIOTEX/)).toBeVisible();await expect(page.getByText(/Failed to fetch/)).toHaveCount(0)
+ await expect(page.getByText(/No se pudo conectar con CHAKRA/)).toBeVisible();await expect(page.getByText(/Failed to fetch/)).toHaveCount(0)
  await page.getByRole('button',{name:'Buscar en catálogo'}).click();await expect(page.getByRole('button',{name:'Maíz · Zea mays'})).toBeVisible();expect(attempts).toBe(2)
 })
 test('production API requests honor the configured backend origin',async({page})=>{

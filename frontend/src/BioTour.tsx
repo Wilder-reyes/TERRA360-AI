@@ -3,8 +3,8 @@ import './bio-tour.css'
 
 type Lang='es'|'en'
 const STEPS=[
- {target:'bio-hero',title:{es:'¡Bienvenido a BIOTEX!',en:'Welcome to BIOTEX!'},
-  body:{es:'¡Holis! Soy BIO. Te enseñaré a explorar un terreno y preparar opciones de rotación de cultivos.',en:"Hello! I'm BIO. I will guide you through exploring a field and planning possible crop rotations."}},
+ {target:'bio-hero',title:{es:'¡Bienvenido a CHAKRA!',en:'Welcome to CHAKRA!'},
+  body:{es:'Hola, soy BIO. Primero veremos el terreno. Después anotarás tus cultivos y compararás opciones para sembrar.',en:"Hello! I'm BIO. I will guide you through exploring a field and planning possible crop rotations."}},
  {target:'bio-map',title:{es:'Ubica tu terreno',en:'Find your field'},
   body:{es:'Elige la parcela de estudio de Barranca o marca otra de la zona. El ejemplo solo se selecciona cuando tú lo eliges.',en:'Choose the Barranca study field or mark another field nearby. The example is selected only when you choose it.'}},
  {target:'bio-layers',title:{es:'Explora las capas NASA',en:'Explore NASA layers'},

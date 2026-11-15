@@ -74,8 +74,8 @@ test('missing NASA data remains unknown and catalogue review never invents plant
  await cropReference(page);await expect(page.getByText(/Años completos: 0/)).toBeVisible();await expect(page.getByText(/Lluvia anual media: —/)).toBeVisible()
 })
 test('release describes the unified application with no published-site dependency',async({page})=>{
- await page.goto('/');await expect(page).toHaveTitle('BIOTEX | Tu chacra y tu plan de siembra')
- const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('barranca-only-connected-api');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('barranca-map-first')
+ await page.goto('/');await expect(page).toHaveTitle('CHAKRA | Tu tierra. Tu próxima siembra.')
+ const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('chakra-barranca-premium');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('chakra-glass-lime')
 })
 test('NASA GIBS layers and POWER figures keep distinct regional provenance',async({page})=>{
  await context(page);await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()

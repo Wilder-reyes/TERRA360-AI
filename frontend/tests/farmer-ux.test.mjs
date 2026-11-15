@@ -14,7 +14,7 @@ const bootstrap=readFileSync(new URL('../src/main.tsx',import.meta.url),'utf8')
 
 
 
-test('The single farmer view is BIOTEX with no historical route selection',()=>{
+test('The single farmer view is CHAKRA with no historical route selection',()=>{
 
  assert.match(bootstrap,/<BiotexFarmerApp\/>/)
 

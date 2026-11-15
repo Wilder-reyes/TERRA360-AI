@@ -10,8 +10,8 @@ export function readableApiError(error: unknown, en: boolean): string {
  const msg=e?.message||''
  const network=(e instanceof TypeError || /failed to fetch|networkerror|network request failed|load failed|fetch failed|connection refused/i.test(msg))
  if(network)return en
-  ? 'Could not connect to BIOTEX. Check your connection and try again; the server may be starting.'
-  : 'No se pudo conectar con BIOTEX. Comprueba tu conexión e inténtalo de nuevo; el servidor podría estar iniciándose.'
+  ? 'Could not connect to CHAKRA. Check your connection and try again; the server may be starting.'
+  : 'No se pudo conectar con CHAKRA. Comprueba tu conexión e inténtalo de nuevo; el servidor podría estar iniciándose.'
  if(e?.name==='TimeoutError')return en
   ? 'The request took too long. Try again in a moment.'
   : 'La consulta tardó demasiado. Inténtalo nuevamente en un momento.'
@@ -29,8 +29,8 @@ export async function httpErrorMessage(response: Response, en: boolean): Promise
   ? 'The server or satellite provider is temporarily unavailable. Please retry shortly.'
   : 'El servidor o proveedor satelital no está disponible temporalmente. Vuelve a intentarlo en un momento.'
  if(response.status===404)return en
-  ? 'BIOTEX could not find this API route. Please retry; if it continues, the server connection needs attention.'
-  : 'BIOTEX no encontró esta consulta en el servidor. Reintenta; si continúa, hay que revisar la conexión del servicio.'
+  ? 'CHAKRA could not find this API route. Please retry; if it continues, the server connection needs attention.'
+  : 'CHAKRA no encontró esta consulta en el servidor. Reintenta; si continúa, hay que revisar la conexión del servicio.'
  if(response.status===429)return en
   ? 'The server is handling too many requests. Please retry shortly.'
   : 'El servidor está procesando demasiadas consultas. Vuelve a intentarlo en un momento.'

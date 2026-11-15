@@ -1,4 +1,4 @@
-/** BIOTEX Chalhuas: evidence-gated public preview. Stable Barranca stays accessible.
+/** CHAKRA Chalhuas: evidence-gated public preview. Stable Barranca stays accessible.
  * Farmer confirms all crops; no local AI has been trained in Junín.
  * All map polygons are either farmer-drawn or explicitly synthetic examples.
  */
@@ -165,7 +165,7 @@ export default function AndesRotation({field,lang,step,onStep,isDemo,goal,setGoa
  }
  const share=()=>{if(!plan||!selected)return''
   const crops=selected.schedule.map(x=>x.name_es).join(' → ')
-  return 'https://wa.me/?text='+encodeURIComponent('BIOTEX · Chalhuas (plan ilustrativo, no prescripción): '+crops+'. Falta verificar suelo, agua, fechas y aptitud en campo.')}
+  return 'https://wa.me/?text='+encodeURIComponent('CHAKRA · Chalhuas (plan ilustrativo, no prescripción): '+crops+'. Falta verificar suelo, agua, fechas y aptitud en campo.')}
  return <><div className="c-app c-regional-flow">
    {step===1&&<section className="c-form-step"><h1>{es?'Mis cultivos':'My crops'}</h1>
       <div className="c-card"><span className="c-small">{es?'HISTORIAL DECLARADO':'FARMER HISTORY'}</span><h2>{es?'¿Qué cultivos sueles alternar?':'Which crops do you usually rotate?'}</h2>
@@ -262,7 +262,7 @@ export default function AndesRotation({field,lang,step,onStep,isDemo,goal,setGoa
     </section>}
 {step===1&&status&&<p role="status">{status}</p>}</div>
  {plan&&selected&&createPortal(<article className="c-print-report" lang={lang}>
-  <header className="c-print-header"><strong>BIOTEX</strong><span>NSPACE BIOTEX · {new Date().toLocaleDateString(es?'es-PE':'en-US')}</span></header>
+  <header className="c-print-header"><strong>CHAKRA</strong><span>CHAKRA · {new Date().toLocaleDateString(es?'es-PE':'en-US')}</span></header>
   <h1>{es?'Informe de rotación agrícola':'Agricultural rotation report'}</h1>
   <p className="c-print-lead">{es?'Comparación exploratoria · Chalhuas, Huáchac, Chupaca, Junín':'Exploratory comparison · Chalhuas, Junín, Peru'}</p>
   <section className="c-print-facts">
@@ -291,7 +291,7 @@ export default function AndesRotation({field,lang,step,onStep,isDemo,goal,setGoa
   <p><b>IA:</b> {es?'No hay modelo entrenado y validado para esta parcela de Chalhuas. Las métricas de Barranca no se transfieren.':'No trained, validated model for this Chalhuas field. Barranca evaluation metrics do not transfer.'}</p>
   <h2>{es?'Fuentes científicas':'Scientific references'}</h2>
   {plan.source_records.map(x=><p className="c-print-source" key={x.url}>{x.title}: {x.url}</p>)}
-  <footer className="c-print-final">NSPACE BIOTEX · {es?'Apoyo a decisiones, no prescripción de siembra':'Decision support, not a planting prescription'}</footer>
+  <footer className="c-print-final">CHAKRA · {es?'Apoyo a decisiones, no prescripción de siembra':'Decision support, not a planting prescription'}</footer>
  </article>,document.body)}
  </>
 }
