@@ -1,5 +1,5 @@
 /** TERRA360 API errors: never leak raw browser "Failed to fetch" in the UI.
- * Production requests go through the same-origin Netlify /api proxy; the
+ * Production requests go through the same-origin Vercel /api rewrite to Render; the
  * developer API origin is configurable ONLY in local Vite development.
  */
 export const API = (

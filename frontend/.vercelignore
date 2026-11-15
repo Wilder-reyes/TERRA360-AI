@@ -1,0 +1,11 @@
+# Vite production does not need tests, browser automation or local caches.
+e2e/
+tests/
+playwright.config.ts
+node_modules/
+dist/
+*.tsbuildinfo
+*.log
+.env
+.env.*
+!.env.example
