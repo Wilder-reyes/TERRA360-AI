@@ -155,8 +155,29 @@ def crop_economic_comparison(strategies: list[dict], budgets: list[dict] | None)
             "strategies": outputs}
 
 
+def historic_ana_context() -> dict:
+    """Published multi-year river context from an ANA document, NEVER live flow."""
+    path = DATA_DIR / "ana_historical_context.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if (data["source_kind"] != "published_historical_reference"
+                or not _official_document_url("ana", data["reference_url"])
+                or data["agency"] != "Autoridad Nacional del Agua (ANA)"):
+            raise ValueError("not official")
+        rivers = data["statistics"]
+        if {r["river"] for r in rivers} != {"Pativilca", "Supe"}:
+            raise ValueError("incorrect rivers")
+        if not all(0 <= float(r["average_flow_m3_s"]) <= 10000 for r in rivers):
+            raise ValueError("bad historic flow")
+        return {"status": "published_historical_reference", **data,
+                "use_for_irrigation_allocation": False}
+    except (OSError, KeyError, ValueError, TypeError, json.JSONDecodeError):
+        return {"status": "unavailable", "use_for_irrigation_allocation": False}
+
+
 def public_evidence_summary() -> dict:
     return {"basin": official_records("ana"),
+            "ana_historical_context": historic_ana_context(),
             "weather_alerts": official_records("senamhi"),
             "market_prices": official_records("midagri"),
             "science": {"soil_reference": FAO_ECOCROP,
