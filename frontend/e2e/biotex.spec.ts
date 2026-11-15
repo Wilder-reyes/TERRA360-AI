@@ -136,3 +136,39 @@ test('Farmers can save and restore their marked field without an account',async(
  await expect(page.getByText('Tu terreno está marcado')).toBeVisible()
  await expect(page.getByText('Recuperamos tu chacra. Revisa los cultivos antes de continuar.')).toBeVisible()
 })
+
+test('Farmer reads a short decision checklist, optional economics are hidden until requested',async({page})=>{
+ await page.route('**/api/rotation/compare',route=>route.fulfill({
+  status:200,contentType:'application/json',body:JSON.stringify(comparison)
+ }))
+ await page.route('**/api/rotation/economics',async route=>{
+  const inputs=route.request().postDataJSON()
+  expect(inputs.crop_budgets).toHaveLength(1)
+  expect(inputs.crop_budgets[0]).toMatchObject({
+   crop_id:'maiz_amarillo_duro',yield_kg_ha:10000,price_soles_kg:1.5,cost_soles_ha:9000
+  })
+  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+   status:'estimated_from_farmer_inputs',source:'farmer_estimate',
+   strategies:[{strategy_id:'S0',status:'estimated_from_farmer_inputs',margin_soles_ha_24months:6000},
+               {strategy_id:'S1',status:'estimated_from_farmer_inputs',margin_soles_ha_24months:6000}]
+  })})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await page.getByRole('button',{name:'Agregar cultivo'}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await page.getByRole('button',{name:'Ver mi plan'}).click()
+ await expect(page.getByRole('heading',{name:'Antes de la próxima siembra'})).toBeVisible()
+ await expect(page.getByRole('link',{name:'Consultar avisos del tiempo en SENAMHI'})).toBeVisible()
+ await expect(page.locator('.b-econ-fields input').first()).toBeHidden()
+ await page.locator('.b-farm-econ summary').click()
+ const inputs=page.locator('.b-econ-fields input')
+ await inputs.nth(0).fill('10000')
+ await inputs.nth(1).fill('1.5')
+ await inputs.nth(2).fill('9000')
+ await page.getByRole('button',{name:'Calcular con mis datos'}).click()
+ await expect(page.getByText('Cuenta aproximada de dos años, por hectárea')).toBeVisible()
+ await expect(page.locator('.b-econ-result').first()).toContainText('6,000')
+ await expect(page.getByText('Fuentes oficiales y datos técnicos')).toBeVisible()
+})
