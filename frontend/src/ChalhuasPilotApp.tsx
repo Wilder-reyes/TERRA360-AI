@@ -92,7 +92,7 @@ function FieldMap({field,subplots,drawing,vertices,onPoint,layer,lowData,layerDa
    {subplots.map((parcel,i)=>{
     const cid=cropAt(i,parcel)
     return <Polygon key={parcel.id} positions={points(parcel.polygon).map(p=>[p.lat,p.lng] as [number,number])}
-      pathOptions={{color:cid?'#fff2d5':'#ecf3e0',weight:3,fillColor:cid?NAMES[cid].color:'#7cba9a',fillOpacity:cid?.52:.22}}
+      pathOptions={{color:cid?'#fff2d5':'#ecf3e0',weight:3,fillColor:cid?NAMES[cid].color:'#7cba9a',fillOpacity:cid?0.52:0.22}}
       eventHandlers={{click:()=>onSelectParcel(parcel.id)}}>
       <Tooltip direction="top" opacity={1}>{parcel.id}{cid?' · '+NAMES[cid].es:''}</Tooltip>
     </Polygon>
@@ -377,7 +377,7 @@ export default function ChalhuasPilotApp(){
        {subplots.length>0&&<div className="c-plot-editor"><label>{es?'Subparcela':'Subplot'}<select value={subplots.some(x=>x.id===selectedParcel)?selectedParcel:subplots[0].id}
          onChange={e=>setSelectedParcel(e.target.value)}>{subplots.map(p=><option key={p.id} value={p.id}>{p.id} · {hectares(p.polygon).toFixed(2)} ha</option>)}</select></label>
          <label>{es?'Cultivo propuesto en la campaña seleccionada':'Proposed crop for the selected campaign'}<select value={currentCropFor(subplots.find(x=>x.id===selectedParcel) || subplots[0],subplots.findIndex(x=>x.id===selectedParcel)>=0?subplots.findIndex(x=>x.id===selectedParcel):0)||'papa'}
-           onChange={e=>setOverrides(v=>({...v,[(subplots.find(x=>x.id===selectedParcel)||subplots[0]).id]+':'+viewYear:e.target.value as CropId}))}>{CROPS.map(c=><option key={c.id} value={c.id}>{cropName(c.id,lang)}</option>)}</select></label></div>}
+           onChange={e=>setOverrides(v=>({...v,[(subplots.find(x=>x.id===selectedParcel)||subplots[0]).id+':'+viewYear]:e.target.value as CropId}))}>{CROPS.map(c=><option key={c.id} value={c.id}>{cropName(c.id,lang)}</option>)}</select></label></div>}
        <p className="c-inline-note">{es?'Los colores representan una ASIGNACIÓN PROPUESTA. En el ejemplo sintético, A y B tienen fases escalonadas para ilustrar varios cultivos simultáneos. No representan cultivos detectados por satélite.':'Colors represent a PROPOSED allocation. In the synthetic example A and B are staggered to illustrate simultaneous crops, not satellite crop identification.'}</p>
        </>}
      </div>
