@@ -137,6 +137,6 @@ export function ChakraZonePrint({plan,field,subplots,lang,place,extra}:{
    </section>
   })}
   {extra}
-  <footer><p>{es?plan.disclaimer_es:plan.disclaimer_en||plan.disclaimer_es}</p><p>{(!es&&plan.sources_en?plan.sources_en:plan.sources).join(' · ')}</p><p>CHAKRA X · NASA Space Apps 2026 · Field Shift</p></footer>
+  <footer><p>{es?'Fuentes disponibles en ':'Sources available at '}{'https://biotex-eta.vercel.app/fuentes'}</p><p>CHAKRA X · NASA Space Apps 2026 · Field Shift</p></footer>
  </article>
 }

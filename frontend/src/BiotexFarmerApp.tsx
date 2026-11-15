@@ -28,7 +28,7 @@ import {ChakraZoneHandles,suggestedZones} from './ChakraRectZones'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
 import ChakraZonePlan,{ChakraZonePrint,type ChakraSpatialPlan} from './ChakraZonePlan'
-import StrategyCompare,{StrategyComparePrint,type CompareStrategy,type MaizeShare} from './StrategyCompare'
+import StrategyCompare,{type CompareStrategy,type MaizeShare} from './StrategyCompare'
 import BARRANCA_EXAMPLE from './barrancaExampleResult.json'
 const FieldEvidence=lazy(()=>import('./FieldEvidence'))
 const CropReference=lazy(()=>import('./CropReference'))
@@ -681,7 +681,7 @@ export default function BiotexFarmerApp(){
   <div className="b-print-header"><div><strong className="b-print-logo">CHAKRA</strong><p>{t.printFooter}</p></div><div className="b-print-date">{simpleDate(lang)}</div></div>
   <h1>{t.planTitle}</h1>
   {sketch&&<figure className="b-print-sketch"><svg viewBox="0 0 120 100" role="img" aria-label={lang==='es'?'Croquis del terreno marcado':'Outline of marked field'}><rect x="1" y="1" width="118" height="98" rx="5" fill="#f4f7f4" stroke="#d5e3d8"/><polygon points={sketch} fill="#dbeee1" stroke="#236147" strokeWidth="2.3"/><text x="102" y="13" fill="#42654e" fontSize="9">N ↑</text></svg><figcaption>{lang==='es'?'Contorno aproximado de la chacra':'Approximate field outline'}</figcaption></figure>}
-  <div className="b-print-meta"><span><b>{t.where}:</b> {place}</span><span><b>{t.areaPrint}:</b> {area.toFixed(2)} ha</span>
+  <div className="b-print-meta"><span><b>{t.where}:</b> {place}</span><span><b>{t.areaPrint}:</b> {area.toFixed(2)} {lang==='es'?'hectáreas':'hectares'}</span>
   <span><b>{t.when}:</b> {simpleDate(lang)}</span></div>
   <p className="b-print-intro">{t.warning} {sampleNote?t.exampleNote:''}</p>
   {preferred?<><h2>{t.recommended}: {strategyName(preferred)}</h2><p>{result[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']}</p>
@@ -807,7 +807,7 @@ export default function BiotexFarmerApp(){
        </div></details>
       </section>}
       {fieldError&&<p role="alert" className="b-error">{fieldError}</p>}
-      {field&&<div className="b-field-ready" role="status"><Icon name="check"/><div><strong>{t.fieldReady}</strong><span>{t.area}: {area.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2})} ha</span></div></div>}
+      {field&&<div className="b-field-ready" role="status"><Icon name="check"/><div><strong>{t.fieldReady}</strong><span>{t.area}: {area.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2})} {lang==='es'?'hectáreas':'hectares'}</span></div></div>}
       {field&&!drawing&&!drawingSubplot&&<details className="b-parcel-tools" aria-label={lang==='es'?'Herramientas de mi terreno':'My field tools'}><summary>{lang==='es'?'Ajustar límites o subparcelas (opcional)':'Adjust boundary or subplots (optional)'}</summary>
         <div className="b-parcel-tools-head"><strong>{lang==='es'?'Límites y subparcelas':'Boundaries and subplots'}</strong><span>{lang==='es'?'Área estimada, no catastral':'Estimated area, not cadastral'}</span></div>
         {!editVertices?<div className="b-parcel-actions"><button type="button" className="b-btn b-btn-light" onClick={beginCornerEdit}>{lang==='es'?'Editar esquinas':'Edit corners'}</button>
@@ -820,7 +820,7 @@ export default function BiotexFarmerApp(){
           <div className="b-parcel-actions"><button type="button" className="b-btn b-btn-primary" onClick={saveCornerEdit}>{lang==='es'?'Guardar contorno':'Save outline'}</button>
             <button type="button" className="b-btn b-btn-light" onClick={()=>{setEditVertices(null);setFieldError('')}}>{t.cancel}</button></div>
          </div>}
-        {subplots.length>0&&<ul className="b-subplot-list">{subplots.map(v=><li key={v.id}><span><strong>{v.id}</strong><small>{approximatePolygonHectares(fromGeo(v.polygon)).toFixed(2)} ha</small></span><button type="button" onClick={()=>deleteSubplot(v.id)} aria-label={(lang==='es'?'Eliminar ':'Remove ')+v.id}>{lang==='es'?'Eliminar':'Remove'}</button></li>)}</ul>}
+        {subplots.length>0&&<ul className="b-subplot-list">{subplots.map(v=><li key={v.id}><span><strong>{v.id}</strong><small>{approximatePolygonHectares(fromGeo(v.polygon)).toFixed(2)} {lang==='es'?'hectáreas':'hectares'}</small></span><button type="button" onClick={()=>deleteSubplot(v.id)} aria-label={(lang==='es'?'Eliminar ':'Remove ')+v.id}>{lang==='es'?'Eliminar':'Remove'}</button></li>)}</ul>}
         {!subplots.length&&<p className="b-muted">{lang==='es'?'No hay subparcelas todavía. Puedes dibujarlas si quieres asignar cultivos por zonas.':'No subplots yet. Draw them only if you want to assign crops by area.'}</p>}
        </details>}
       {!supported&&<p className="b-note"><Icon name="info" size={18}/>{lang==='es'?'Puedes planificar por zonas aquí. Verifica con un técnico local el calendario y el agua antes de sembrar.':'Plan your zones here. Verify local seasons and water before planting.'}</p>}
@@ -926,7 +926,7 @@ export default function BiotexFarmerApp(){
     maize={(result as unknown as {maize_low_river_share?:MaizeShare}|null)?.maize_low_river_share||null} upperBasin={result?.upper_basin_rain||null}/></details>}
    {step===2&&spatialPlan&&result?.ai_analysis&&<details className="chakra-more-science"><summary>{lang==='es'?'¿Qué observó la NASA en la parcela de estudio?':'What did NASA observe in our study field?'}</summary><FarmerAIEvidence ai={result.ai_analysis} lang={lang}/></details>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
-    <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
+    <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} {lang==='es'?'hectáreas':'hectares'}</span></div>
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
     {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
     <div className="b-result-reading-order" aria-label={lang==='es'?'Cómo leer tu propuesta':'How to read your plan'}><span><b>1</b>{lang==='es'?'Qué sembrar y cuándo':'What and when to plant'}</span><span><b>2</b>{lang==='es'?'Qué debes comprobar':'What to check'}</span><span><b>3</b>{lang==='es'?'Evidencia y otras opciones':'Evidence and alternatives'}</span></div>
@@ -953,7 +953,6 @@ export default function BiotexFarmerApp(){
   <BioTour lang={lang} step={step===3?2:step} assigned={assignedCount} zoneCount={availableZones.length||1} landing={landing} fieldReady={Boolean(field)} cropPending={Boolean(pendingCrop)} planReady={Boolean(spatialPlan)} error={step===0?fieldError:spatialError||fieldError}/>
   <footer className="b-footer"><div><strong>CHAKRA X</strong></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><a href="/como-funciona" onClick={e=>{e.preventDefault();showPage('how')}}>{lang==='es'?'Cómo funciona':'How it works'}</a><a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
   {printable()}
-  {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}
-   extra={result?.strategies?.length?<StrategyComparePrint strategies={result.strategies as CompareStrategy[]} lang={lang}/>:null}/>}
+  {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}/>}
  </div>
 }
