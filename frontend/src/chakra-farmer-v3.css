@@ -151,3 +151,10 @@
 @media(max-width:900px){.chakra-calendar-months{grid-template-columns:repeat(6,minmax(0,1fr))}.chakra-quarter-heading,.chakra-quarter-row{grid-template-columns:110px repeat(4,minmax(0,1fr))}.chakra-quarter-cell{padding:5px}.chakra-quarter-crop{padding:6px 4px}.chakra-quarter-crop strong{font-size:11px}}
 @media(max-width:700px){.chakra-quarter-heading{display:none}.chakra-quarter-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}.chakra-quarter-zone{grid-column:1/-1;padding:10px 13px;min-height:42px;flex-direction:row;align-items:center;justify-content:space-between}.chakra-quarter-cell{min-height:90px;padding:8px}.chakra-quarter-period{display:block}.chakra-calendar-v3 .chakra-calendar-active{padding:8px 12px}.chakra-calendar-v3 .chakra-calendar-active strong{font-size:17px}.chakra-calendar-years button{padding:8px 15px;min-height:46px;font-size:16px}}
 @media print{.chakra-calendar-v3{display:none!important}.chakra-print-year{break-inside:avoid-page!important}.chakra-print-year table{table-layout:fixed;font-size:10px!important}.chakra-print-year th small{display:block;font-size:8px!important;font-weight:normal}.chakra-print-year td span{display:inline-block!important;margin:1px 0;font-size:9px;max-width:100%}}
+
+/* Fewer distracting controls during the farmer experience. Drawing buttons remain usable only while actively drawing. */
+@media screen{
+ .chakra-farmer-clean:not(.chakra-research) #chakra-field :is(.b-map-more,.b-low-bandwidth,.b-map-guide,.b-field-ready){display:none!important}
+ .chakra-farmer-clean:not(.chakra-research) #chakra-field .b-map-actions{background:transparent!important}
+ .chakra-farmer-clean:not(.chakra-research) #chakra-field .b-map-frame .leaflet-control-attribution{display:block!important;opacity:.9}
+}

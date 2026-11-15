@@ -797,7 +797,7 @@ export default function BiotexFarmerApp(){
       {savedNotice&&<p className="b-note" role="status">{savedNotice}</p>}
       {savedAvailable&&<div className="b-farm-recovery"><button type="button" onClick={()=>restoreFarm()}>{lang==='es'?'Recuperar mi chacra guardada':'Restore saved field'}</button></div>}
      <details className="b-technical"><summary>{lang==='es'?'Importar contorno GeoJSON (opcional)':'Import GeoJSON outline (optional)'}</summary><label>{lang==='es'?'Contorno GeoJSON':'GeoJSON outline'}<textarea value={geoInput} onChange={e=>setGeoInput(e.target.value)}/></label><button type="button" className="b-btn b-btn-light" onClick={importField}>{lang==='es'?'Usar contorno':'Use outline'}</button></details>
-     {field&&<Suspense fallback={<p role="status">{lang==='es'?'Cargando herramientas…':'Loading tools…'}</p>}><FieldEvidence key={JSON.stringify(field)} polygon={field} lang={lang} andes={false}/></Suspense>}
+     {field&&new URLSearchParams(window.location.search).get('research')==='1'&&<Suspense fallback={<p role="status">{lang==='es'?'Cargando herramientas…':'Loading tools…'}</p>}><FieldEvidence key={JSON.stringify(field)} polygon={field} lang={lang} andes={false}/></Suspense>}
      </div>
 
     </div>
