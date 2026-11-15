@@ -105,3 +105,22 @@ test('Only one Barranca sample is visible and satellite imagery is accessible',a
  await page.getByRole('button',{name:'Lluvia NASA'}).click()
  await expect(page.getByText(/Lluvia regional NASA GPM/)).toBeVisible()
 })
+
+test('Satellite clues display acquisition dates, mapped NASA imagery and original HLS scene link',async({page})=>{
+ await page.route('**/api/rotation/history',route=>route.fulfill({
+  status:200,contentType:'application/json',body:JSON.stringify({
+   status:'available',sensor:'NASA HLS v2.0 (30 m)',period:{start:'2021-01-01',end:'2026-11-14'},
+   months_with_data:48,months_total:70,detection:{campaigns:[]},
+   months:[{month:'2026-08',ndvi:0.62,best_scene:{date:'2026-08-16',collection:'hls2-l30',scene_id:'HLS.L30.T18LYL.2026228T153532.v2.0',valid_pixels:35}}]
+  })
+ }))
+ await page.goto('/')
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await page.getByText('¿No recuerdas alguna siembra?').click()
+ await page.getByRole('button',{name:'Buscar pistas con imágenes del terreno'}).click()
+ await expect(page.getByText('Así se veía la zona desde el espacio')).toBeVisible()
+ await expect(page.getByText('2026-08-16')).toBeVisible()
+ await expect(page.getByRole('link',{name:'Consultar la imagen HLS utilizada'})).toHaveAttribute('href',/planetarycomputer\.microsoft\.com/)
+ await expect(page.getByText('0.62')).toBeVisible()
+})
