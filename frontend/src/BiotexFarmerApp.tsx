@@ -358,7 +358,7 @@ export default function BiotexFarmerApp(){
  return <div className="b-app">
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
   <header className="b-header"><div className="b-header-inner"><div className="b-brand"><span className="b-brand-mark"><Icon name="leaf" size={25}/></span><div><b>BIOTEX</b><small>NSPACE BIOTEX</small></div></div>
-  <span className="b-pilot">{t.pilot}</span>
+
   <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></header>
   <div className="b-progress-wrap"><nav className="b-progress" aria-label="Progreso">{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step||i===3&&!result} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div>
   <main id="main" className="b-main">
@@ -374,8 +374,15 @@ export default function BiotexFarmerApp(){
       {places.length>0&&<div className="b-place-results">{places.map((p,i)=><button key={i} type="button" onClick={()=>pickPlace(p)}><Icon name="pin" size={18}/><span>{p.name}</span></button>)}</div>}
       <p className="b-map-label"><Icon name="pin" size={16}/>{place}</p>
       <p className="b-muted">{t.mapHint}</p>
+      <div className="b-map-view" role="group" aria-label={lang==='es'?'Capas de observación':'Observation layers'}>
+       {(['photo','vegetation','rain'] as const).map(id=><button key={id} type="button" aria-pressed={mapLayer===id} onClick={()=>{setMapLayer(id);setMapLayerFailed(false)}}>{id==='photo'?(lang==='es'?'Foto aérea':'Aerial photo'):id==='vegetation'?(lang==='es'?'Vegetación NASA':'NASA vegetation'):(lang==='es'?'Lluvia NASA':'NASA rain')}</button>)}
+      </div>
       <div className="b-map-frame"><MapContainer className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
        <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
+       {mapLayer!=='photo'&&<WMSTileLayer key={mapLayer} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
+        layers={mapLayer==='vegetation'?'MODIS_Terra_NDVI_8Day':'IMERG_Precipitation_Rate'}
+        styles="" format="image/png" transparent={true} version="1.1.1" opacity={0.72}
+        attribution="NASA GIBS / ESDIS" eventHandlers={{tileerror:()=>setMapLayerFailed(true)}}/>}
        <FlyTo point={centre} polygon={mapPolygon}/>
        <DrawLayer enabled={drawing} points={points} onPoint={p=>{setPoints(x=>[...x,p]);setFieldError('')}} onFinish={finish}/>
        {field&&<Polygon positions={(mapPolygon||[]).map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F4C252',weight:4,fillColor:'#2EAE84',fillOpacity:0.24}}/>}
@@ -384,13 +391,16 @@ export default function BiotexFarmerApp(){
        <button type="button" className="b-btn b-btn-solid" onClick={finish} disabled={points.length<3}>{t.finish}</button>
        <button type="button" className="b-btn b-btn-light" onClick={()=>{setDrawing(false);setPoints([]);setFieldError('')}}>{t.cancel}</button></>:
        <button type="button" className="b-btn b-btn-solid" onClick={()=>{changeArea();setDrawing(true)}}>{field?t.changeField:t.draw}</button>}</div></div>
+      {mapLayer!=='photo'&&<div className="b-map-evidence"><span>{mapLayer==='vegetation'?(lang==='es'?'Vegetación regional NASA MODIS · 250 m':'Regional NASA MODIS vegetation · 250 m'):(lang==='es'?'Lluvia regional NASA GPM · aprox. 10 km':'Regional NASA GPM rainfall · approx. 10 km')}. {lang==='es'?'No es una medida exacta de tu chacra.':'Not an exact field measurement.'}</span>
+       <a href={'https://worldview.earthdata.nasa.gov/?l='+(mapLayer==='vegetation'?'MODIS_Terra_NDVI_8Day':'IMERG_Precipitation_Rate')} target="_blank" rel="noreferrer">{lang==='es'?'Ver fuente NASA':'NASA source'}</a>
+       {mapLayerFailed&&<span role="status">{lang==='es'?'La capa NASA no cargó para esta vista.':'NASA layer unavailable for this view.'}</span>}</div>}
       {fieldError&&<p role="alert" className="b-error">{fieldError}</p>}
       {field&&<div className="b-field-ready" role="status"><Icon name="check"/><div><strong>{t.fieldReady}</strong><span>{t.area}: {area.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2})} ha</span></div></div>}
       {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
      </div>
-     <aside className="b-card b-examples"><h2>{t.examples}</h2><p>{t.exampleNote}</p>
+     <aside className="b-card b-examples"><h2>{t.examples}</h2>
       {DEMOS.map((f,i)=><button key={f.id} type="button" className="b-example-choice" onClick={()=>setExample(f)}><span className="b-example-index">{String(i+1).padStart(2,'0')}</span>
-        <span><strong>{lang==='es'?'Terreno de ejemplo '+(i+1):'Example field '+(i+1)}</strong><small>Barranca · Pativilca / Supe</small></span><Icon name="right" size={19}/></button>)}
+        <span><strong>{lang==='es'?'Explorar parcela de Barranca':'Explore a Barranca field'}</strong><small>{lang==='es'?'Vista desde el satélite':'Satellite view'}</small></span><Icon name="right" size={19}/></button>)}
       <p className="b-muted">{lang==='es'?'También puedes buscar tu propio distrito y marcar tu terreno.':'You can also search your district and mark your own field.'}</p>
      </aside>
     </div>
@@ -410,7 +420,8 @@ export default function BiotexFarmerApp(){
        {!history&&!historyBusy&&<button type="button" className="b-btn b-btn-light" onClick={loadImages}>{t.satellite}</button>}
        {historyBusy&&<p className="b-loading" role="status"><span className="b-spinner"/>{t.loading}</p>}
        {historyError&&<p className="b-error" role="alert">{t.satFail} <button type="button" onClick={loadImages}>{lang==='es'?'Reintentar':'Retry'}</button></p>}
-       {history&&<><p>{t.historyFound}</p>
+       {history&&<><SatelliteEvidence months={history.months} polygon={field!} lang={lang} sensor={history.sensor} monthsWithData={history.months_with_data} monthsTotal={history.months_total}/>
+       <p>{t.historyFound}</p>
        {seasons.length===0&&<p className="b-note">{t.noSeasons}</p>}
        <div className="b-season-grid">{seasons.map(c=><div className="b-season" key={c.start}>
         <label>{t.possible} {monthYear(Math.max(0,ymNumber(c.start)-1-firstAugust),baseYear,lang)}?</label>
