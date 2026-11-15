@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.services import rotation_engine as engine
+from app.services import field_shift_ai as field_ai
 from app.services.hls_history import cached_history, monthly_history
 from app.services.imerg_basin import basin_context
 from app.services.power_climatology import ClimateError, monthly_climate
@@ -80,8 +81,40 @@ class Priorities(BaseModel):
     pests: int = Field(1, ge=0, le=2)
 
 
+class FieldSoil(BaseModel):
+    # Optional, farmer-declared observations, never inferred from GPM / SMAP.
+    texture: Literal["arenosa", "franca", "arcillosa"] | None = None
+    ph: float | None = Field(None, ge=0, le=14)
+    salinity_ds_m: float | None = Field(None, ge=0, le=100)
+    organic_matter_percent: float | None = Field(None, ge=0, le=100)
+    drainage: Literal["bueno", "regular", "malo"] | None = None
+    source: Literal["farmer_reported", "lab_report"] = "farmer_reported"
+
+
+class CropBudget(BaseModel):
+    crop_id: str
+    yield_kg_ha: float = Field(ge=0, le=300000)
+    price_soles_kg: float = Field(ge=0, le=10000)
+    cost_soles_ha: float = Field(ge=0, le=1000000)
+
+
+class BudgetPlanting(BaseModel):
+    crop_id: str
+
+
+class BudgetStrategy(BaseModel):
+    id: Literal["S0", "S1", "S2"]
+    plantings: list[BudgetPlanting] = Field(max_length=12)
+
+
+class EconomicsRequest(BaseModel):
+    strategies: list[BudgetStrategy] = Field(min_length=1, max_length=3)
+    crop_budgets: list[CropBudget] = Field(min_length=1, max_length=16)
+
+
 class CompareRequest(BaseModel):
     zone: Literal["huaral", "barranca"] | None = None
+    polygon: dict[str, Any] | None = None
     latitude: float | None = Field(None, ge=-60, le=60)
     longitude: float | None = Field(None, ge=-180, le=180)
     current: list[Planting] = Field(default_factory=list, max_length=10)
@@ -90,7 +123,27 @@ class CompareRequest(BaseModel):
     history: dict[str, Any] | None = Field(None, description="summary: sensor, start, end, months_with_data")
     current_source: Literal["farmer_declared", "satellite_confirmed", "team_demo"] = "farmer_declared"
     income_crop_id: str | None = None
+    soil: FieldSoil | None = None
+    crop_budgets: list[CropBudget] = Field(default_factory=list, max_length=16)
+    irrigation_source: Literal["farmer_reported", "water_users_board"] | None = None
+    irrigation_allowance_m3_ha_season: float | None = Field(None, ge=0, le=1000000)
     use_team_templates_as_fallback: bool = False
+
+
+@router.post("/economics")
+def estimate_economics(req: EconomicsRequest):
+    """No NASA fetch, no assumed farmgate prices, fully user-supplied inputs."""
+    from app.services.agro_evidence import crop_economic_comparison
+    expected = set(engine.load_catalog()["crops"])
+    crop_ids = [p.crop_id for strategy in req.strategies for p in strategy.plantings]
+    budget_ids = [p.crop_id for p in req.crop_budgets]
+    if (any(cid not in expected for cid in crop_ids+budget_ids)
+            or len(set(budget_ids)) != len(budget_ids)
+            or len({s.id for s in req.strategies}) != len(req.strategies)):
+        raise HTTPException(422, "Hay cultivos repetidos o no reconocidos.")
+    return crop_economic_comparison(
+        [s.model_dump() for s in req.strategies],
+        [item.model_dump() for item in req.crop_budgets])
 
 
 @router.get("/zones")
@@ -110,7 +163,9 @@ def templates():
 
 
 async def _climate(zone: str | None, lat: float | None, lon: float | None) -> dict:
-    if zone:
+    # Use the farmer's selected parcel coordinates when supplied. A demo zone
+    # is a contextual label, not the location of every farm in that valley.
+    if zone and (lat is None or lon is None):
         z = get_zone(zone)
         lat, lon = z["lat"], z["lng"]
     if lat is None or lon is None:
@@ -126,6 +181,37 @@ async def _climate(zone: str | None, lat: float | None, lon: float | None) -> di
 @router.get("/upper-basin-rain")
 def upper_basin_rain(zone: Literal["huaral", "barranca"]):
     return basin_context(zone)
+
+
+@router.get("/ai-demo")
+def ai_demo(field: Literal["barranca-1"] = "barranca-1"):
+    """Reproducible HLS training evidence, without invented crop labels."""
+    try:
+        model = field_ai.validated_barranca_model()
+    except (OSError, ValueError, KeyError) as exc:
+        return {"status": "not_verified", "source": "NASA HLS", "reason": type(exc).__name__}
+    artifact = model["artifact"]
+    observations = [{"month": x["month"], "ndvi": x["ndvi"]}
+                    for x in model["observed"]]
+    return {"status": "trained_and_verified", "field": field,
+            "model_id": artifact["model_id"], "sensor": artifact["source_sensor"],
+            "source_url": model["source"]["source_url"],
+            "source_period": artifact["source_period"],
+            "observed_months": artifact["observed_months"],
+            "missing_months": artifact["missing_months"],
+            "holdout": artifact["evaluation"],
+            "real_ndvi_observations": observations,
+            "seasonal_bare_probability":
+                {str(i+1): model["probabilities"][i] for i in range(12)},
+            "target": artifact["target"],
+            "limitation_es": "El modelo aprende baja cobertura vegetal de una parcela, no identifica cultivos ni predice rendimientos."}
+
+
+@router.get("/evidence-sources")
+def evidence_sources():
+    """Official source availability, not automatically a current observation."""
+    from app.services.agro_evidence import public_evidence_summary
+    return public_evidence_summary()
 
 
 @router.get("/climate")
@@ -198,8 +284,65 @@ async def compare(req: CompareRequest):
     except engine.RotationError as exc:
         raise HTTPException(422, str(exc)) from exc
     result["zone"] = req.zone
+    # The actual NASA-HLS model is only applicable to the exact polygon
+    # from which its real Earth observations were collected.
+    parcel = polygon_from_geojson(req.polygon) if req.polygon else None
+    model_analysis = field_ai.assess_strategies(parcel, result["strategies"])
+    result["ai_analysis"] = model_analysis
+    if model_analysis["status"] == "trained_and_verified":
+        earlier = result.get("recommended_strategy_id")
+        scored = engine.highlight_for_farmer(
+            result["strategies"], {**req.priorities.model_dump()}, req.water_turn,
+            ai_bare_risk=model_analysis["weighted_uncovered_exposure"])
+        result.update(scored)
+        result["ai_analysis"]["used_for_decision"] = bool(scored.get("ai_weighted"))
+        result["ai_analysis"]["influenced_recommendation"] = (
+            earlier != result.get("recommended_strategy_id"))
+    else:
+        result["ai_analysis"]["influenced_recommendation"] = False
     # P1 «agua que viene»: IMERG rain in the upper basin (context only; abstains if not computed).
-    basin = basin_context(req.zone)
+    if req.zone in ("huaral", "barranca"):
+        basin = basin_context(req.zone)
+    else:
+        basin = {
+            "status": "unavailable",
+            "message_es": "No contamos con datos de lluvia de la cuenca para este lugar.",
+            "message_en": "Upper-basin rainfall has not been calculated for this location.",
+            "climatology_mm_month": {},
+        }
+    result["farm_inputs"] = {
+        "soil": req.soil.model_dump(exclude_none=True) if req.soil else None,
+        "irrigation_allowance_m3_ha_season": req.irrigation_allowance_m3_ha_season,
+        "irrigation_source": req.irrigation_source,
+        "status": "provided_by_user_not_used_to_rank",
+        "note_es": "Datos anotados para revisar. Falta validar reglas locales antes de usarlos para recomendar o descartar cultivos.",
+        "note_en": "Recorded for review. Local validation is required before these values can rank or exclude crops.",
+    }
+    # Never label public portals as live station measurements or prices.
+    from app.services.agro_evidence import (crop_economic_comparison,
+                                            soil_checks, public_evidence_summary)
+    used_ids = sorted({p["crop_id"] for strategy in result["strategies"]
+                       for p in strategy["plantings"]})
+    budget_input = [p.model_dump() for p in req.crop_budgets]
+    result["economic_comparison"] = crop_economic_comparison(result["strategies"], budget_input)
+    result["soil_assessment"] = soil_checks(
+        req.soil.model_dump(exclude_none=True) if req.soil else None, used_ids)
+    result["official_evidence"] = public_evidence_summary()
+    # Only an expert-reviewed agronomic rule can exclude a crop option.
+    # Absence of curated ranges must never become a positive soil suitability claim.
+    if result["soil_assessment"]["status"] == "screened_with_expert_reviewed_reference":
+        blocked = {item["crop_id"] for item in result["soil_assessment"].get("alerts", [])}
+        valid = [strategy for strategy in result["strategies"]
+                 if strategy["id"] == "S0" or
+                 not any(p["crop_id"] in blocked for p in strategy["plantings"])]
+        if result.get("recommended_strategy_id") and not any(
+                x["id"] == result["recommended_strategy_id"] for x in valid):
+            chosen = engine.highlight_for_farmer(
+                valid, {**req.priorities.model_dump()}, req.water_turn,
+                ai_bare_risk=(model_analysis.get("weighted_uncovered_exposure")
+                              if model_analysis["status"] == "trained_and_verified" else None))
+            result.update(chosen)
+            result["soil_reranked"] = True
     result["upper_basin_rain"] = basin
     if basin["status"] == "available":
         for month in result["window"]["context"]:

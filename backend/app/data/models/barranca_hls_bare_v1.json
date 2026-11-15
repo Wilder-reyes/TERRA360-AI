@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "model_id": "biotex-barranca-hls-bare-v1",
+  "status": "trained_hls_observed_target_only",
+  "study_field": "barranca-1",
+  "source_path": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
+  "source_git_blob_sha": "8846b0ceb4669c8372d0ea724263d263a4bf37d7",
+  "source_sensor": "NASA HLS v2.0 (Landsat 8/9 + Sentinel-2, 30 m)",
+  "source_period": {
+    "start": "2021-01-01",
+    "end": "2026-11-14"
+  },
+  "observed_months": 44,
+  "total_months": 71,
+  "missing_months": 27,
+  "source_retrieved_at": "2026-11-14T20:56:54+00:00",
+  "target": "observed_NDVI_below_0.20__proxy_bare_surface_not_crop_identity",
+  "target_threshold": 0.2,
+  "model": "logistic_regression_ridge_gradient_descent",
+  "features": [
+    "bias",
+    "sin_month",
+    "cos_month",
+    "sin_double_month",
+    "cos_double_month",
+    "year_trend_(year-2021)/6"
+  ],
+  "training": {
+    "learning_rate": 0.13,
+    "ridge_penalty": 0.02,
+    "iterations": 5000,
+    "split": "chronological_75_percent_observed_train_and_25_percent_observed_holdout",
+    "train_observations": 33,
+    "holdout_observations": 11,
+    "train_first": "2021-01",
+    "train_last": "2025-11",
+    "holdout_first": "2025-12",
+    "holdout_last": "2026-11",
+    "train_positive_labels": 8,
+    "holdout_positive_labels": 9,
+    "fit_all_observations_after_validation": true
+  },
+  "evaluation": {
+    "brier_model": 0.23408067,
+    "brier_train_prevalence_baseline": 0.48025712,
+    "relative_brier_improvement": 0.512593,
+    "baseline_training_prevalence": 0.242424,
+    "test_coefficients": [
+      -1.532133249607,
+      -1.289562918137,
+      -1.299666579825,
+      -0.450800490059,
+      -1.253017160763,
+      1.375486125668
+    ],
+    "train_test_split_preserves_time_order": true
+  },
+  "final_fit": {
+    "coefficients": [
+      -1.112907064034,
+      -1.227418315923,
+      -1.282341193366,
+      -0.194105006014,
+      -1.049506029356,
+      2.031866825898
+    ],
+    "prediction_reference_year": 2026,
+    "predicted_probability_by_calendar_month": [
+      0.147854,
+      0.137432,
+      0.31709,
+      0.599265,
+      0.700853,
+      0.672716,
+      0.69278,
+      0.833649,
+      0.933461,
+      0.945692,
+      0.844877,
+      0.432129
+    ]
+  },
+  "use": "historical_likelihood_of_bare_surface_by_season_to_weight_relative_crop_cover_opportunities_not_a_yield_prediction",
+  "limits": [
+    "44 valid monthly observations out of 71, with persistent winter cloud gaps",
+    "labels are derived from NDVI threshold 0.2, not verified crop identity",
+    "11-month forward holdout; one parcel cannot validate generalization",
+    "year trend held at 2026 for future scenario estimates; do not interpret as a forecast of the farmer's crop",
+    "no guarantee of soil improvement, irrigation savings or harvest profit"
+  ]
+}

@@ -219,6 +219,32 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(len({x["source_url"] for x in z}), 1)
         self.assertEqual({x["sector"]["code"] for x in z}, {"15060105", "15020105"})
 
+    def test_optional_soil_and_irrigation_data_are_recorded_not_invented(self):
+        clim = coastal_climate()
+
+        async def fake(lat, lon, client=None, coastal=True):
+            return clim
+
+        with patch("app.api.rotation_routes.monthly_climate", fake):
+            response = self.client.post("/api/rotation/compare", json={
+                "zone": "barranca", "current": E.TEMPLATES["current"],
+                "soil": {"texture": "franca", "ph": 6.7, "organic_matter_percent": 2.1},
+                "irrigation_allowance_m3_ha_season": 2600,
+                "irrigation_source": "farmer_reported"
+            })
+        self.assertEqual(response.status_code, 200, response.text)
+        context = response.json()["farm_inputs"]
+        self.assertEqual(context["soil"]["ph"], 6.7)
+        self.assertEqual(context["status"], "provided_by_user_not_used_to_rank")
+        self.assertEqual(context["irrigation_allowance_m3_ha_season"], 2600)
+
+    def test_bad_soil_entries_are_rejected(self):
+        r = self.client.post("/api/rotation/compare", json={
+            "zone": "barranca", "current": E.TEMPLATES["current"],
+            "soil": {"ph": 18.0},
+        })
+        self.assertEqual(r.status_code, 422)
+
     def test_compare_abstains_without_current_rotation(self):
         r = self.client.post("/api/rotation/compare", json={"zone": "huaral", "current": []}).json()
         self.assertEqual(r["status"], "needs_current_rotation")
@@ -285,6 +311,92 @@ class ApiTests(unittest.TestCase):
     def test_history_rejects_non_polygon_geojson(self):
         r = self.client.post("/api/rotation/history", json={"polygon": {"type": "Point", "coordinates": [0, 0]}})
         self.assertEqual(r.status_code, 422)
+
+
+class FarmerRecommendationTests(unittest.TestCase):
+    """Objective-specific highlights are computed, not inferred from card order."""
+
+    def setUp(self):
+        self.plans = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 350, "bare_months": 18}},
+            {"id": "S1", "indicators": {"water_low_river_mm": 100, "bare_months": 18}},
+            {"id": "S2", "indicators": {"water_low_river_mm": 1100, "bare_months": 0}},
+        ]
+
+    def test_water_priority_prefers_genuine_lower_demand(self):
+        r = E.highlight_for_farmer(self.plans, {"water": 2, "soil": 0})
+        self.assertEqual(r["recommended_strategy_id"], "S1")
+        self.assertIn("menos de agua", r["recommendation_reason_es"])
+
+    def test_soil_priority_does_not_promote_extreme_water_penalty(self):
+        r = E.highlight_for_farmer(self.plans, {"water": 0, "soil": 2})
+        self.assertIsNone(r["recommended_strategy_id"])
+
+    def test_scarce_irrigation_rejects_higher_demand_even_with_more_coverage(self):
+        plans = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 300, "bare_months": 17}},
+            {"id": "S2", "indicators": {"water_low_river_mm": 320, "bare_months": 0}},
+        ]
+        result = E.highlight_for_farmer(plans, {"water": 0, "soil": 2}, "escaso")
+        self.assertIsNone(result["recommended_strategy_id"])
+
+    def test_minor_water_difference_is_explicitly_qualified(self):
+        plans = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 344, "bare_months": 14}},
+            {"id": "S1", "indicators": {"water_low_river_mm": 334, "bare_months": 12}},
+        ]
+        result = E.highlight_for_farmer(plans, {"water": 2, "soil": 2})
+        self.assertEqual(result["recommended_strategy_id"], "S1")
+        self.assertEqual(result["recommendation_confidence"], "limited")
+        self.assertIn("pequeña", result["recommendation_reason_es"])
+
+    def test_excessive_water_penalty_is_never_highlighted(self):
+        plans = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 344, "bare_months": 14}},
+            {"id": "S2", "indicators": {"water_low_river_mm": 1480, "bare_months": 0}},
+        ]
+        self.assertIsNone(E.highlight_for_farmer(plans, {"water": 0, "soil": 2})["recommended_strategy_id"])
+
+    def test_both_priorities_do_not_hide_major_water_penalty(self):
+        r = E.highlight_for_farmer(self.plans, {"water": 2, "soil": 2})
+        self.assertEqual(r["recommended_strategy_id"], "S1")
+
+    def test_no_evidence_of_improvement_means_no_highlight(self):
+        worse = [
+            {"id": "S0", "indicators": {"water_low_river_mm": 100, "bare_months": 5}},
+            {"id": "S1", "indicators": {"water_low_river_mm": 200, "bare_months": 7}},
+        ]
+        r = E.highlight_for_farmer(worse, {"water": 2, "soil": 2})
+        self.assertIsNone(r["recommended_strategy_id"])
+
+    def test_parcel_location_overrides_zone_centroid_for_climate(self):
+        """Recommendations for a selected field use its location, not a zone marker."""
+        coordinates = []
+
+        async def fake(lat, lon, client=None, coastal=True):
+            coordinates.append((lat, lon))
+            return coastal_climate()
+
+        with patch("app.api.rotation_routes.monthly_climate", fake):
+            r = TestClient(app).post("/api/rotation/compare", json={
+                "zone": "barranca", "latitude": -10.695, "longitude": -77.735,
+                "current": E.TEMPLATES["current"],
+            })
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(coordinates, [(-10.695, -77.735)])
+
+    def test_custom_location_has_no_invented_basin_rain(self):
+        clim = coastal_climate()
+
+        async def fake(lat, lon, client=None, coastal=True):
+            return clim
+
+        with patch("app.api.rotation_routes.monthly_climate", fake):
+            res = TestClient(app).post("/api/rotation/compare", json={
+                "latitude": -11.4, "longitude": -77.1, "current": E.TEMPLATES["current"],
+            })
+        self.assertEqual(res.status_code, 200, res.text)
+        self.assertEqual(res.json()["upper_basin_rain"]["status"], "unavailable")
 
 
 class MaizeLowRiverShareTests(unittest.TestCase):

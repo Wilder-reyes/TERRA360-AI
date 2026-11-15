@@ -538,27 +538,33 @@ def sections(key: str, ind: dict, base: dict | None, plantings: list[dict], clim
                       f"Today, peak water use falls in {_months([m['calendar_month'] for m in sorted(base['_timeline'], key=lambda m: -m['water_mm'])[:3]], 'en')}; this idea moves the thirstiest campaigns to high-river months or uses lower-demand crops."]
         else:
             why_es = [f"Atiende tu prioridad de cuidar el suelo: hoy queda sin cubierta {base['bare_months']} de 24 meses.",
-                      "Incluye leguminosas que dejan nitrógeno y alterna familias para cortar plagas."]
+                      "Incluye leguminosas que pueden ayudar a la tierra y alterna familias de cultivo."]
             why_en = [f"Addresses your priority of caring for the soil: today it is bare {base['bare_months']} of 24 months.",
                       "Includes nitrogen-fixing legumes and alternates families to break pest cycles."]
         benefits_es, benefits_en = [], []
-        if dlow is not None:
-            word_es = "menos" if dlow < 0 else "más"
-            word_en = "less" if dlow < 0 else "more"
-            benefits_es.append(f"{abs(dlow):.0f} % {word_es} agua del cultivo entre mayo y noviembre que lo que haces hoy (cálculo relativo).")
-            benefits_en.append(f"{abs(dlow):.0f}% {word_en} crop water from May to November than today (relative estimate).")
-        if dtot is not None:
-            benefits_es.append(f"Agua total en 24 meses: {dtot:+.0f} % frente a hoy.")
-            benefits_en.append(f"Total water over 24 months: {dtot:+.0f}% vs today.")
+        # Positive and negative outcomes MUST NOT appear together under benefits.
+        # Water values are FAO-56 crop-demand estimates, not measured irrigation.
+        if dlow is not None and dlow < -0.5:
+            benefits_es.append(f"La demanda estimada de agua de los cultivos sería {abs(dlow):.0f} % menor entre mayo y noviembre.")
+            benefits_en.append(f"Estimated crop-water demand would be {abs(dlow):.0f}% lower from May to November.")
+        elif dlow is not None and dlow > 0.5:
+            risks_es.append(f"Esta opción podría requerir {dlow:.0f} % más agua para los cultivos en los meses secos.")
+            risks_en.append(f"This option could need {dlow:.0f}% more crop water in dry months.")
+        if dtot is not None and dtot < -0.5:
+            benefits_es.append(f"En los 24 meses, la demanda estimada de agua bajaría {abs(dtot):.0f} %.")
+            benefits_en.append(f"Estimated crop-water demand over 24 months would fall {abs(dtot):.0f}%.")
+        elif dtot is not None and dtot > 0.5:
+            risks_es.append(f"En los 24 meses, la demanda estimada de agua subiría {dtot:.0f} %.")
+            risks_en.append(f"Estimated crop-water demand over 24 months would rise {dtot:.0f}%.")
         if dbare > 0:
-            benefits_es.append(f"{dbare} meses más con el suelo cubierto en 24 meses.")
-            benefits_en.append(f"{dbare} more months with covered soil over 24 months.")
+            benefits_es.append(f"El suelo tendría {dbare} meses más con cultivos durante el ciclo de 24 meses.")
+            benefits_en.append(f"Soil would have crops for {dbare} more months in the 24-month cycle.")
         elif dbare < 0:
-            benefits_es.append(f"Ojo: {-dbare} meses más sin cubierta que hoy (descanso en estiaje).")
-            benefits_en.append(f"Note: {-dbare} more bare months than today (rest during the low-river season).")
+            risks_es.append(f"Habría {-dbare} meses más sin cultivos que en tu rotación registrada.")
+            risks_en.append(f"There would be {-dbare} more months without crops than in your recorded rotation.")
         if ind["legume_plantings"]:
-            benefits_es.append(f"{ind['legume_plantings']} siembra(s) de leguminosa en 24 meses: dejan nitrógeno al siguiente cultivo.")
-            benefits_en.append(f"{ind['legume_plantings']} legume planting(s) in 24 months: they leave nitrogen for the next crop.")
+            benefits_es.append(f"Incluye {ind['legume_plantings']} siembra(s) de leguminosas que pueden ayudar a nutrir el suelo.")
+            benefits_en.append(f"Includes {ind['legume_plantings']} legume planting(s) that may help support soil nutrients.")
         if ind["same_family_consecutive"] < base["same_family_consecutive"]:
             benefits_es.append("Menos repeticiones de la misma familia: ayuda a cortar plagas.")
             benefits_en.append("Fewer same-family repeats: helps break pest cycles.")
@@ -627,6 +633,99 @@ def _strategy(key: str, plantings: list[dict], climate: dict, base: dict | None,
     }
 
 
+def highlight_for_farmer(strategies: list[dict], priorities: dict,
+                         water_turn: str = "no_se",
+                         ai_bare_risk: dict[str, float] | None = None) -> dict:
+    """Highlight an evidence-supported option, not an agronomic prescription.
+
+    1. Scarce irrigation: never promote an option with higher estimated dry-season
+       crop demand than the farmer's current plan.
+    2. Any irrigation regime: never promote a plan with >25% higher dry-season
+       demand; it stays visible as an alternative with its trade-offs.
+    3. Small differences are explicitly labelled; scoring is deterministic and
+       uses relative FAO-56 water estimates, bare months, and family repeats.
+    """
+    if not strategies:
+        return {"recommended_strategy_id": None}
+    s0 = next((x for x in strategies if x["id"] == "S0"), None)
+    if not s0:
+        return {"recommended_strategy_id": None}
+    base = s0["indicators"]
+    water_weight = max(0, int(priorities.get("water", 1)))
+    soil_weight = max(0, int(priorities.get("soil", 1)))
+    pests_weight = max(0, int(priorities.get("pests", 0)))
+    candidates = []
+    for strategy in strategies:
+        if strategy["id"] == "S0":
+            continue
+        ind = strategy["indicators"]
+        base_water = base["water_low_river_mm"]
+        water_difference = (ind["water_low_river_mm"] - base_water) / max(1.0, base_water)
+        if water_turn == "escaso" and water_difference > 0.001:
+            continue
+        if water_difference > 0.25:
+            continue
+        water_gain = (base_water - ind["water_low_river_mm"]) / max(50.0, base_water)
+        cover_gain = (base["bare_months"] - ind["bare_months"]) / 24.0
+        pests_gain = (base.get("same_family_consecutive", 0)
+                      - ind.get("same_family_consecutive", 0)) / max(
+                          1.0, base.get("same_family_consecutive", 0))
+        # NASA-HLS learned seasonal exposure is a separate, transparent
+        # input: covering historically exposed months counts more than
+        # a calendar-shift without evidence. It is not a yield predictor.
+        ai_gain = 0.0
+        if ai_bare_risk and s0["id"] in ai_bare_risk and strategy["id"] in ai_bare_risk:
+            ai_gain = ai_bare_risk[s0["id"]] - ai_bare_risk[strategy["id"]]
+        score = (water_weight * water_gain + 2 * soil_weight * cover_gain
+                 + 0.15 * pests_weight * pests_gain + 0.8 * soil_weight * ai_gain)
+        # NASA model never overrides the scarce-water safety guard above.
+        if score > 0.01 and (water_gain > 0.01 or cover_gain > 0 or pests_gain > 0 or
+                            (soil_weight > 0 and ai_gain > 0.01)):
+            candidates.append((score, strategy["id"], water_difference, cover_gain))
+    if not candidates:
+        return {
+            "recommended_strategy_id": None,
+            "recommendation_reason_es": "Con lo que sabemos, ninguna opción ofrece una mejora suficientemente clara.",
+            "recommendation_reason_en": "Based on the available data, no option offers a sufficiently clear improvement.",
+            "recommendation_confidence": "insufficient",
+            "ai_weighted": bool(ai_bare_risk and soil_weight > 0),
+        }
+    _, chosen, water_difference, cover_gain = max(
+        candidates, key=lambda x: (x[0], -int(x[1][1:])))
+    pct = round(abs(water_difference) * 100)
+    months = round(abs(cover_gain) * 24)
+    if abs(water_difference) < 0.05:
+        water_es = f"La diferencia de agua estimada es pequeña (cerca del {pct} %)."
+        water_en = f"Estimated crop-water difference is small (about {pct}%)."
+        strength = "limited"
+    elif water_difference < 0:
+        water_es = f"Los cultivos podrían necesitar cerca del {pct} % menos de agua en meses secos."
+        water_en = f"Crops may need about {pct}% less water in dry months."
+        strength = "relative_evidence"
+    else:
+        water_es = f"Los cultivos podrían necesitar cerca del {pct} % más de agua en meses secos."
+        water_en = f"Crops may need about {pct}% more water in dry months."
+        strength = "relative_evidence"
+    if cover_gain > 0:
+        soil_es, soil_en = f"Tu terreno tendría cultivos {months} meses más.", f"Your field would carry crops for {months} more months."
+    elif cover_gain < 0:
+        soil_es, soil_en = f"Tu terreno quedaría {months} meses más sin cultivo.", f"Your field would be without crops for {months} more months."
+    else:
+        soil_es, soil_en = "El tiempo sin cultivos se mantiene.", "Time without crops stays the same."
+    return {
+        "recommended_strategy_id": chosen,
+        "recommendation_reason_es": water_es + " " + soil_es,
+        "recommendation_reason_en": water_en + " " + soil_en,
+        "recommendation_confidence": strength,
+        "recommendation_method": ("Relative crop-water, crop coverage and family-repeat scores; "
+                                  + ("plus verified NASA HLS learned seasonal bare-risk exposure; "
+                                     if ai_bare_risk else "")
+                                  + "scarce-water and +25% safety guards. No measured irrigation, "
+                                  "harvest-yield or economic predictions."),
+        "ai_weighted": bool(ai_bare_risk and soil_weight > 0),
+    }
+
+
 def compare(current: list[dict], climate: dict, *, priorities: dict | None = None,
             water_turn: str = "normal", history: dict | None = None,
             current_origin: str = "farmer_declared", income_crop_id: str | None = None,
@@ -666,7 +765,9 @@ def compare(current: list[dict], climate: dict, *, priorities: dict | None = Non
             continue
         strategies.append(_strategy(key, plan, climate, base, history, water_turn, origin))
     seasons = load_catalog()["seasons"]
+    highlights = highlight_for_farmer(strategies, {"water": 1, "soil": 1, **priorities}, water_turn)
     return {
+        **highlights,
         "status": status,
         "income_crop": income_crop,
         "income_crop_origin": "farmer_selected" if income_crop_id else "most_frequent_in_current",

@@ -1,21 +1,21 @@
-name: TERRA360 public demo smoke check
+name: BIOTEX Vercel and Render production contract
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/smoke-production.yml'
-      - 'scripts/smoke_public_demo.py'
+      - 'scripts/smoke_chalhuas_public.py'
 permissions:
   contents: read
 jobs:
-  production-smoke:
+  public-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 9
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Verify Netlify, Render, crop search, ARIE and NASA POWER
-        run: python scripts/smoke_public_demo.py
+      - name: Verify Vercel frontend and Render Chalhuas API
+        run: python scripts/smoke_chalhuas_public.py
