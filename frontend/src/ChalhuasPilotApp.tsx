@@ -121,6 +121,7 @@ export default function ChalhuasPilotApp(){
  const [layerDate,setLayerDate]=useState('2025-11-01')
  const [opacity,setOpacity]=useState(.7)
  const [sequence,setSequence]=useState<CropId[]>(['papa','arveja','papa','arveja'])
+ const [historySource,setHistorySource]=useState<'example'|'farmer_declared'>('example')
  const [goal,setGoal]=useState<'water'|'soil'|'both'>('both')
  const [startYear,setStartYear]=useState(2027)
  const [soilKnown,setSoilKnown]=useState(false)
@@ -194,7 +195,7 @@ export default function ChalhuasPilotApp(){
  }
  function saveProject(){
   try{
-   const payload={version:1,field,isDemo,subplots,sequence,goal,startYear,overrides}
+   const payload={version:1,field,isDemo,subplots,sequence,historySource,goal,startYear,overrides}
    localStorage.setItem('biotex-chalhuas-v1',JSON.stringify(payload))
    setStatus(es?'Datos guardados en este navegador. No son un registro catastral.':'Saved in this browser. Not a cadastral record.')
   }catch{setStatus(es?'Tu navegador no permitió guardar estos datos.':'Browser storage unavailable.')}
@@ -206,6 +207,7 @@ export default function ChalhuasPilotApp(){
    if(data.field){const p=points(data.field);if(!validatePolygon(p).valid||hectares(data.field)<.1||hectares(data.field)>500)throw Error('invalid polygon')}
    setField(data.field||null);setIsDemo(Boolean(data.isDemo));setSubplots(Array.isArray(data.subplots)?data.subplots:[])
    setSequence(Array.isArray(data.sequence)&&data.sequence.length===4&&data.sequence.every((x:CropId)=>NAMES[x])?data.sequence:['papa','arveja','papa','arveja'])
+   setHistorySource(data.historySource==='farmer_declared'?'farmer_declared':'example')
    if(['water','soil','both'].includes(data.goal))setGoal(data.goal)
    if(Number.isInteger(data.startYear)&&data.startYear>=2020&&data.startYear<=2035)setStartYear(data.startYear)
    setOverrides(data.overrides&&typeof data.overrides==='object'?data.overrides:{})
@@ -263,7 +265,7 @@ export default function ChalhuasPilotApp(){
   setBusy(true);setStatus('')
   try{
    const response=await fetch(API+'/api/andes/compare',{method:'POST',headers:{'Content-Type':'application/json'},
-     body:JSON.stringify({rotation:sequence,start_year:startYear,priority:goal})})
+     body:JSON.stringify({rotation:sequence,start_year:startYear,priority:goal,history_source:historySource})})
    if(!response.ok)throw Error(await httpErrorMessage(response,!es))
    const data=await response.json() as Decision
    if(data.status!=='illustrative_comparison'||data.automatic_recommendation!==null)throw Error('Respuesta incompatible con el piloto')
@@ -372,6 +374,10 @@ export default function ChalhuasPilotApp(){
    {step===1&&<section className="c-form-step">
       <div className="c-card"><span className="c-small">{es?'HISTORIAL DECLARADO':'FARMER HISTORY'}</span><h2>{es?'¿Qué sembraste en cada campaña?':'What did you plant each campaign?'}</h2>
        <p>{es?'Esta es una ventana de cuatro campañas anuales para comparar familias botánicas. Los nombres iniciales son un ejemplo histórico; puedes modificarlos. No equivalen a cuatro años enteros de vegetación.':'This is a four-campaign study window. Initial crop names are a historical example, not a continuous four-year planting record. Edit as needed.'}</p>
+       <fieldset className="c-history-origin"><legend>{es?'Origen de esta secuencia':'Where this sequence comes from'}</legend>
+        <label><input type="radio" name="history-source" checked={historySource==='example'} onChange={()=>{setHistorySource('example');setPlan(null)}}/>{es?'Ejemplo histórico del estudio de Chalhuas':'Historical study example'}</label>
+        <label><input type="radio" name="history-source" checked={historySource==='farmer_declared'} onChange={()=>{setHistorySource('farmer_declared');setPlan(null)}}/>{es?'Cultivos de mis campañas, confirmados por mí':'My campaigns, confirmed by me'}</label>
+       </fieldset>
        <div className="c-year-grid">{sequence.map((crop,i)=><label key={i} className="c-crop-select"><span>{es?'Campaña':'Campaign'} {i+1}</span>
         <select value={crop} onChange={e=>{setSequence(v=>v.map((x,j)=>i===j?e.target.value as CropId:x));setPlan(null)}}>{CROPS.map(c=><option key={c.id} value={c.id}>{cropName(c.id,lang)} · {c.family}</option>)}</select></label>)}</div>
        <p className="c-inline-note">{es?'Los satélites observan vegetación, no certifican la especie sembrada. Confirma personalmente los cultivos.':'Satellites observe vegetation, not the crop species. Confirm your own records.'}</p>
@@ -402,7 +408,7 @@ export default function ChalhuasPilotApp(){
        <p>{es?plan.comparison_summary_es:'Compare botanical diversity and crop-family sequences. Local agronomic verification is still required.'}</p>
        <div className="c-tabs" role="group" aria-label={es?'Rotación a visualizar':'Choose rotation'}>
         {plan.strategies.map(s=><button type="button" key={s.id} aria-pressed={selectedPlan===s.id} onClick={()=>{setSelectedPlan(s.id);setOverrides({})}}>
-         {s.id==='S0'?(es?'Lo que registraste':'Recorded'):s.id==='R1'?(es?'Referencia INIA':'INIA reference'):(es?'Otra opción':'Another option')}</button>)}
+         {s.id==='S0'?(historySource==='example'?(es?'Ejemplo histórico':'Historical example'):(es?'Lo que registraste':'Recorded')):s.id==='R1'?(es?'Referencia INIA':'INIA reference'):(es?'Otra opción':'Another option')}</button>)}
        </div>
        {selected&&<><div className="c-plan-sequence">
         {selected.schedule.map(c=><div key={c.campaign} className="c-sequence-card">

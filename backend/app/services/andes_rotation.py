@@ -63,18 +63,22 @@ def describe(sequence:list[str], start_year:int, identity:str, name_es:str, name
     }
 
 
-def compare(rotation:list[str],start_year:int,priority:str)->dict:
+def compare(rotation:list[str],start_year:int,priority:str,history_source:str='example')->dict:
     if priority not in ("water","soil","both"):
         raise ValueError("Prioridad no reconocida")
+    if history_source not in ('example','farmer_declared'):
+        raise ValueError('Origen de historial no reconocido')
     if len(rotation)!=4 or any(cid not in CROPS for cid in rotation):
         raise ValueError("Utiliza cuatro cultivos válidos del catálogo andino")
-    initial=describe(rotation,start_year,"S0","Lo registrado por ti","Your recorded sequence")
+    initial=describe(rotation,start_year,"S0",
+        "Lo registrado por ti" if history_source=="farmer_declared" else "Ejemplo histórico para investigar",
+        "Your recorded sequence" if history_source=="farmer_declared" else "Historical example to explore")
     scenarios=[describe(crops,start_year,identity,title_es,title_en)
                for identity,title_es,title_en,crops in REFERENCES]
     return {
         "status":"illustrative_comparison",
         "scope":"Chalhuas, Huáchac, Chupaca, Junín — reference sector, not a certified parcel",
-        "selected_priority":priority,"start_year":start_year,"end_year":start_year+3,
+        "selected_priority":priority,"history_source":history_source,"start_year":start_year,"end_year":start_year+3,
         "model_status":"not_trained_for_chalhuas","automatic_recommendation":None,
         "confidence":"requires_local_agronomic_validation",
         "strategies":[initial,*scenarios],

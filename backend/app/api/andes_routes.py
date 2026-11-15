@@ -14,6 +14,7 @@ class Comparison(BaseModel):
     rotation:list[str]=Field(min_length=4,max_length=4)
     start_year:int=Field(ge=2020,le=2035)
     priority:Literal["water","soil","both"]="both"
+    history_source:Literal["example","farmer_declared"]="example"
 
 @router.get("/catalog")
 def catalog():
@@ -22,7 +23,7 @@ def catalog():
 @router.post("/compare")
 def compare(req:Comparison):
     try:
-        return andes_rotation.compare(req.rotation,req.start_year,req.priority)
+        return andes_rotation.compare(req.rotation,req.start_year,req.priority,req.history_source)
     except ValueError as exc:
         raise HTTPException(422,str(exc)) from exc
 

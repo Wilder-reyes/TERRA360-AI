@@ -87,3 +87,7 @@
 .c-hls-evidence{border-top:1px solid #d9e5d7;margin-top:17px;padding-top:13px}.c-hls-evidence h4{font-size:.95rem;color:#245a3c;margin:0 0 10px}
 .c-hls-reading{background:#edf6ea;padding:10px;border-radius:9px;margin:10px 0}.c-hls-reading strong{font-size:1.2rem;color:#245a3d;margin-right:8px}.c-hls-reading span{font-size:.8rem;color:#3f684d}
 .c-eco-scene{border-bottom:1px solid #e4ecdf;overflow-wrap:anywhere;font-size:.7rem!important;margin:4px 0}
+
+.c-history-origin{border:1px solid #d7e6d7;border-radius:12px;padding:13px 15px;display:grid;gap:11px;margin:18px 0;color:#405e48}
+.c-history-origin legend{font-size:.84rem;font-weight:790;color:#28583c;padding:0 6px}.c-history-origin label{display:flex;align-items:center;gap:9px;font-size:.88rem}
+.c-history-origin input{width:18px;height:18px;accent-color:#246342}

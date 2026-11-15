@@ -10,6 +10,10 @@ class AndeanPilotTest(unittest.TestCase):
     def test_reference_rotation_never_claims_suitability_or_water_savings(self):
         result=andes_rotation.compare(["papa","arveja","papa","arveja"],2027,"both")
         self.assertEqual(result["status"],"illustrative_comparison")
+        self.assertEqual(result["history_source"],"example")
+        self.assertIn("Ejemplo histórico",result["strategies"][0]["title_es"])
+        confirmed=andes_rotation.compare(["papa","arveja","papa","arveja"],2027,"both","farmer_declared")
+        self.assertIn("registrado por ti",confirmed["strategies"][0]["title_es"])
         self.assertIsNone(result["automatic_recommendation"])
         self.assertEqual([x["year"] for x in result["strategies"][1]["schedule"]],[2027,2028,2029,2030])
         self.assertEqual(result["strategies"][1]["indicators"]["botanical_families"],4)
