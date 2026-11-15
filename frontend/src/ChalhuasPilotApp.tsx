@@ -22,7 +22,7 @@ type HLSHistory={sensor:string;months_with_data:number;months_total:number;month
 type EcoScenes={status:string;scenes?:{granule_name:string;acquisition_time:string;temperature_c:null;quality_verified:false}[];temperature_values_available:false;note_es:string}
 type Parcel={id:string;polygon:Shape}
 type Drawing='field'|'subplot'|null
-type Layer='image'|'vegetation'|'rain'
+type Layer='image'|'vegetation'|'rain'|'terrain'
 
 const LOC={lat:-12.04700155,lng:-75.36633862}
 const CROPS:{id:CropId;es:string;en:string;family:string;color:string}[]=[
@@ -80,9 +80,9 @@ function FieldMap({field,subplots,drawing,vertices,onPoint,layer,lowData,layerDa
  }
  return <div className="c-map-box" data-bio-target="bio-map">
   <MapContainer center={[p.lat,p.lng]} zoom={14} className="c-map" scrollWheelZoom={false}>
-   <TileLayer key={lowData?'streets':'imagery'} url={lowData?'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}
+   <TileLayer key={lowData?'streets':layer==='terrain'?'terrain':'imagery'} url={lowData?'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png':layer==='terrain'?'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}
     attribution={lowData?'© OpenStreetMap contributors':'Imagery © Esri, Maxar, Earthstar Geographics'}/>
-   {!lowData&&layer!=='image'&&<WMSTileLayer key={layer+layerDate} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
+   {!lowData&&(layer==='vegetation'||layer==='rain')&&<WMSTileLayer key={layer+layerDate} url="https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi"
     layers={layer==='vegetation'?'MODIS_Terra_NDVI_8Day':'IMERG_Precipitation_Rate'}
     version="1.1.1" styles="" transparent={true} format="image/png" opacity={opacity}
     {...{time:layerDate}} attribution="NASA GIBS / ESDIS" eventHandlers={{tileerror:()=>setTileError(true)}} />}
@@ -310,15 +310,16 @@ export default function ChalhuasPilotApp(){
      <div className="c-card c-map-card">
       <div className="c-card-head"><div><span className="c-small">{es?'ELIGE UNA PARCELA':'CHOOSE A FIELD'}</span><h2>{es?'¿Dónde quieres estudiar la rotación?':'Where would you study rotations?'}</h2></div><span className="c-coordinate">−12.0470, −75.3663</span></div>
       <div className="c-layer-controls" data-bio-target="bio-layers"><div className="c-layer-buttons" role="group" aria-label={es?'Capas del mapa':'Map layers'}>
-       {(['image','vegetation','rain'] as const).map(id=><button key={id} type="button" disabled={lowData&&id!=='image'} aria-pressed={layer===id} className={layer===id?'on':''} onClick={()=>setLayer(id)}>
-        {id==='image'?(es?'Foto aérea':'Aerial'):id==='vegetation'?(es?'Vegetación NASA':'NASA vegetation'):(es?'Lluvia NASA':'NASA rain')}</button>)}</div>
+       {(['image','vegetation','rain','terrain'] as const).map(id=><button key={id} type="button" disabled={lowData&&id!=='image'} aria-pressed={layer===id} className={layer===id?'on':''} onClick={()=>setLayer(id)}>
+        {id==='image'?(es?'Foto aérea':'Aerial'):id==='vegetation'?(es?'Vegetación NASA':'NASA vegetation'):id==='rain'?(es?'Lluvia NASA':'NASA rain'):(es?'Relieve':'Terrain')}</button>)}</div>
        <label className="c-low"><input type="checkbox" checked={lowData} onChange={e=>{setLowData(e.target.checked);if(e.target.checked)setLayer('image')}}/>{es?'Ahorrar datos':'Low data'}</label>
-       {layer!=='image'&&!lowData&&<div className="c-layer-extra"><label>{es?'Fecha de la capa':'Layer date'} <input type="date" value={layerDate} min="2020-01-01" max="2026-11-14" onChange={e=>setLayerDate(e.target.value)}/></label>
+       {(layer==='vegetation'||layer==='rain')&&!lowData&&<div className="c-layer-extra"><label>{es?'Fecha de la capa':'Layer date'} <input type="date" value={layerDate} min="2020-01-01" max="2026-11-14" onChange={e=>setLayerDate(e.target.value)}/></label>
         <label>{es?'Transparencia':'Opacity'} <input type="range" min=".2" max="1" step=".1" value={opacity} onChange={e=>setOpacity(Number(e.target.value))}/></label></div>}
-       {layer!=='image'&&!lowData&&<div className="c-legend"><strong>{layer==='vegetation'?'NASA MODIS NDVI · 250 m':'NASA GPM IMERG · ~10 km'}</strong>
+       {(layer==='vegetation'||layer==='rain')&&!lowData&&<div className="c-legend"><strong>{layer==='vegetation'?'NASA MODIS NDVI · 250 m':'NASA GPM IMERG · ~10 km'}</strong>
         <div className={layer==='vegetation'?'c-ramp green':'c-ramp blue'}/><div className="c-legend-labels"><span>{layer==='vegetation'?'Menor verdor':'Menor precipitación'}</span><span>{layer==='vegetation'?'Mayor verdor':'Mayor precipitación'}</span></div>
         <small>{es?'Colores orientativos de la variable regional. Consulta la escala oficial en NASA Worldview y verifica si existen teselas para la fecha. No mide una parcela individual.':'Regional thematic guide only. Check the official NASA Worldview scale and tile availability; not field-level data.'}</small>
        </div>}
+       {layer==='terrain'&&!lowData&&<div className="c-legend"><strong>{es?'Base topográfica Esri':'Esri topographic base map'}</strong><p className="c-terrain-note">{es?'Los relieves y curvas son cartografía de referencia. Para obtener un valor altitudinal aproximado del entorno, utiliza la consulta SRTM. No es una capa NASADEM ni una medición del predio.':'The contours and relief are reference cartography. Query SRTM separately for approximate regional elevation; this is not NASADEM raster or a field measurement.'}</p></div>}
       </div>
       <FieldMap field={field} subplots={[]} drawing={drawing} vertices={vertices} onPoint={p=>setVertices(x=>[...x,p])}
        layer={layer} lowData={lowData} layerDate={layerDate} opacity={opacity} viewYear={0} scenario={null} overrides={{}} isDemo={false} onSelectParcel={()=>{}}/>
