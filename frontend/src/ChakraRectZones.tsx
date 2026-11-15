@@ -63,7 +63,7 @@ export function suggestedZones(field:GeoPolygon,existing:EditableZone[],count=2)
 export function rectangleCorners(z:GeoPolygon):Point[]{return pts(z)}
 const handleIcon=(main:boolean)=>L.divIcon({className:main?'chakra-zone-move-icon':'chakra-zone-resize-icon',
  html:main?'<span aria-hidden="true">✥</span>':'<span aria-hidden="true"></span>',
- iconSize:main?[31,31]:[20,20],iconAnchor:main?[15,15]:[10,10]})
+ iconSize:main?[44,44]:[36,36],iconAnchor:main?[22,22]:[18,18]})
 export function ChakraZoneHandles({field,zones,selected,onMove,onInvalid}:{
  field:GeoPolygon;zones:EditableZone[];selected:string;
  onMove:(id:string,polygon:GeoPolygon)=>void;onInvalid:(message:string)=>void
