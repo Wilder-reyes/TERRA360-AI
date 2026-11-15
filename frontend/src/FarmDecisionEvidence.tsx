@@ -8,7 +8,7 @@ type EconItem={strategy_id:string;status:string;margin_soles_ha_24months?:number
  revenue_soles_ha_24months?:number;cost_soles_ha_24months?:number;missing_crop_ids?:string[]}
 export type EconomicReport={status:string;strategies:EconItem[];source:string}
 type Source={name:string;url:string}
-type OfficialRecord={status:string;source:Source;document_url?:string;records?:{date:string;value:number;unit:string;location:string}[];data_quality?:string}
+type OfficialRecord={status:string;source?:Source;document_url?:string;records?:{date:string;value:number;unit:string;location:string}[];data_quality?:string}
 type Context={
  ana_historical_context?:{status:string;statistics?:{river:string;average_flow_m3_s:number}[];
    reference_url?:string;document_date?:string;use_for_irrigation_allocation?:boolean};
@@ -32,7 +32,7 @@ export default function FarmDecisionEvidence({lang,strategies,names,context,soil
  const [error,setError]=useState('')
  const name=(id:string)=>names[id]?.[es?0:1]||id
  function update(id:string,key:'yield'|'price'|'cost',value:string){
-  setValues(old=>({...old,[id]:{yield:'',price:'',cost:'',...old[id],[key]:value}}))
+  setValues(old=>({...old,[id]:{...(old[id]??{yield:'',price:'',cost:''}),[key]:value}}))
   onBudget(null);setError('')
  }
  async function calculate(){
