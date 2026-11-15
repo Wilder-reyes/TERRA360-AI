@@ -23,7 +23,7 @@ const LABEL:Record<Lang,Record<SectionKey,string>>={
 }
 export function strategyTitle(s:CompareStrategy,lang:Lang):string{
  if(s.id==='S0')return lang==='es'?'S0 · Rotación actual':'S0 · Current rotation'
- if(s.key==='water'||s.id==='S1')return lang==='es'?'S1 · Agua: menos riego cuando el río baja':'S1 · Water: less irrigation when the river is low'
+ if(s.key==='water'||s.id==='S1')return lang==='es'?'S1 · Agua: prioriza los meses de río bajo':'S1 · Water: prioritise low-river months'
  return lang==='es'?'S2 · Suelo: suelo cubierto y leguminosas':'S2 · Soil: covered soil and legumes'
 }
 export type MaizeShare={source:string;low_river_months:number[];by_sow_month:Record<string,number>;current_sow_months:number[]}
