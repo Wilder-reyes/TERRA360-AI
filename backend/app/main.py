@@ -11,6 +11,7 @@ from app.api.imerg_polygon_routes import router as imerg_polygon_router
 from app.api.smap_routes import router as smap_router
 from app.api.gaez_routes import router as gaez_router
 from app.api.rotation_routes import router as rotation_router
+from app.api.andes_routes import router as andes_router
 
 app = FastAPI(
     title="BIOTEX API",
@@ -35,3 +36,4 @@ app.include_router(imerg_polygon_router)
 app.include_router(smap_router)
 app.include_router(gaez_router)
 app.include_router(rotation_router)
+app.include_router(andes_router)
