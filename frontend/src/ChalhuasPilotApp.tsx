@@ -15,6 +15,7 @@ type Lang='es'|'en'
 type CropId='papa'|'arveja'|'haba'|'quinua'|'cebada'|'avena'
 type Climate={status:string;year:number;min_air_temperature_c?:number;rainfall_sum_mm?:number;days_at_or_below_zero_c?:number;valid_days?:number;months?:{month:number;min_air_temperature_c:number|null;rainfall_sum_mm:number|null;valid_days:number}[];source_url?:string}
 type Terrain={elevation_m:number;approximate_gradient_degrees:number;resolution_m_approx:number;source_url:string;not_field_measurement?:boolean}
+type Power={source:string;period:string;annual_et0_mm:number;source_url?:string}
 type Scenario={id:string;title_es:string;title_en:string;schedule:{campaign:number;year:number;crop_id:CropId;name_es:string;family:string;dates_verified:boolean}[];
  indicators:{botanical_families:number;adjacent_family_repetitions:number;legume_campaigns:number;potato_return_interval_campaigns:number[]|null};flags_es:string[];limitations_es:string[]}
 type Decision={status:string;strategies:Scenario[];automatic_recommendation:null;model_status:string;water_note_es:string;comparison_summary_es:string;start_year:number;end_year:number;source_records:{title:string;url:string}[]}
@@ -133,6 +134,7 @@ export default function ChalhuasPilotApp(){
  const [status,setStatus]=useState('')
  const [busy,setBusy]=useState(false)
  const [terrain,setTerrain]=useState<Terrain|null>(null)
+ const [power,setPower]=useState<Power|null>(null)
  const [climate,setClimate]=useState<Climate|null>(null)
  const [evidenceBusy,setEvidenceBusy]=useState(false)
  const [evidenceError,setEvidenceError]=useState('')
@@ -161,13 +163,13 @@ export default function ChalhuasPilotApp(){
   window.scrollTo({top:0,behavior:'auto'})
  }
  function selectDemo(){
-  setHls(null);setEco(null);setTerrain(null);setClimate(null)
+  setHls(null);setEco(null);setTerrain(null);setClimate(null);setPower(null)
   setField(demoShape);setSubplots(demoParcels);setIsDemo(true);setDrawing(null);setVertices([])
   setPlan(null);setOverrides({});setGeometryStatus(es?'Ejemplo sintético: sus límites no corresponden a un predio comprobado.':'Synthetic sketch: boundaries do not describe a verified property.')
   setSelectedParcel('A')
  }
  function startDraw(mode:Drawing){
-  if(mode==='field'){setField(null);setSubplots([]);setIsDemo(false);setPlan(null);setOverrides({});setHls(null);setEco(null);setTerrain(null);setClimate(null)}
+  if(mode==='field'){setField(null);setSubplots([]);setIsDemo(false);setPlan(null);setOverrides({});setHls(null);setEco(null);setTerrain(null);setClimate(null);setPower(null)}
   setDrawing(mode);setVertices([]);setGeometryStatus('')
  }
  async function finishDraw(){
@@ -220,12 +222,15 @@ export default function ChalhuasPilotApp(){
   const at=centre(field)
   const jobs=await Promise.allSettled([
    fetch(API+'/api/environment/terrain?latitude='+at.lat+'&longitude='+at.lng).then(async r=>{if(!r.ok)throw Error('SRTM');return await r.json() as Terrain}),
-   fetch(API+'/api/andes/era5-land?latitude='+at.lat+'&longitude='+at.lng+'&year=2025').then(async r=>{if(!r.ok)throw Error('ERA5');return await r.json() as Climate})
+   fetch(API+'/api/andes/era5-land?latitude='+at.lat+'&longitude='+at.lng+'&year=2025').then(async r=>{if(!r.ok)throw Error('ERA5');return await r.json() as Climate}),
+   fetch(API+'/api/rotation/climate?latitude='+at.lat+'&longitude='+at.lng).then(async r=>{if(!r.ok)throw Error('POWER');return await r.json() as Power})
   ])
   if(jobs[0].status==='fulfilled')setTerrain(jobs[0].value)
   else setTerrain(null)
   if(jobs[1].status==='fulfilled'&&jobs[1].value.status==='available')setClimate(jobs[1].value)
   else setClimate(null)
+  if(jobs[2].status==='fulfilled'&&Number.isFinite(jobs[2].value.annual_et0_mm))setPower(jobs[2].value)
+  else setPower(null)
   if(jobs.some(x=>x.status==='rejected')||(jobs[1].status==='fulfilled'&&jobs[1].value.status!=='available'))
    setEvidenceError(es?'Alguna fuente no respondió o no dispone de lecturas válidas. No asignamos valores inexistentes.':'Some sources unavailable or insufficient; no values inferred.')
   setEvidenceBusy(false)
@@ -347,6 +352,7 @@ export default function ChalhuasPilotApp(){
        <button type="button" className="c-action secondary" onClick={evidence} disabled={!field||evidenceBusy}>{evidenceBusy?(es?'Consultando fuentes…':'Loading…'):(es?'Consultar datos del terreno':'Check environmental context')}</button>
        {terrain&&<div className="c-science-value"><b>{terrain.elevation_m.toFixed(0)} m</b><span>{es?'Elevación aproximada SRTM (90 m)':'Approx. SRTM elevation (90 m)'}</span></div>}
        {terrain&&<div className="c-science-value"><b>{terrain.approximate_gradient_degrees.toFixed(1)}°</b><span>{es?'Gradiente del entorno a 180 m, no pendiente del lote':'Neighbourhood gradient, not field slope'}</span></div>}
+       {power&&<div className="c-science-value"><b>{power.annual_et0_mm.toFixed(0)} mm/año</b><span>{es?'ET₀ anual NASA POWER / FAO-56: estimación climática regional, NO riego medido':'Annual NASA POWER / FAO-56 reference ET₀: regional estimate, NOT measured irrigation'}</span></div>}
        {climate&&<><div className="c-science-value"><b>{climate.min_air_temperature_c?.toFixed(1)} °C</b><span>{es?'Mínima regional estimada de 2025':'2025 modelled regional minimum'}</span></div>
         <div className="c-science-value"><b>{climate.rainfall_sum_mm?.toFixed(0)} mm</b><span>{es?'Lluvia regional estimada de 2025':'2025 modelled regional precipitation'}</span></div>
         <details className="c-annual-details"><summary>{es?'Ver los 12 meses de 2025':'View 12 months of 2025'}</summary>
@@ -367,9 +373,10 @@ export default function ChalhuasPilotApp(){
         {hlsError&&<p className="c-inline-note" role="status">{hlsError}</p>}
        </section>
        {evidenceError&&<p role="status" className="c-inline-note">{evidenceError}</p>}
-       {!(terrain||climate)&&!evidenceError&&<p className="c-muted">{es?'Sin consulta realizada: no se muestran cifras.':'No query made: no figures shown.'}</p>}
+       {!(terrain||climate||power)&&!evidenceError&&<p className="c-muted">{es?'Sin consulta realizada: no se muestran cifras.':'No query made: no figures shown.'}</p>}
        <details><summary>{es?'Fuentes y otras capas':'Sources and other layers'}</summary>
-        <p><a href="https://www.opentopodata.org/datasets/srtm/" target="_blank" rel="noreferrer">NASA/USGS SRTM 90 m</a> · <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noreferrer">ECMWF ERA5-Land</a></p>
+        <p><a href="https://power.larc.nasa.gov/" target="_blank" rel="noreferrer">NASA POWER · FAO-56</a></p>
+         <p><a href="https://www.opentopodata.org/datasets/srtm/" target="_blank" rel="noreferrer">NASA/USGS SRTM 90 m</a> · <a href="https://open-meteo.com/en/docs/historical-weather-api" target="_blank" rel="noreferrer">ECMWF ERA5-Land</a></p>
         <p>{es?'ECOSTRESS V003: requiere imágenes y máscaras válidas para este lugar; todavía no habilitada. GLDAS: contexto regional en investigación.':'ECOSTRESS V003 needs valid local images and QA; not enabled. GLDAS is research-only regional context.'}</p>
         <button type="button" className="c-action secondary" disabled={!field||ecoBusy} onClick={loadEco}>{ecoBusy?(es?'Buscando escenas NASA…':'Searching NASA scenes…'):(es?'Buscar escenas ECOSTRESS':'Search ECOSTRESS scenes')}</button>
         {eco&&<p className="c-inline-note" role="status">{eco.status==='metadata_only_quality_unverified'?(es?'Se encontraron '+(eco.scenes?.length||0)+' escenas en el catálogo. Ninguna tiene temperatura validada todavía.':'Scene metadata found; none has validated temperature.'):
