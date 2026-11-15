@@ -75,7 +75,7 @@ test('desktop and mobile show three accessible steps without horizontal overflow
 
 test('English retains the same three-step process and map',async({page})=>{
  await page.goto('/?lang=en&research=1')
- await expect(page.getByRole('button',{name:/Explore the Barranca example/})).toBeVisible()
+ await expect(page.getByRole('button',{name:/Try an example/})).toBeVisible()
  await expect(page.locator('.b-progress button')).toHaveCount(3)
  await page.getByRole('button',{name:'Record crops by zone'}).click()
  await expect(page.getByRole('heading',{name:'Show what you planted'})).toBeVisible()
