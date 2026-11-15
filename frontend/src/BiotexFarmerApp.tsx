@@ -792,13 +792,20 @@ export default function BiotexFarmerApp(){
      <p>{lang==='es'?'Toca una zona, elige su cultivo y registra el mes. Puedes dibujar tantas zonas como necesites.':'Choose an area, its crop and planting month. Draw other zones as needed.'}</p></div>
     <div className="chakra-zone-map-wrap">
      <div className="chakra-zone-map-frame"><MapContainer center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
+      <ZoneDropBridge field={field} subplots={subplots} onAssign={assignZoneCrop}/>
       <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
       <FlyTo point={point} polygon={mapPolygon}/>
       <DrawLayer enabled={drawingSubplot} points={points} onPoint={p=>{setPoints(q=>[...q,p]);setFieldError('')}} onFinish={finish}/>
-      <Polygon positions={(mapPolygon||[]).map(v=>[v.lat,v.lng] as [number,number])} interactive={false} pathOptions={{color:'#D6F866',weight:3,fillColor:'#D6F866',fillOpacity:.1}}/>
+      <Polygon positions={(mapPolygon||[]).map(v=>[v.lat,v.lng] as [number,number])} interactive={!drawingSubplot}
+       eventHandlers={{click:()=>{if(pendingCrop)assignZoneCrop('rest',pendingCrop);else setActiveZone('rest')}}}
+       pathOptions={{color:'#D6F866',weight:5,fillColor:cropVisual(zoneCrops.rest?.crop_id).color,fillOpacity:zoneCrops.rest?.crop_id?0.45:0.15}}>
+       {zoneCrops.rest&&subplots.length===0&&<Tooltip permanent direction="center" className="chakra-crop-map-label">{cropVisual(zoneCrops.rest.crop_id).icon} {labelCrop(zoneCrops.rest.crop_id,lang)}</Tooltip>}
+      </Polygon>
       {subplots.map(z=><Polygon key={z.id} positions={fromGeo(z.polygon).map(v=>[v.lat,v.lng] as [number,number])}
-       pathOptions={{color:selectedZone===z.id?'#D6F866':'#F1CC80',weight:selectedZone===z.id?4:2,fillColor:zoneCrops[z.id]?'#77B78A':'#F1CC80',fillOpacity:.4}}
-       interactive={!drawingSubplot} eventHandlers={{click:()=>setActiveZone(z.id)}}/>)}
+       pathOptions={{color:selectedZone===z.id?'#D6F866':'#F1F8EB',weight:selectedZone===z.id?5:3,fillColor:cropVisual(zoneCrops[z.id]?.crop_id).color,fillOpacity:.8}}
+       interactive={!drawingSubplot} eventHandlers={{click:()=>{if(pendingCrop)assignZoneCrop(z.id,pendingCrop);else setActiveZone(z.id)}}}>
+       {zoneCrops[z.id]&&<Tooltip permanent direction="center" className="chakra-crop-map-label">{cropVisual(zoneCrops[z.id].crop_id).icon} {labelCrop(zoneCrops[z.id].crop_id,lang)}</Tooltip>}
+      </Polygon>)}
      </MapContainer></div>
      <div className="chakra-zone-map-actions">
       {drawingSubplot?<><span>{lang==='es'?'Toca las esquinas de la zona.':'Tap area corners.'}</span>
@@ -807,7 +814,7 @@ export default function BiotexFarmerApp(){
        <button className="b-btn b-btn-light" type="button" onClick={()=>{setDrawingSubplot(false);setPoints([])}}>{t.cancel}</button></>:
        <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={()=>{setDrawingSubplot(true);setPoints([]);setFieldError('')}}>{lang==='es'?'+ Dibujar otra zona':'+ Draw another area'}</button>}
      </div>
-     <p className="chakra-zone-map-note">{lang==='es'?'Límite lima: tu terreno. Cada zona que dibujes se registra por separado.':'Lime outline: your field. Each drawn section is recorded separately.'}</p>
+     <p className="chakra-zone-map-note">{lang==='es'?'Borde verde: tu terreno. Cada color representa un cultivo que tú registras.':'Lime border: your field. Each color represents a crop you record.'}</p>
     </div>
     {fieldError&&<p className="b-error" role="alert">{fieldError}</p>}
     <div className="chakra-zones-heading"><h2>{lang==='es'?'¿Dónde sembraste?':'Where did you plant?'}</h2><span>{assignedCount}/{availableZones.length} {lang==='es'?'zonas registradas':'areas recorded'}</span></div>
@@ -815,8 +822,9 @@ export default function BiotexFarmerApp(){
      onClick={()=>{setActiveZone(z.id);const previous=zoneCrops[z.id];if(previous){setCrop(previous.crop_id);const idx=relativeMonthIndex(previous.planted_month,baseYear);if(idx>=0&&idx<36)setCropMonth(idx)}}}>
      <span>{z.id==='rest'?(lang==='es'?'Resto del terreno':'Remaining field'):(lang==='en'?z.id.replace(/^Subparcela /,'Area '):z.id)}</span><small>{z.ha.toFixed(2)} ha</small>
      <strong>{zoneCrops[z.id]?labelCrop(zoneCrops[z.id].crop_id,lang):(lang==='es'?'Por registrar':'To register')}</strong></button>)}</div>
-    <section className="chakra-crop-section"><h2>{lang==='es'?'¿Qué sembraste aquí?':'What did you grow here?'}</h2>
-     <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>setCrop(id)}>
+    <section className="chakra-crop-section" data-bio-target="bio-crops"><h2>{lang==='es'?'¿Qué sembraste aquí?':'What did you grow here?'}</h2>
+     <p className="chakra-zone-drag-hint">{lang==='es'?'Elige un cultivo y toca su zona en el mapa. En computadora también puedes llevar la tarjeta hasta esa zona.':'Choose a crop and tap its area on the map. On desktop you can also drag the card into that area.'}</p>
+     <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" draggable onDragStart={event=>{event.dataTransfer.setData('application/x-chakra-crop',id);event.dataTransfer.effectAllowed='copy';setPendingCrop(id);setCrop(id)}} key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>{setCrop(id);setPendingCrop(id)}}>
       <span className="chakra-crop-art" aria-hidden="true">{({maiz_amarillo_duro:'🌽',maiz_chala:'🌽',camote:'🍠',papa:'🥔',frijol_grano_seco:'🫘',frijol_castilla:'🫘',vainita:'🫛',pallar:'🫘',arveja_verde:'🫛',cebolla:'🧅',zanahoria:'🥕',brocoli_col:'🥦',alfalfa:'🌿'} as Record<string,string>)[id]}</span>
       <span>{labelCrop(id,lang)}</span><span className="chakra-crop-tick">{crop===id?'✓':''}</span></button>)}</div>
      <div className="chakra-crop-when"><label>{lang==='es'?'¿En qué mes lo sembraste?':'When did you plant it?'}
