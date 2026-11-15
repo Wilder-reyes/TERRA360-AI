@@ -6,10 +6,10 @@ test.beforeEach(async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))
 })
 
-test('starts near Barranca without silently selecting a farm and accepts coordinates',async({page})=>{
+test('starts with a clearly labeled Barranca study example and accepts other coordinates',async({page})=>{
  await page.goto('/')
- await expect(page.locator('.b-field-ready')).toHaveCount(0)
- await expect(page.getByRole('button',{name:'Marcar mi chacra'})).toBeVisible()
+ await expect(page.locator('.b-field-ready')).toHaveCount(1)
+ await expect(page.getByRole('button',{name:'Delimitar otro terreno'})).toBeVisible()
  await page.getByText('Buscar por coordenadas').click()
  await page.getByRole('spinbutton',{name:'Latitud',exact:true}).fill('-10.738')
  await page.getByRole('spinbutton',{name:'Longitud',exact:true}).fill('-77.729')

@@ -37,29 +37,42 @@ test.beforeEach(async({page})=>{
 async function selectedField(page:import('@playwright/test').Page){await page.goto('/');await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()}
 async function context(page:import('@playwright/test').Page){await selectedField(page);await page.getByText('Datos ambientales y satélite (opcional)',{exact:true}).click();await page.getByRole('button',{name:'Consultar datos del terreno'}).click()}
 async function cropReference(page:import('@playwright/test').Page){
- await selectedField(page);await page.getByRole('button',{name:'Continuar',exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('camote');await page.getByRole('button',{name:'Buscar en catálogo'}).click();await page.getByRole('button',{name:'Camote · Ipomoea batatas'}).click();await page.getByRole('button',{name:'Revisar referencia regional'}).click()
+ await selectedField(page);await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click();await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('camote');await page.getByRole('button',{name:'Buscar en catálogo'}).click();await page.getByRole('button',{name:'Camote · Ipomoea batatas'}).click();await page.getByRole('button',{name:'Revisar referencia regional'}).click()
 }
 test('regional climate is available inside Mi terreno with incomplete-period disclosure',async({page})=>{
  await context(page)
  await expect(page.getByRole('region',{name:'Clima histórico'})).toContainText('3.7 mm')
  await expect(page.getByRole('region',{name:'Clima histórico'})).toContainText('21.1 °C')
  await expect(page.getByText(/los periodos incompletos no son totales anuales/)).toBeVisible()
- await expect(page.locator('.b-progress button')).toHaveCount(4)
+ await expect(page.locator('.b-progress button')).toHaveCount(3)
  await expect(page.getByText(/Elevación aproximada: 120.0 m/)).toBeVisible()
 })
 test('searched crop reference does not become declared crop history or suitability ranking',async({page})=>{
  await cropReference(page)
  await expect(page.getByText(/La temperatura regional coincide/)).toBeVisible()
  await expect(page.getByText(/NO recomendaciones de siembra/)).toBeVisible()
- await expect(page.getByText('Todavía no has agregado cultivos.')).toBeVisible()
- await expect(page.getByRole('button',{name:'Continuar',exact:true})).toBeDisabled()
+ await expect(page.locator('.chakra-zone-choice')).toContainText(['Por registrar'])
+ await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
 })
-test('farm plan retains a native print entry point and A4 report',async({page})=>{
+test('zone-by-zone PDF uses the native print entry point and a geometric map',async({page})=>{
  await page.addInitScript(()=>{(window as any).__printed=0;window.print=()=>{(window as any).__printed++}})
- await page.route('**/api/rotation/compare',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({status:'partial',strategies:[],recommended_strategy_id:null})}))
- await selectedField(page);await page.getByRole('button',{name:'Continuar',exact:true}).click();await page.getByRole('button',{name:'Agregar cultivo',exact:true}).click();await page.getByRole('button',{name:'Continuar',exact:true}).click();await page.getByRole('button',{name:'Ver mi plan',exact:true}).click()
- await page.getByRole('button',{name:'Imprimir o guardar PDF'}).click();await expect.poll(()=>page.evaluate(()=>(window as any).__printed)).toBe(1)
- await page.emulateMedia({media:'print'});await expect(page.locator('.b-print-report')).toBeVisible()
+ await page.route('**/api/rotation/spatial-plan',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({
+  status:'prepared',parcel_area_ha:2.25,scope:'barranca_reference',ai_status:'agronomic_rule_engine',
+  climate_status:'reference_rules',disclaimer_es:'Revisar con asesor local.',sources:['FAO-56'],
+  zone_plans:[{zone_id:'rest',area_ha:2.25,current_crop:'Camote',current_crop_id:'camote',
+   suggested_crop:'Vainita',suggested_crop_id:'vainita',sow_month:'2027-01',sow_label_es:'enero de 2027',
+   estimated_cycle_days:100,why_es:'Rotación familiar.',how_es:['Revisar agua','Preparar suelo','Sembrar','Seguir etapas'],
+   reference_water_mm:null,sowing_window_scope:'lima_reference',source_tags:['FAO-56']}]
+ })}))
+ await selectedField(page)
+ await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
+ await page.getByRole('button',{name:'Guardar cultivo de esta zona'}).click()
+ await page.getByRole('button',{name:'Preparar mi plan'}).click()
+ await page.getByRole('button',{name:'Imprimir mapa y plan PDF'}).click()
+ await expect.poll(()=>page.evaluate(()=>(window as any).__printed)).toBe(1)
+ await page.emulateMedia({media:'print'})
+ await expect(page.locator('.chakra-spatial-print')).toBeVisible()
+ await expect(page.locator('.chakra-spatial-print svg')).toHaveCount(1)
 })
 test('mobile crop reference works without requiring a photo or artificial vision',async({page})=>{
  await page.setViewportSize({width:390,height:844});await cropReference(page)
@@ -79,13 +92,17 @@ test('release describes the unified application with no published-site dependenc
 })
 test('NASA GIBS layers and POWER figures keep distinct regional provenance',async({page})=>{
  await context(page);await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()
- await expect(page.locator('img[src*="gibs.earthdata.nasa.gov"][src*="IMERG_Precipitation_Rate"]').first()).toBeAttached()
- await expect(page.getByText(/La imagen no mide lluvia dentro de la chacra/)).toBeVisible()
- await page.getByRole('button',{name:'Vegetación NASA',exact:true}).click();await expect(page.locator('img[src*="gibs.earthdata.nasa.gov"][src*="MODIS_Terra_NDVI_8Day"]').first()).toBeAttached()
+ const sources=page.getByRole('region',{name:'Procedencia de la capa NASA'})
+ await sources.getByText('Detalles de esta capa NASA').click()
+ await expect(sources).toContainText('GPM IMERG')
+ await expect(sources.locator('img[src*="gibs.earthdata.nasa.gov"]')).toBeAttached()
+ await page.getByText('Más capas y herramientas').click()
+ await page.getByRole('button',{name:'Vegetación regional'}).click()
+ await expect(sources).toContainText('MODIS Terra NDVI 8-Day')
  await expect(page.getByRole('region',{name:'Clima histórico'})).toContainText('NASA POWER')
 })
 test('mobile map controls stay usable without a separate dashboard page',async({page})=>{
- await page.setViewportSize({width:375,height:812});await page.goto('/');await expect(page.locator('.b-map')).toBeVisible();await page.getByRole('button',{name:'Marcar mi chacra'}).click();await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeDisabled();await page.getByRole('button',{name:'Cancelar',exact:true}).click()
+ await page.setViewportSize({width:375,height:812});await page.goto('/');await expect(page.locator('.b-map')).toBeVisible();await page.getByRole('button',{name:'Delimitar otro terreno'}).click();await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeDisabled();await page.getByRole('button',{name:'Cancelar',exact:true}).click()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(376)
  await expect(page.locator('a[href*="vista="]')).toHaveCount(0)
 })

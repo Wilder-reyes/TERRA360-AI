@@ -3,16 +3,12 @@ import './bio-tour.css'
 
 type Lang='es'|'en'
 const STEPS=[
- {target:'bio-hero',title:{es:'¡Bienvenido a CHAKRA!',en:'Welcome to CHAKRA!'},
-  body:{es:'Hola, soy BIO. Primero veremos el terreno. Después anotarás tus cultivos y compararás opciones para sembrar.',en:"Hello! I'm BIO. I will guide you through exploring a field and planning possible crop rotations."}},
- {target:'bio-map',title:{es:'Ubica tu terreno',en:'Find your field'},
-  body:{es:'Elige la parcela de estudio de Barranca o marca otra de la zona. El ejemplo solo se selecciona cuando tú lo eliges.',en:'Choose the Barranca study field or mark another field nearby. The example is selected only when you choose it.'}},
- {target:'bio-layers',title:{es:'Explora las capas NASA',en:'Explore NASA layers'},
-  body:{es:'Elige vegetación o lluvia y consulta su leyenda. Los datos regionales no son mediciones exactas de una chacra.',en:'Choose vegetation or rain and read the legend. Regional data are not exact farm measurements.'}},
- {target:'bio-steps',title:{es:'Tus cultivos y prioridades',en:'Your crops and priorities'},
-  body:{es:'Después de marcar tu parcela, anota lo que sembraste y elige si priorizas agua, suelo o ambos. Cada paso aparece en este recorrido.',en:'After selecting the field, enter previous crops and choose whether water, soil or both matter most. Follow the steps shown here.'}},
- {target:'bio-next',title:{es:'Prepara tu plan',en:'Build your plan'},
-  body:{es:'Pulsa «Continuar» después de marcar el terreno. Al final podrás comparar opciones y revisar riesgos y fuentes.',en:'Tap Continue after marking your field. At the end you can compare options and review risks and evidence.'}}
+  {target:'bio-map',title:{es:'1. Delimita tu terreno',en:'1. Outline your field'},
+   body:{es:'Barranca sirve como ejemplo. Puedes buscar otro lugar o marcar tu propia parcela en el mapa.',en:'Barranca is the example. Find another place or outline your own field on the map.'}},
+  {target:'bio-steps',title:{es:'2. Registra tus cultivos',en:'2. Record your crops'},
+   body:{es:'Dibuja zonas y anota qué sembraste en cada una. Las tarjetas facilitan reconocer cada cultivo.',en:'Draw zones and record what you grew in each one using the crop cards.'}},
+  {target:'bio-next',title:{es:'3. Revisa tu plan',en:'3. Review your plan'},
+   body:{es:'Verás qué cultivar, dónde y cuándo. Imprime el mapa y las tareas de cada zona.',en:'See what to grow, where and when. Print the map and tasks for each area.'}}
 ] as const
 const KEY='biotex-bio-intro-v1'
 
@@ -31,7 +27,7 @@ function BioMascot(){return <svg className="bio-mascot" viewBox="0 0 112 154" ar
  <text x="56" y="111" textAnchor="middle" fill="#386f48" fontWeight="900" fontFamily="system-ui" fontSize="15">BIO</text>
  </svg>}
 export default function BioTour({lang='es'}:{lang?:Lang}){
- const [open,setOpen]=useState(()=>{try{return window.localStorage.getItem(KEY)!=='complete'}catch{return true}})
+ const [open,setOpen]=useState(false)
  const [index,setIndex]=useState(0)
  const [target,setTarget]=useState<string|null>(null)
  useEffect(()=>{
