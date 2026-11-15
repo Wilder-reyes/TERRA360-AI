@@ -22,7 +22,7 @@ import './chakra.css'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
 import ChakraZonePlan,{ChakraZonePrint,type ChakraSpatialPlan} from './ChakraZonePlan'
-import StrategyCompare,{StrategyComparePrint,type CompareStrategy} from './StrategyCompare'
+import StrategyCompare,{StrategyComparePrint,type CompareStrategy,type MaizeShare} from './StrategyCompare'
 import BARRANCA_EXAMPLE from './barrancaExampleResult.json'
 const FieldEvidence=lazy(()=>import('./FieldEvidence'))
 const CropReference=lazy(()=>import('./CropReference'))
@@ -798,7 +798,8 @@ export default function BiotexFarmerApp(){
     lang={lang} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
    {step===2&&precomputedAt&&<p role="note" className="chakra-strategy-scope">{lang==='es'?'Resultado precalculado del ejemplo de Barranca ('+precomputedAt.slice(0,10)+'): el servidor no respondió a tiempo. Son los mismos cálculos del motor CHAKRA.':'Precomputed result for the Barranca example ('+precomputedAt.slice(0,10)+'): the server did not answer in time. Same CHAKRA engine calculations.'}</p>}
    {step===2&&spatialPlan&&field&&<StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}
-    crop={id=>labelCrop(id,lang)} busy={compareBusy} error={compareError} outOfScope={!province} onRetry={()=>void compareZones()}/>}
+    crop={id=>labelCrop(id,lang)} busy={compareBusy} error={compareError} outOfScope={!province} onRetry={()=>void compareZones()}
+    maize={(result as unknown as {maize_low_river_share?:MaizeShare}|null)?.maize_low_river_share||null} upperBasin={result?.upper_basin_rain||null}/>}
    {step===2&&spatialPlan&&result?.ai_analysis&&<FarmerAIEvidence ai={result.ai_analysis} lang={lang}/>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
