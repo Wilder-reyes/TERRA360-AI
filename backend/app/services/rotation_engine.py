@@ -676,6 +676,7 @@ def highlight_for_farmer(strategies: list[dict], priorities: dict,
             "recommendation_reason_es": "Con lo que sabemos, ninguna opción ofrece una mejora suficientemente clara.",
             "recommendation_reason_en": "Based on the available data, no option offers a sufficiently clear improvement.",
             "recommendation_confidence": "insufficient",
+            "ai_weighted": bool(ai_bare_risk and soil_weight > 0),
         }
     _, chosen, water_difference, cover_gain = max(
         candidates, key=lambda x: (x[0], -int(x[1][1:])))
@@ -709,7 +710,7 @@ def highlight_for_farmer(strategies: list[dict], priorities: dict,
                                      if ai_bare_risk else "")
                                   + "scarce-water and +25% safety guards. No measured irrigation, "
                                   "harvest-yield or economic predictions."),
-        "ai_weighted": bool(ai_bare_risk),
+        "ai_weighted": bool(ai_bare_risk and soil_weight > 0),
     }
 
 
