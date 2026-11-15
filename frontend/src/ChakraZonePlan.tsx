@@ -48,7 +48,7 @@ export function ChakraZoneSketch({field,subplots,plan,lang,month}:{field:GeoPoly
   <svg viewBox="0 0 600 340" role="img" aria-label={es?'Mapa de cultivos por zonas':'Crop map by area'}>
    <title>{es?'Distribución espacial del terreno':'Field spatial layout'}</title>
    <rect width="600" height="340" rx="20" fill="#152519"/>
-   <polygon points={geometry.field} fill={restVisual.color} fillOpacity=".9" stroke="#D6F866" strokeWidth="5" strokeLinejoin="round"/>
+   <polygon points={geometry.field} fill={restVisual.color} fillOpacity={rest?'.9':'0'} stroke="#D6F866" strokeWidth="5" strokeLinejoin="round"/>
    {rest&&subplots.length===0&&<text x={restPos.x} y={restPos.y} textAnchor="middle" fill="#142b1c" fontSize="21" fontWeight="800">{restCrop?(es?restCrop.nameEs:restCrop.nameEn):''}</text>}
    {subplots.map((sub,i)=>{
     const row=plan.zone_plans.find(p=>p.zone_id===sub.id),current=row?suggestedFor(row,month):null
@@ -94,10 +94,10 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
   <ChakraRotationTimeline plan={plan} lang={lang} monthIndex={monthIndex} onMonth={setMonthIndex}/>
   <div className="chakra-result-advice">{plan.zone_plans.map((row,i)=><article className="chakra-advice-card" key={row.zone_id}>
    <header><span className="chakra-advice-zone"><i style={{background:shade(i)}}/>{label(row.zone_id,es,i)} · {areaName(row.area_ha,es)}</span><span className="chakra-advice-current">{es?'Antes':'Current'}: {localizedCrop(row.current_crop,row.current_crop_en,es)}</span></header>
-   <h2>{localizedCrop(row.suggested_crop,row.suggested_crop_en,es)}</h2>
-   <div className="chakra-advice-when"><span>{es?'CUÁNDO SEMBRAR':'WHEN TO PLANT'}</span><strong>{localizedDate(row,es)}</strong></div>
+   <h2><span aria-hidden="true">{cropVisual(row.suggested_crop_id).icon} </span>{localizedCrop(row.suggested_crop,row.suggested_crop_en,es)}</h2>
+   <div className="chakra-advice-when"><span aria-hidden="true">🗓️ </span><span>{es?'CUÁNDO SEMBRAR':'WHEN TO PLANT'}</span><strong>{localizedDate(row,es)}</strong></div>
    <p>{!es&&row.why_en?row.why_en:row.why_es}</p>
-   <details><summary>{es?'Cómo prepararlo, paso a paso':'How to prepare the planting'}</summary><ol>{(!es&&row.how_en?row.how_en:row.how_es).map((line,j)=><li key={j}>{line}</li>)}</ol></details>
+   <details open><summary>{es?'🌱 Cómo prepararlo, paso a paso':'How to prepare the planting'}</summary><ol>{(!es&&row.how_en?row.how_en:row.how_es).map((line,j)=><li key={j}>{line}</li>)}</ol></details>
   </article>)}</div>
   <div className="chakra-result-actions"><button type="button" className="b-btn b-btn-primary" onClick={onPrint}>{es?'Guardar mi plan':'Save my plan'}</button>
    <button type="button" className="b-btn b-btn-light" onClick={onEdit}>{es?'Editar mis cultivos':'Edit my crops'}</button></div>
@@ -117,8 +117,8 @@ export function ChakraZonePrint({plan,field,subplots,lang,place,extra}:{
   {plan.zone_plans.map((row,i)=><section className="chakra-print-zone" key={row.zone_id}>
    <h2><span style={{background:shade(i)}}/> {label(row.zone_id,es,i)} ({areaName(row.area_ha,es)})</h2>
    <p><strong>{es?'Cultivo registrado':'Current crop'}:</strong> {localizedCrop(row.current_crop,row.current_crop_en,es)}</p>
-   <p><strong>{es?'Próximo cultivo a evaluar':'Crop to consider'}:</strong> {localizedCrop(row.suggested_crop,row.suggested_crop_en,es)}</p>
-   <p><strong>{es?'Siembra orientativa':'Reference sowing'}:</strong> {localizedDate(row,es)}</p>
+   <p><strong>🌱 {es?'Próximo cultivo a evaluar':'Crop to consider'}:</strong> {localizedCrop(row.suggested_crop,row.suggested_crop_en,es)}</p>
+   <p><strong>🗓️ {es?'Siembra orientativa':'Reference sowing'}:</strong> {localizedDate(row,es)}</p>
    <p>{!es&&row.why_en?row.why_en:row.why_es}</p>
    <ol>{(!es&&row.how_en?row.how_en:row.how_es).map((s,j)=><li key={j}>{s}</li>)}</ol>
   </section>)}
@@ -131,7 +131,7 @@ export function ChakraZonePrint({plan,field,subplots,lang,place,extra}:{
       <th>{zoneLabel(row.zone_id,es,i)}<small>{es?'Antes: ':'Previously: '}{es?row.current_crop:row.current_crop_en||row.current_crop}</small></th>
       {[0,1,2,3].map(q=>{
        const cells=quarterCrops(row,quarterMonths(slots,q))
-       return <td key={q}>{cells.length?cells.map(c=>{const v=cropVisual(c.crop_id);return <span key={c.when} style={{background:v.color}}>{es?c.label:c.label_en} · {c.continues?(es?'Continúa':'Ongoing'):displayMonth(c.when,lang)}</span>}):'—'}</td>
+       return <td key={q}>{cells.length?cells.map(c=>{const v=cropVisual(c.crop_id);return <span key={c.when} style={{background:v.color}}>{es?c.label:c.label_en} · {c.continues?(es?'Continúa':'Ongoing'):displayMonth(c.when,lang)}</span>} ):(es?'Sin siembra programada':'No planting scheduled')}</td>
       })}
      </tr>)}</tbody></table>
    </section>
