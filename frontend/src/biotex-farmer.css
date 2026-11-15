@@ -315,3 +315,19 @@
 @media print{
  .b-sequence,.b-satellite-gallery,.b-map-view,.b-year-control{display:none!important}
 }
+
+/* Optional farm observations - secondary to the three main choices. */
+.b-farm-evidence{margin-top:22px;border-top:1px solid #e1ebe4;padding-top:17px}
+.b-farm-evidence summary{cursor:pointer;color:#215e45;font-weight:800;min-height:48px;display:flex;align-items:center}
+.b-farm-evidence>p{color:#526a5a;font-size:.89rem;margin:5px 0 12px}
+.b-farm-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.b-farm-fields label{display:flex;flex-direction:column;gap:7px}
+.b-farm-fields input,.b-farm-fields select{min-height:48px;padding:9px 12px;border:1.5px solid #abc7b2;border-radius:10px;background:#fff;color:#1b4130;width:100%}
+.b-save-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0}
+.b-save-actions p{margin:0;font-size:.87rem;color:#526d59}
+.b-save-actions button,.b-save-actions a{font-weight:730}
+.b-farm-recovery{border:1px dashed #a6cfb3;border-radius:12px;padding:11px 13px;margin-top:16px;background:#f7fbf7}
+.b-farm-recovery button{background:#fff;border:1px solid #bbd7c5;border-radius:10px;padding:10px 14px;min-height:44px;color:#1a6045;font-weight:760}
+.b-report-map-outline{float:right;width:95px;height:78px;margin:0 0 6px 10px;stroke:#1c6645;fill:#e0efe6}
+.b-print-crop-note{font-size:8.5pt;color:#496555}
+@media(max-width:620px){.b-farm-fields{grid-template-columns:1fr}}
