@@ -13,8 +13,8 @@
     "Frontend prepared for a NEW Vercel project importing the EXISTING GitHub repository; FastAPI hosted separately"
   ],
   "computer_vision_enabled": false,
-  "environment": "github_publication_pending",
-  "source_branch": "main_to_be_updated_from_stage_0_to_8_package",
+  "environment": "github_candidate_no_deployment",
+  "source_branch": "main",
   "notes": "No production deployment verified. Geographic scope is explicit; only Barranca validated HLS model is trained. Chalhuas has no locally evaluated AI, no guaranteed yields, water savings, soil fertility or identified crops.",
   "ai_model": "trained_nasa_hls_44_observations_barranca_1",
   "ai_model_status": "barranca_hls_chronological_holdout_11_only",
@@ -27,7 +27,7 @@
     "mantaro": "exploratory_no_local_ai_model"
   },
   "deployment_ready": false,
-  "deployment_readiness_reason": "Complete npm build, Playwright, Docker/backend API and real NASA source checks in CI before production. Configure a new backend HTTPS origin.",
+  "deployment_readiness_reason": "Production deployment is not authorized. Configure a new backend HTTPS origin and verify live scientific sources before production.",
   "ai_barranca_holdout": {
     "test_observations": 11,
     "accuracy_percent": 63.6364,

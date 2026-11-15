@@ -61,7 +61,7 @@ test('four campaign comparison is explicit and maps colored illustrative subplot
  await expect(page.locator('.c-map .leaflet-interactive')).not.toHaveCount(0)
  await page.getByRole('button',{name:'2029'}).click()
  await expect(page.getByRole('button',{name:'2029'})).toHaveAttribute('aria-pressed','true')
- await expect(page.getByText(/ASIGNACIÓN PROPUESTA/)).toBeVisible()
+ await expect(page.getByText(/ASIGNACIONES PROPUESTAS/)).toBeVisible()
  await expect(page.getByRole('button',{name:'Imprimir / PDF'})).toBeVisible()
  await page.getByRole('button',{name:'Guardar en este dispositivo'}).click()
  await page.reload()

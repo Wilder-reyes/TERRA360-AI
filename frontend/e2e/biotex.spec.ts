@@ -246,11 +246,11 @@ test('mobile redesign offers sample before map and never overflows',async({page}
 
 test('release keeps science v0.26 and makes visual redesign identifiable',async({page})=>{
  await page.goto('/')
- await expect(page.locator('meta[name="biotex-ui-release"]')).toHaveAttribute('content','stage-1-unified-workflow')
+ await expect(page.locator('meta[name="biotex-ui-release"]')).toHaveAttribute('content','stages-2-through-8-integrated')
  const res=await page.request.get('/release.json')
  const data=await res.json()
- expect(data.release).toBe('v0.26-hls-trained-ai-barranca')
- expect(data.ui_release).toBe('stage-1-unified-workflow')
+ expect(data.release).toBe('stage-8-preview-candidate')
+ expect(data.ui_release).toBe('stages-2-through-8-integrated')
  expect(data.primary_url).toBeUndefined()
  expect(data.regional_profiles.mantaro).toBe('exploratory_no_local_ai_model')
 })

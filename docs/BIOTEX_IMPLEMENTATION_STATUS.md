@@ -153,3 +153,8 @@ Destino: Wilder-reyes/TERRA360-AI, base main 28359f896e305e1656884e99cef664b92a7
 - Playwright local bloqueado por socket() Operation not permitted al arrancar Chromium; no es un resultado de pruebas funcionales. Docker no está instalado. Verificar ambos en GitHub Actions antes de limpiar ramas.
 - Respaldo Git de todas las ramas: BIOTEX-branches-20261115.bundle, verificado con git bundle verify. Mantener main, David y ramas de PR abiertos (#20 y #33).
 - Commit correspondiente: commit que incorpora esta sección (git log -- docs/BIOTEX_IMPLEMENTATION_STATUS.md).
+
+### Controles remotos de la publicación
+
+Commit b101c21919f3dcee04b1dfe4a26d66c8ccaea041: quality checks (backend 266, frontend 39, build y Docker) y HLS reproducible aprobados. Playwright: 39/43; cuatro expectativas de versión/copy heredadas del paquete se actualizan al contrato actual (stage-8, advertencia IMERG y asignaciones propuestas). No se omiten pruebas.
+Respaldo duradero: BIOTEX-branches-20261115.bundle, libfile_44a6cac587388191ab6b8a9e07154504. Ninguna rama eliminada: autenticación adicional de Google bloqueada por revisión automática del navegador; continuar requiere autorización de ese origen.

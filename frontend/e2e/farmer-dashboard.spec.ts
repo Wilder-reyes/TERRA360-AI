@@ -75,12 +75,12 @@ test('missing NASA data remains unknown and catalogue review never invents plant
 })
 test('release describes the unified application with no published-site dependency',async({page})=>{
  await page.goto('/');await expect(page).toHaveTitle('BIOTEX | Tu chacra y tu plan de siembra')
- const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('v0.26-hls-trained-ai-barranca');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('stage-1-unified-workflow')
+ const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('stage-8-preview-candidate');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('stages-2-through-8-integrated')
 })
 test('NASA GIBS layers and POWER figures keep distinct regional provenance',async({page})=>{
  await context(page);await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()
  await expect(page.locator('img[src*="gibs.earthdata.nasa.gov"][src*="IMERG_Precipitation_Rate"]').first()).toBeAttached()
- await expect(page.getByText(/No es una medida exacta de tu chacra/)).toBeVisible()
+ await expect(page.getByText(/La imagen no mide lluvia dentro de la chacra/)).toBeVisible()
  await page.getByRole('button',{name:'Vegetación NASA',exact:true}).click();await expect(page.locator('img[src*="gibs.earthdata.nasa.gov"][src*="MODIS_Terra_NDVI_8Day"]').first()).toBeAttached()
  await expect(page.getByRole('region',{name:'Clima histórico'})).toContainText('NASA POWER')
 })
