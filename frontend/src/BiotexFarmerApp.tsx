@@ -11,6 +11,7 @@ import FarmDecisionEvidence,{type EconomicReport} from './FarmDecisionEvidence'
 import FarmerAIEvidence,{type AIEvidence} from './FarmerAIEvidence'
 import './biotex-farmer.css'
 import BioTour from './BioTour'
+import ChakraInfoPage from './ChakraInfoPage'
 import {CropPhotoGuide} from './CropPhotoGuide'
 import {parseGeoJSONPolygon} from './geometry'
 import {imergApproxCell} from './imerg-grid'
@@ -21,6 +22,7 @@ import './agricultural-dark.css'
 import './chakra.css'
 import './chakra-light.css'
 import './chakra-ppt-flow.css'
+import './chakra-farmer-v3.css'
 import {cropVisual} from './chakraCropVisuals'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
@@ -239,7 +241,18 @@ export default function BiotexFarmerApp(){
  const t=LABELS[lang]
  const [step,setStep]=useState<Step>(0)
  const [landing,setLanding]=useState(true)
- const [activeNav,setActiveNav]=useState<'how'|'sources'|null>(null)
+ const [infoPage,setInfoPage]=useState<'how'|'sources'|null>(()=>{
+  const p=window.location.pathname;return p==='/como-funciona'?'how':p==='/fuentes'?'sources':null
+ })
+ useEffect(()=>{
+  const onPop=()=>{const p=window.location.pathname;setInfoPage(p==='/como-funciona'?'how':p==='/fuentes'?'sources':null)}
+  window.addEventListener('popstate',onPop);return()=>window.removeEventListener('popstate',onPop)
+ },[])
+ function showPage(page:'how'|'sources'|null){
+  const path=page==='how'?'/como-funciona':page==='sources'?'/fuentes':'/'
+  if(window.location.pathname!==path)window.history.pushState({},'',path+window.location.search)
+  setInfoPage(page);window.scrollTo({top:0,behavior:'auto'})
+ }
  const [place,setPlace]=useState('Barranca · Pativilca / Supe')
  const [centre,setCentre]=useState<Point>(centroid(BARRANCA_FIELD.polygon))
  const [query,setQuery]=useState('')
@@ -287,7 +300,7 @@ export default function BiotexFarmerApp(){
  const [planError,setPlanError]=useState('')
  const [economicReport,setEconomicReport]=useState<EconomicReport|null>(null)
  const [otherOpen,setOtherOpen]=useState(false)
- const [mapLayer,setMapLayer]=useState<BaseOrScienceLayer>('hls')
+ const [mapLayer,setMapLayer]=useState<BaseOrScienceLayer>('photo')
  const [mapDate,setMapDate]=useState(()=>new Date(Date.now()-7*86400000).toISOString().slice(0,10))
  const [mapOpacity,setMapOpacity]=useState(.72)
  const [mapLayerFailed,setMapLayerFailed]=useState(false)
@@ -676,23 +689,27 @@ export default function BiotexFarmerApp(){
    {economicReport.strategies.map(x=><p key={x.strategy_id}><strong>{x.strategy_id==='S0'?t.current:x.strategy_id}:</strong> {x.margin_soles_ha_24months==null?(lang==='es'?'Datos incompletos':'Incomplete inputs'):'S/ '+x.margin_soles_ha_24months.toLocaleString(lang==='es'?'es-PE':'en-US')}</p>)}
   </div>}
   <p>{sampleNote?(lang==='es'?'Terreno mostrado para demostración; los cultivos registrados fueron proporcionados durante esta sesión.':'Field used for demonstration; crop inputs were supplied during this session.'):''}</p></div></div>}
- return <div className={'b-app '+(spatialPlan?'chakra-has-zone-print':'')}>
+ if(infoPage)return <ChakraInfoPage page={infoPage} lang={lang} onBack={()=>showPage(null)} onNavigate={showPage}/>
+ return <div className={'b-app chakra-farmer-clean '+(spatialPlan?'chakra-has-zone-print':'')}>
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
   <header className="b-header"><div className="b-header-inner">
- <button type="button" className="b-brand" aria-label={lang==='es'?'Inicio CHAKRA':'CHAKRA home'} onClick={()=>{navigate(0);setLanding(true)}}><span className="b-brand-mark"><ChakraMark/></span><div><b>chakra</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></button>
- <nav className="chakra-nav" aria-label={lang==='es'?'Navegación principal':'Main navigation'}>{landing?<><a href="#chakra-how" aria-current={activeNav==='how'?'location':undefined} onClick={()=>setActiveNav('how')}>{lang==='es'?'Cómo funciona':'How it works'}</a><a href="#chakra-sources" aria-current={activeNav==='sources'?'location':undefined} onClick={()=>setActiveNav('sources')}>{lang==='es'?'Fuentes':'Sources'}</a></>:<button type="button" onClick={()=>{navigate(0);setLanding(true)}}>{lang==='es'?'Inicio':'Home'}</button>}</nav>
+ <button type="button" className="b-brand" aria-label={lang==='es'?'Inicio CHAKRA':'CHAKRA home'} onClick={()=>{showPage(null);navigate(0);setLanding(true)}}><span className="b-brand-mark"><ChakraMark/></span><div><b>chakra</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></button>
+ <nav className="chakra-nav" aria-label={lang==='es'?'Navegación principal':'Main navigation'}>
+ <a href="/como-funciona" onClick={e=>{e.preventDefault();showPage('how')}}>{lang==='es'?'Cómo funciona':'How it works'}</a>
+ <a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a>
+ </nav>
  <div className="b-header-tools"><button className="chakra-nav-cta" aria-label={lang==='es'?'Ver mapa de Barranca':'Open Barranca map'} onClick={()=>{setLanding(false);navigate(0);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}}><span className="chakra-nav-long">{lang==='es'?'Ver mapa de Barranca':'Open Barranca map'}</span><span className="chakra-nav-short" aria-hidden="true">{lang==='es'?'Mapa':'Map'}</span><Icon name="right" size={16}/></button>
  <button type="button" className="chakra-theme-toggle" aria-pressed={theme==='light'} aria-label={theme==='light'?(lang==='es'?'Cambiar a modo oscuro':'Switch to dark mode'):(lang==='es'?'Cambiar a modo claro':'Switch to light mode')} title={theme==='light'?'Dark':'Light'} onClick={()=>setTheme(v=>v==='light'?'dark':'light')}>{theme==='light'?'☾':'☀'}</button>
  <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></div></header>
   <div className="chakra-background" aria-hidden="true"><img src="/chakra-fields.webp" alt=""/><div/></div>
   <main id="main" className={'b-main '+(landing&&step===0?'chakra-home':'chakra-workspace')}>
-   {landing&&step===0&&<ChakraLanding lang={lang} onStart={()=>{setExample(BARRANCA_FIELD);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}} onMap={()=>{changeArea();setDrawing(true);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}}/>}
+   {landing&&step===0&&<ChakraLanding lang={lang} onStart={()=>{setLanding(false);setExample(BARRANCA_FIELD);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}} onMap={()=>{setLanding(false);changeArea();setDrawing(true);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}}/>}
   <div className="b-progress-wrap"><div className="b-progress-shell"><div className="b-progress-label"><span>{lang==='es'?'Tu recorrido':'Your journey'}</span><strong>{lang==='es'?'Paso '+(Math.min(step,2)+1)+' de 3':'Step '+(Math.min(step,2)+1)+' of 3'}</strong></div>
 <nav className="b-progress" data-bio-target="bio-steps" aria-label={lang==='es'?'Progreso del plan':'Plan progress'}>{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div></div>
 
    {step===0&&<section id="chakra-field" className="b-layout">
     <div className="b-intro b-hero-intro" data-bio-target={landing?undefined:"bio-hero"}><div className="b-hero-copy">
-<span className="b-eyebrow"><span className="b-hero-spark" aria-hidden="true"/>{lang==='es'?'DATOS NASA · PARCELA DE ESTUDIO':'FARMING WITH NASA EVIDENCE'}</span>
+<span className="b-eyebrow"><span className="b-hero-spark" aria-hidden="true"/>{lang==='es'?'PASO 1 · MI TERRENO':'STEP 1 · MY FIELD'}</span>
 <h1>{t.title}</h1><p>{t.subtitle}</p>
 <div className="b-hero-promise"><span><Icon name="check" size={16}/>{lang==='es'?'Sin conocimientos técnicos':'No technical skills needed'}</span><span><Icon name="check" size={16}/>{lang==='es'?'Sin crear una cuenta':'No account required'}</span></div>
 </div></div>
@@ -788,10 +805,10 @@ export default function BiotexFarmerApp(){
    </section>}
    {step===1&&field&&<section className="b-form-page chakra-zone-page">
     <div className="b-intro"><span className="b-eyebrow">{lang==='es'?'PASO 2 DE 3':'STEP 2 OF 3'}</span>
-     <h1>{lang==='es'?'¿Qué sembraste y en qué parte?':'What did you plant and where?'}</h1>
-     <p>{lang==='es'?'Toca una zona, elige su cultivo y registra el mes. Puedes dibujar tantas zonas como necesites.':'Choose an area, its crop and planting month. Draw other zones as needed.'}</p></div>
-    <div className="chakra-zone-map-wrap">
-     <div className="chakra-zone-map-frame"><MapContainer center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
+     <h1>{lang==='es'?'Muéstranos qué sembraste':'Show what you planted'}</h1>
+     <p>{lang==='es'?'Elige un cultivo y márcalo en la parte del terreno donde creció. Si sembraste productos distintos, divide la parcela en zonas.':'Choose a crop and mark where it grew. Divide your field into areas if you planted different crops.'}</p></div>
+    <div className="chakra-zone-map-wrap" data-bio-target="bio-zone-map">
+     <div className="chakra-zone-map-frame" id="chakra-zone-map"><MapContainer center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
       <ZoneDropBridge field={field} subplots={subplots} onAssign={assignZoneCrop}/>
       <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
       <FlyTo point={point} polygon={mapPolygon}/>
@@ -812,26 +829,26 @@ export default function BiotexFarmerApp(){
        <button className="b-btn b-btn-light" type="button" disabled={!points.length} onClick={()=>setPoints(v=>v.slice(0,-1))}>{t.undo}</button>
        <button className="b-btn b-btn-primary" type="button" disabled={points.length<3} onClick={finish}>{lang==='es'?'Guardar zona':'Save zone'}</button>
        <button className="b-btn b-btn-light" type="button" onClick={()=>{setDrawingSubplot(false);setPoints([])}}>{t.cancel}</button></>:
-       <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={()=>{setDrawingSubplot(true);setPoints([]);setFieldError('')}}>{lang==='es'?'+ Dibujar otra zona':'+ Draw another area'}</button>}
+       <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={()=>{setDrawingSubplot(true);setPoints([]);setFieldError('')}}>{lang==='es'?'+ Dividir el terreno en zonas':'+ Divide field into areas'}</button>}
      </div>
-     <p className="chakra-zone-map-note">{lang==='es'?'Borde verde: tu terreno. Cada color representa un cultivo que tú registras.':'Lime border: your field. Each color represents a crop you record.'}</p>
+     <p className="chakra-zone-map-note">{lang==='es'?'Toca la zona donde sembraste el cultivo elegido.':'Tap the area where you planted your selected crop.'}</p>
     </div>
     {fieldError&&<p className="b-error" role="alert">{fieldError}</p>}
-    <div className="chakra-zones-heading"><h2>{lang==='es'?'¿Dónde sembraste?':'Where did you plant?'}</h2><span>{assignedCount}/{availableZones.length} {lang==='es'?'zonas registradas':'areas recorded'}</span></div>
+    <div className="chakra-zones-heading"><h2>{lang==='es'?'Mis zonas':'My areas'}</h2><span>{assignedCount}/{availableZones.length} {lang==='es'?'zonas registradas':'areas recorded'}</span></div>
     <div className="chakra-zone-choices">{availableZones.map(z=><button className={'chakra-zone-choice '+(selectedZone===z.id?'chosen':'')} type="button" key={z.id} aria-pressed={selectedZone===z.id}
      onClick={()=>{setActiveZone(z.id);const previous=zoneCrops[z.id];if(previous){setCrop(previous.crop_id);const idx=relativeMonthIndex(previous.planted_month,baseYear);if(idx>=0&&idx<36)setCropMonth(idx)}}}>
-     <span>{z.id==='rest'?(lang==='es'?'Resto del terreno':'Remaining field'):(lang==='en'?z.id.replace(/^Subparcela /,'Area '):z.id)}</span><small>{z.ha.toFixed(2)} ha</small>
+     <span>{z.id==='rest'?(lang==='es'?'Todo mi terreno':'My whole field'):(lang==='en'?z.id.replace(/^Subparcela /,'Area '):z.id)}</span><small>{z.ha.toFixed(2)} ha</small>
      <strong>{zoneCrops[z.id]?labelCrop(zoneCrops[z.id].crop_id,lang):(lang==='es'?'Por registrar':'To register')}</strong></button>)}</div>
-    <section className="chakra-crop-section" data-bio-target="bio-crops"><h2>{lang==='es'?'¿Qué sembraste aquí?':'What did you grow here?'}</h2>
-     <p className="chakra-zone-drag-hint">{lang==='es'?'Elige un cultivo y toca su zona en el mapa. En computadora también puedes llevar la tarjeta hasta esa zona.':'Choose a crop and tap its area on the map. On desktop you can also drag the card into that area.'}</p>
-     <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" draggable onDragStart={event=>{event.dataTransfer.setData('application/x-chakra-crop',id);event.dataTransfer.effectAllowed='copy';setPendingCrop(id);setCrop(id)}} key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>{setCrop(id);setPendingCrop(id)}}>
+    <section className="chakra-crop-section" data-bio-target="bio-crops"><h2>{lang==='es'?'Elige tus cultivos':'Choose your crops'}</h2>
+     <p className="chakra-zone-drag-hint">{lang==='es'?'Selecciona el mes, toca un cultivo y marca su lugar en el mapa de al lado. También puedes arrastrarlo.':'Choose the month, select a crop and tap its place on the map beside it. You can also drag it.'}</p>
+     <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" draggable onDragStart={event=>{event.dataTransfer.setData('application/x-chakra-crop',id);event.dataTransfer.effectAllowed='copy';setPendingCrop(id);setCrop(id)}} key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>{setCrop(id);setPendingCrop(id);if(window.innerWidth<900)document.getElementById('chakra-zone-map')?.scrollIntoView({behavior:'smooth',block:'center'})}}>
       <span className="chakra-crop-art" aria-hidden="true">{({maiz_amarillo_duro:'🌽',maiz_chala:'🌽',camote:'🍠',papa:'🥔',frijol_grano_seco:'🫘',frijol_castilla:'🫘',vainita:'🫛',pallar:'🫘',arveja_verde:'🫛',cebolla:'🧅',zanahoria:'🥕',brocoli_col:'🥦',alfalfa:'🌿'} as Record<string,string>)[id]}</span>
       <span>{labelCrop(id,lang)}</span><span className="chakra-crop-tick">{crop===id?'✓':''}</span></button>)}</div>
      <div className="chakra-crop-when"><label>{lang==='es'?'¿En qué mes lo sembraste?':'When did you plant it?'}
       <select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{monthChoices.map(i=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label>
-      <button className="b-btn b-btn-primary" type="button" onClick={applyZoneCrop}>{lang==='es'?'Guardar cultivo de esta zona':'Save this area crop'}</button></div>
+      <button className="b-btn b-btn-primary" type="button" onClick={applyZoneCrop}>{lang==='es'?'Marcar en zona elegida':'Assign to selected area'}</button></div>
     </section>
-    <details className="chakra-zone-help"><summary>{lang==='es'?'Ayuda para reconocer cultivos (opcional)':'Help identifying crops (optional)'}</summary>
+    <details className="chakra-zone-help chakra-farmer-extra"><summary>{lang==='es'?'Ayuda para reconocer cultivos (opcional)':'Help identifying crops (optional)'}</summary>
      <p>{lang==='es'?'Tus respuestas sobre lo que sembraste son la referencia principal. Puedes consultar catálogos e imágenes como pistas.':'Your crop records are the primary reference. Use catalogues and satellite imagery as supporting clues.'}</p>
      <Suspense fallback={null}><CropReference point={point} en={lang==='en'}/></Suspense>
      <details className="b-technical"><summary>{lang==='es'?'Foto de referencia en tu dispositivo':'Reference photo on your device'}</summary><CropPhotoGuide en={lang==='en'}/></details>
@@ -839,10 +856,10 @@ export default function BiotexFarmerApp(){
      {historyError&&<p role="status">{historyError}</p>}
      {history&&<SatelliteEvidence months={history.months} polygon={field} lang={lang} sensor={history.sensor} monthsWithData={history.months_with_data} monthsTotal={history.months_total}/>}
     </details>
-    <details className="chakra-zone-help"><summary>{lang==='es'?'Administrar zonas':'Manage areas'}</summary>
+    <details className="chakra-zone-help chakra-farmer-extra"><summary>{lang==='es'?'Administrar zonas':'Manage areas'}</summary>
      <p>{lang==='es'?'Dibuja zonas dentro del terreno para registrar otros cultivos. El resto se calcula automáticamente.':'Draw zones inside the field to record other crops. Remaining area is calculated automatically.'}</p>
      {subplots.map(z=><button type="button" className="b-btn b-btn-light" key={z.id} onClick={()=>deleteSubplot(z.id)}>{lang==='es'?'Quitar ':'Remove '}{z.id}</button>)}</details>
-    <div className="b-next between">
+    <div className="b-next between" data-bio-target="bio-next">
      <button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}>{t.back}</button>
      <button type="button" className="b-btn b-btn-light" onClick={saveFarm}>{lang==='es'?'Guardar avance':'Save progress'}</button>
      <button type="button" className="b-btn b-btn-primary" disabled={!availableZones.length} onClick={()=>{if(availableZones.some(z=>!zoneCrops[z.id])){setSpatialError(lang==='es'?'Registra un cultivo en cada zona antes de continuar.':'Record a crop for every area before continuing.');return}setSpatialError('');navigate(2)}}>{lang==='es'?'Continuar a mi plan':'Continue to my plan'}<Icon name="right"/></button></div>
@@ -898,8 +915,8 @@ export default function BiotexFarmerApp(){
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
   </main>
-  <BioTour lang={lang} step={step===3?2:step} assigned={assignedCount}/>
-  <footer className="b-footer"><div><strong>CHAKRA · CHAKRA X</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
+  <BioTour lang={lang} step={step===3?2:step} assigned={assignedCount} zoneCount={availableZones.length||1} landing={landing} fieldReady={Boolean(field)} cropPending={Boolean(pendingCrop)} planReady={Boolean(spatialPlan)} error={step===0?fieldError:spatialError||fieldError}/>
+  <footer className="b-footer"><div><strong>CHAKRA · CHAKRA X</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><a href="/como-funciona" onClick={e=>{e.preventDefault();showPage('how')}}>{lang==='es'?'Cómo funciona':'How it works'}</a><a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
   {printable()}
   {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}
    extra={result?.strategies?.length?<StrategyComparePrint strategies={result.strategies as CompareStrategy[]} lang={lang}/>:null}/>}
