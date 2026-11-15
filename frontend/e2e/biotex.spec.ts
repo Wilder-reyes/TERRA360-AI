@@ -172,3 +172,35 @@ test('Farmer reads a short decision checklist, optional economics are hidden unt
  await expect(page.locator('.b-econ-result').first()).toContainText('6,000')
  await expect(page.getByText('Fuentes oficiales y datos técnicos')).toBeVisible()
 })
+
+test('Trained NASA AI is explained in farmer language and detailed metrics stay collapsed',async({page})=>{
+ const ai={
+  status:'available',model_version:'biotex-hls-regimes-v1',
+  field_months_observed:18,low_vegetation_months:15,low_vegetation_share:.8333,
+  cover_priority_multiplier:1.46,
+  explanation_es:'La IA identificó poca vegetación en 15 de 18 meses con imágenes utilizables. Por eso presta más atención a mantener el suelo con cultivos, si esa es tu prioridad.',
+  explanation_en:'The model found low vegetation in 15 of 18 observed months.',
+  validation:{train_month_observations:158,holdout_2026_observations:41,holdout_distortion_reduction_vs_one_centroid:.86784,independent_farmer_validation:false}
+ }
+ await page.route('**/api/rotation/compare',route=>{
+  const body=route.request().postDataJSON()
+  expect(body.field_polygon?.type).toBe('Polygon')
+  return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+   ...comparison,ai_analysis:ai,ai_decision_impact:{
+    without_ai_strategy_id:'S1',with_ai_strategy_id:'S1',strategy_changed:false}
+  })})
+ })
+ await page.goto('/')
+ await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await page.getByRole('button',{name:'Agregar cultivo'}).click()
+ await page.getByRole('button',{name:'Continuar'}).click()
+ await page.getByRole('button',{name:'Ver mi plan'}).click()
+ await expect(page.getByRole('heading',{name:'Lo que aprendimos de tu terreno'})).toBeVisible()
+ await expect(page.getByText(/15 de 18 meses con imágenes utilizables/)).toBeVisible()
+ await expect(page.getByText('15 / 18')).toBeVisible()
+ await expect(page.getByText('158 observaciones')).toBeHidden()
+ await page.getByText('Ver cómo aprendió la IA').click()
+ await expect(page.getByText(/158 observaciones/)).toBeVisible()
+ await expect(page.getByText(/no representa precisión para recomendar cultivos/)).toBeVisible()
+})
