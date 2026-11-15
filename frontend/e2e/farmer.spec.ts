@@ -24,7 +24,7 @@ test('place search and crop reference lookup are inside the shared journey',asyn
  await page.getByRole('button',{name:'Buscar lugar'}).click()
  await page.getByRole('button',{name:/Calca.*Cusco/}).click()
  await expect(page.getByText('Calca, Cusco, Perú',{exact:true})).toBeVisible()
- await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
+ await page.getByRole('button',{name:'Usar parcela de Barranca',exact:true}).click()
  await page.getByRole('button',{name:'Continuar',exact:true}).click()
  await expect(page.getByRole('heading',{name:'¿Qué cultivos sembraste?'})).toBeVisible()
  await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click()
