@@ -49,7 +49,7 @@ test('crop cards and spatial plan produce a zone-specific printable map',async({
  await page.getByRole('button',{name:'Preparar mi plan'}).click()
  await expect(page.getByRole('heading',{name:/Tu próxima siembra, zona por zona/})).toBeVisible()
  await expect(page.getByText('Vainita',{exact:true}).first()).toBeVisible()
- await expect(page.getByText('enero de 2027')).toBeVisible()
+ await expect(page.getByText('enero de 2027',{exact:true})).toBeVisible()
  expect(submitted).toMatchObject({zones:[{id:'rest',crop_id:'camote'}]})
  await expect(page.getByRole('button',{name:'Imprimir mapa y plan PDF'})).toBeVisible()
  await page.emulateMedia({media:'print'})
