@@ -722,6 +722,14 @@ export default function BiotexFarmerApp(){
       <select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{monthChoices.map(i=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label>
       <button className="b-btn b-btn-primary" type="button" onClick={applyZoneCrop}>{lang==='es'?'Guardar cultivo de esta zona':'Save this area crop'}</button></div>
     </section>
+    <details className="chakra-zone-help"><summary>{lang==='es'?'Ayuda para reconocer cultivos (opcional)':'Help identifying crops (optional)'}</summary>
+     <p>{lang==='es'?'Tus respuestas sobre lo que sembraste son la referencia principal. Puedes consultar catálogos e imágenes como pistas.':'Your crop records are the primary reference. Use catalogues and satellite imagery as supporting clues.'}</p>
+     <Suspense fallback={null}><CropReference point={point} en={lang==='en'}/></Suspense>
+     <details className="b-technical"><summary>{lang==='es'?'Foto de referencia en tu dispositivo':'Reference photo on your device'}</summary><CropPhotoGuide en={lang==='en'}/></details>
+     <button type="button" className="b-btn b-btn-light" disabled={historyBusy} onClick={loadImages}>{historyBusy?(lang==='es'?'Revisando imágenes…':'Reviewing imagery…'):(lang==='es'?'Consultar imágenes NASA HLS':'Check NASA HLS history')}</button>
+     {historyError&&<p role="status">{historyError}</p>}
+     {history&&<SatelliteEvidence months={history.months} polygon={field} lang={lang} sensor={history.sensor} monthsWithData={history.months_with_data} monthsTotal={history.months_total}/>}
+    </details>
     <details className="chakra-zone-help"><summary>{lang==='es'?'Administrar zonas':'Manage areas'}</summary>
      <p>{lang==='es'?'Dibuja zonas dentro del terreno para registrar otros cultivos. El resto se calcula automáticamente.':'Draw zones inside the field to record other crops. Remaining area is calculated automatically.'}</p>
      {subplots.map(z=><button type="button" className="b-btn b-btn-light" key={z.id} onClick={()=>deleteSubplot(z.id)}>{lang==='es'?'Quitar ':'Remove '}{z.id}</button>)}</details>
