@@ -55,10 +55,56 @@ Que un agricultor pueda comprender **qué alternativas de cultivo y rotación va
 
 **Leyendas:** capa visible única, transparencia y periodo seleccionable, no-data explícito, unidades correctas, fecha, sensor, resolución, estado de validación y fuente clicable. **Costos:** priorizar recortes de área, datos precalculados/caché y almacenamiento dentro de cuotas gratuitas; no crear descargas globales ni Functions en Vercel.
 
-## Gestión de skills y diseño
-- **Disponible en repositorio:** `.agents/skills/ui-ux-pro-max/SKILL.md`.
-- **Guías Aura seleccionadas:** Web Interface Guidelines, UX Copywriting Guide, Web Design Reviewer, Responsive Design, UI Design System Toolkit, Interaction Design, Design State Ownership, Build Interactive Dashboards, Frontend Developer Expert, UI Consistency Auditor, Image Optimization Analysis y Skill Creator. **Revisar disponibilidad y licencias** antes de incorporarlas; tratarlas como directrices de desarrollo, no como librerías/productos «instalados».
-- **Nueva guía por elaborar:** `.agents/skills/biotex-farmer-experience/SKILL.md` con reglas de evidencia, calendario, geometría, BIO, texto, accesibilidad y regresión.
+## Gestión de skills, con nombres y responsabilidades explícitas
+
+**Estado comprobado:** `.agents/skills/ui-ux-pro-max/SKILL.md` ya está en GitHub. Las doce guías de Aura se **seleccionaron para aplicación selectiva**; no afirmar que están instaladas, habilitadas o con licencia para copia hasta verificar su contenido y licencia individualmente. Si una no se puede incorporar legal o técnicamente, aplicar sus principios verificables mediante reglas propias, no afirmar que ejecutamos su skill original.
+
+| # | Skill elegida | Responsable de / tarea específica en BIOTEX | Prueba de aceptación |
+| --- | --- | --- | --- |
+| **Base** | **UI UX Pro Max** (ya existe) | Sistema visual general, componentes y experiencia del agricultor | Auditoría de jerarquía, accesibilidad, contraste, móviles y diseño consistente |
+| 1 | **Web Interface Guidelines** (Vercel Labs) | Reglas para controles, estados sin datos, errores, mapas e interacción | Revisión por checklist WCAG 2.2 AA; foco visible, teclado, etiquetas y contraste |
+| 2 | **UX Copywriting Guide** | Microtextos de BIO, agricultura en español sencillo, leyendas y advertencias honestas | Cada indicador responde «qué significa» y «qué puedo hacer»; no confundir lluvia regional con riego de parcela |
+| 3 | **Web Design Reviewer** | Inspección visual y de comportamiento en resultados, mapa, diálogos y formularios | Playwright desktop/móvil con casos sin datos, errores y desbordes |
+| 4 | **Responsive Design** | Diseño móvil para trabajo de campo y mapas; uso con conectividad limitada | Vista de 360, 390, 768 y 1280 px sin controles bloqueados ni desbordes horizontales |
+| 5 | **UI Design System Toolkit** | Tokens, componentes reutilizables, tarjetas de cultivo, cronologías, leyendas y tipografía | Un solo sistema de color y unidades; contrastes semánticos y consistencia entre los 4 pasos |
+| 6 | **Interaction Design** | Tutorial guiado de BIO con resalte de objetivos reales, siguiente, atrás, omitir y repetir | Tour completo y sin bloqueos; animaciones reducidas según preferencia del dispositivo |
+| 7 | **Design State Ownership** | Persistencia de recorrido/tour, historial con fechas absolutas, subparcelas, cambios de campaña y prioridades | Restauración sin desplazamiento de fechas, sin pérdida de datos; reinicio y eliminación voluntaria |
+| 8 | **Build Interactive Dashboards** | Panel científico y cartográfico; selector de capas y periodos, leyendas, gráficos comparativos y transparencia | Capa muestra fuente, sensor, fecha, resolución, unidades, escala, calidad y estado no-data |
+| 9 | **Frontend Developer Expert** | Arquitectura React/TypeScript, separación de capas y motor, carga bajo demanda, pruebas de componentes | Compilación y test; sin cálculos científicos duplicados en frontend |
+| 10 | **UI Consistency Auditor** | Revisión transversal de etiquetas, botones, hitos, tipos de mapa y versión español/inglés | Mismos nombres, unidades, estado y comportamiento entre las cuatro pantallas y el PDF |
+| 11 | **Image Optimization Analysis** | Tamaño de recursos de BIO, mosaicos, leyendas e ilustraciones; cargas lazy y caché | Sin imágenes externas innecesarias; medir rendimiento y datos consumidos en móvil |
+| 12 | **Skill Creator** | Crear y mantener `.agents/skills/biotex-farmer-experience/SKILL.md`, específica del proyecto | Instrucciones versionadas con ejemplo, checklist de decisiones, fuentes, BIO y regresión |
+
+**Condición de uso:** estas skills son guías de creación y revisión; no incorporan por sí solas conexiones a NASA, modelos, leyes agronómicas o nuevas funcionalidades. Se comprobarán las licencias y el funcionamiento antes de copiar archivos externos.
+
+### Nueva skill especializada: biotex-farmer-experience
+Archivo por crear en fase 7: `.agents/skills/biotex-farmer-experience/SKILL.md` (no confundir plan con una creación ya realizada). Deberá exigir:
+1. **BIO solo guía el tutorial introductorio** y la ayuda contextual de navegación; no será chatbot, asesor ni fuente de datos.
+2. **Evidencia geoespacial honesta:** cada capa tendrá procedencia, fecha, resolución, unidad, leyenda, incertidumbre y estado sin datos; NDVI no reconoce especies.
+3. **Agronomía verificable:** prohibido trasladar calendarios de Lima o Cusco a Chalhuas; distinguir estimación climática, condición declarada del suelo, restricciones verificadas y autorización de campo.
+4. **Cronología consistente:** usar fechas de siembra absolutas, horizonte declarado y pruebas de desplazamiento de un mes/cambio de año.
+5. **Asignación espacial:** no mostrar polígonos propuestos como cultivos observados; subparcelas dentro de la geometría confirmada; áreas sumadas y no solapadas.
+6. **Información para decidir:** propuesta, por qué, cuándo, dónde, riesgos y siguiente verificación; detalles técnicos desplegables.
+7. **Regresión:** preservar API, Vercel estático + Render, PDF, WhatsApp, idiomas, modo de bajo consumo, mapas y pruebas automatizadas.
+
+### Aplicación de las skills por fase de la hoja de ruta
+- **Fase 0:** Web Interface Guidelines + Web Design Reviewer + UI Consistency Auditor + Frontend Developer Expert para eliminar errores heredados; UI UX Pro Max como base.
+- **Fases 1 y 3:** Build Interactive Dashboards + Responsive Design + UX Copywriting Guide + Image Optimization Analysis para mapa, leyendas, filtros temporales y fuentes.
+- **Fases 2, 4 y 5:** Frontend Developer Expert para contratos reproducibles; Skill Creator y reglas propias para preservar trazabilidad científica. Las reglas agronómicas requieren fuentes INIA, SENAMHI, ANA, MIDAGRI y especialistas; **no se derivan de skills visuales**.
+- **Fase 6:** UI Design System Toolkit + Design State Ownership + Build Interactive Dashboards para asignación espacial y cronología por subparcela.
+- **Fase 7:** Interaction Design + UX Copywriting Guide + Design State Ownership para el onboarding de BIO.
+- **Fase 8:** Web Design Reviewer + UI Consistency Auditor + Responsive Design y Playwright para validación de la publicación.
+
+## Contrato específico de nuevas visualizaciones geográficas
+- **Ya existente (reutilizar, no duplicar):** NASA HLS, Sentinel-2, NASA POWER, GPM IMERG, SMAP, NASA GIBS y FAO GAEZ. Integrado no implica que la nueva parcela tenga datos adecuados; verificar caso por caso.
+- **Nuevo 1: NASADEM/SRTM** → DEM, elevación, pendiente, orientación, sombreado; no inferir directamente erosión, drenaje o fertilidad.
+- **Nuevo 2: ERA5-Land** → temperatura y humedad regional, mínimos históricos y episodios fríos; no presentar como sensor de helada ni pronóstico del lote.
+- **Nuevo 3: ECOSTRESS** → temperatura de superficie, evapotranspiración y estrés evaporativo, condicionado a escenas disponibles, QA/píxeles válidos y licencia/producto correcto.
+- **Estudio complementario: GLDAS** → contraste hidrológico regional solo si añade valor y no duplica SMAP/POWER; no posicionarlo como capa de parcela.
+- **Instituciones locales:** INIA para prácticas/variedades, SENAMHI para alertas/estaciones con fecha, ANA y junta de usuarios para agua real y MIDAGRI/FAO para calendario y referencia agronómica.
+- **Controles UI exigidos:** elegir capas sin saturar, escoger período/fecha, ajustar opacidad, hacer clic para consultar la variable, ver leyenda con escala/unidad y abrir procedencia; modo bajo consumo y estado «sin observación válida».
+- **Etiquetas obligatorias por valor:** «observación satelital», «estimación regional», «valor declarado por agricultor» o «simulación de rotación». **Nunca interpolar una celda regional de 9–50 km como certeza de una parcela.**
+- **Cierre:** no publicar una capa como funcional en Chalhuas hasta demostrar cobertura, calidad, funcionamiento y límites en el polígono seleccionado.
 
 ## Bloqueos y decisiones pendientes verificables
 - Elegir y validar polígono: la coordenada del sector no demuestra límites de cultivo ni propiedad. Si no existe, crear escenario marcado **sintético**, sin atribuir observaciones reales de una parcela no verificada.
