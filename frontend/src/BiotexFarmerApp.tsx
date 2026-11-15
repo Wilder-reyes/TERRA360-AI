@@ -228,6 +228,7 @@ function ZoneDropBridge({field,subplots,onAssign}:{field:GeoPolygon;subplots:Sub
    const point=map.containerPointToLatLng([event.clientX-box.left,event.clientY-box.top])
    if(!insideCropArea(point.lng,point.lat,field))return
    const zone=subplots.slice().reverse().find(z=>insideCropArea(point.lng,point.lat,z.polygon))
+   if(!zone&&subplots.length)return // Only explicitly drawn cultivation polygons are assignable.
    onAssign(zone?.id||'rest',id)
   }
   element.addEventListener('dragover',over)
