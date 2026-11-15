@@ -9,6 +9,7 @@ import SatelliteEvidence from './SatelliteEvidence'
 import FarmDecisionEvidence,{type EconomicReport} from './FarmDecisionEvidence'
 import FarmerAIEvidence,{type AIEvidence} from './FarmerAIEvidence'
 import './biotex-farmer.css'
+import './biotex-v027.css'
 
 type Lang='es'|'en'
 type Step=0|1|2|3
@@ -444,15 +445,26 @@ export default function BiotexFarmerApp(){
   <p>{sampleNote?(lang==='es'?'Terreno mostrado para demostración; los cultivos registrados fueron proporcionados durante esta sesión.':'Field used for demonstration; crop inputs were supplied during this session.'):''}</p></div></div>}
  return <div className="b-app">
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
-  <header className="b-header"><div className="b-header-inner"><div className="b-brand"><span className="b-brand-mark"><Icon name="leaf" size={25}/></span><div><b>BIOTEX</b><small>NSPACE BIOTEX</small></div></div>
-
-  <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></header>
-  <div className="b-progress-wrap"><nav className="b-progress" aria-label="Progreso">{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step||i===3&&!result} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div>
+  <header className="b-header"><div className="b-header-inner">
+ <div className="b-brand"><span className="b-brand-mark"><Icon name="leaf" size={25}/></span><div><b>BIOTEX</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></div>
+ <div className="b-header-context"><span className="b-header-dot" aria-hidden="true"/>{lang==='es'?'Piloto agrícola · Barranca, Perú':'Agricultural pilot · Barranca, Peru'}</div>
+ <div className="b-header-tools"><a className="b-expert-link" href="/?vista=tecnica" target="_blank" rel="noreferrer">{lang==='es'?'Vista para especialistas':'Expert view'} <Icon name="right" size={16}/></a>
+ <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></div></header>
+  <div className="b-progress-wrap"><div className="b-progress-shell"><div className="b-progress-label"><span>{lang==='es'?'Tu recorrido':'Your journey'}</span><strong>{lang==='es'?'Paso '+(step+1)+' de 4':'Step '+(step+1)+' of 4'}</strong></div>
+<nav className="b-progress" aria-label={lang==='es'?'Progreso del plan':'Plan progress'}>{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step||i===3&&!result} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div></div>
   <main id="main" className="b-main">
    {step===0&&<section className="b-layout">
-    <div className="b-intro"><span className="b-eyebrow">{t.region}</span><h1>{t.title}</h1><p>{t.subtitle}</p></div>
+    <div className="b-intro b-hero-intro"><div className="b-hero-copy">
+<span className="b-eyebrow"><span className="b-hero-spark" aria-hidden="true"/>{lang==='es'?'AGRICULTURA CON EVIDENCIA NASA':'FARMING WITH NASA EVIDENCE'}</span>
+<h1>{t.title}</h1><p>{t.subtitle}</p>
+<div className="b-hero-promise"><span><Icon name="check" size={16}/>{lang==='es'?'Sin conocimientos técnicos':'No technical skills needed'}</span><span><Icon name="check" size={16}/>{lang==='es'?'Sin crear una cuenta':'No account required'}</span></div>
+</div><aside className="b-hero-story" aria-label={lang==='es'?'Cómo te ayuda BIOTEX':'How BIOTEX helps'}>
+<span className="b-hero-story-label">{lang==='es'?'ASÍ FUNCIONA':'HOW IT WORKS'}</span>
+<div className="b-story-item"><span>01</span><div><strong>{lang==='es'?'Ubica tu terreno':'Find your field'}</strong><small>{lang==='es'?'En el mapa, con un ejemplo o tu propia chacra.':'On the map, with a sample or your own field.'}</small></div></div>
+<div className="b-story-item"><span>02</span><div><strong>{lang==='es'?'Cuéntanos qué sembraste':'Record what you grew'}</strong><small>{lang==='es'?'Puedes apoyarte en imágenes del satélite.':'Satellite images can help you remember.'}</small></div></div>
+<div className="b-story-item"><span>03</span><div><strong>{lang==='es'?'Revisa opciones para sembrar':'Review planting options'}</strong><small>{lang==='es'?'Agua, cobertura del terreno y tus prioridades.':'Water, crop cover and your priorities.'}</small></div></div></aside></div>
     <div className="b-farm-grid">
-     <div className="b-card b-search-card"><h2><Icon name="pin"/>{t.search}</h2>
+     <div className="b-card b-search-card"><div className="b-card-heading"><span className="b-section-kicker">{lang==='es'?'PRIMERO · UBICA TU PARCELA':'FIRST · FIND YOUR FIELD'}</span><h2><Icon name="pin"/>{t.search}</h2><p>{lang==='es'?'Busca tu localidad o marca las esquinas directamente en el mapa.':'Search for your town or mark the corners directly on the map.'}</p></div>
       <form className="b-search" onSubmit={searchPlace}><label htmlFor="b-search" className="sr-only">{t.search}</label>
        <input id="b-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.searchHint} autoComplete="off"/>
        <button type="submit" className="b-btn b-btn-solid" disabled={searching}><Icon name="search" size={19}/>{searching?t.waitSearch:t.find}</button>
@@ -490,13 +502,16 @@ export default function BiotexFarmerApp(){
       {savedNotice&&<p className="b-note" role="status">{savedNotice}</p>}
       {savedAvailable&&<div className="b-farm-recovery"><button type="button" onClick={restoreFarm}>{lang==='es'?'Recuperar mi chacra guardada':'Restore saved field'}</button></div>}
      </div>
-     <aside className="b-card b-examples"><h2>{t.examples}</h2>
+     <aside className="b-card b-examples"><span className="b-sample-label">{lang==='es'?'INICIO RÁPIDO':'QUICK START'}</span>
+<div className="b-sample-graphic" aria-hidden="true"><div className="b-sample-plot"><span/><span/><span/></div><span className="b-sample-sun"/></div>
+<h2>{lang==='es'?'Prueba BIOTEX con una parcela observada por NASA':'Explore a field observed by NASA'}</h2>
+<p className="b-sample-explain">{lang==='es'?'Usa un terreno de estudio de Barranca sin dibujar nada. No conocemos a su propietario ni sus cultivos reales.':'Explore a Barranca study field without drawing. Its owner and actual crops have not been verified.'}</p>
       {DEMOS.map((f,i)=><button key={f.id} type="button" className="b-example-choice" onClick={()=>setExample(f)}><span className="b-example-index">{String(i+1).padStart(2,'0')}</span>
-        <span><strong>{lang==='es'?'Explorar parcela de Barranca':'Explore a Barranca field'}</strong><small>{lang==='es'?'Vista desde el satélite':'Satellite view'}</small></span><Icon name="right" size={19}/></button>)}
-      <p className="b-muted">{lang==='es'?'También puedes buscar tu propio distrito y marcar tu terreno.':'You can also search your district and mark your own field.'}</p>
+        <span><strong>{lang==='es'?'Explorar parcela de Barranca':'Explore a Barranca field'}</strong><small>{approximatePolygonHectares(fromGeo(f.polygon)).toFixed(2)} ha · NASA HLS</small></span><Icon name="right" size={19}/></button>)}
+      <p className="b-muted b-sample-foot"><Icon name="info" size={17}/>{lang==='es'?'La IA entrenada solo se aplica a esta parcela; puedes marcar otra para explorar el mapa.':'Trained AI only applies to this field; you can mark another to explore the map.'}</p>
      </aside>
     </div>
-    <div className="b-next"><button type="button" className="b-btn b-btn-light" disabled={!field} onClick={saveFarm}>{lang==='es'?'Guardar mi chacra':'Save my field'}</button><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
+    <div className="b-next b-next-emphasized"><p className="b-next-context">{field?(lang==='es'?'Terreno seleccionado. Sigue para registrar tus cultivos.':'Field selected. Continue to record your crops.'):(lang==='es'?'Elige el ejemplo o marca un terreno para continuar.':'Choose the example or mark a field to continue.')}</p><button type="button" className="b-btn b-btn-light" disabled={!field} onClick={saveFarm}>{lang==='es'?'Guardar mi chacra':'Save my field'}</button><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
    </section>}
    {step===1&&<section className="b-form-page"><div className="b-intro"><span className="b-eyebrow">02 / 04</span><h1>{t.historyTitle}</h1><p>{t.historyLead}</p></div>
     <div className="b-entry-grid"><section className="b-card"><h2>{t.add}</h2>
