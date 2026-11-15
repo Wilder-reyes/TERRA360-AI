@@ -35,10 +35,10 @@
 
 /* Step one: map first. Remove the lab panels from the farmer journey, not the data or map attribution. */
 @media screen {
- .chakra-farmer-clean #chakra-field :is(.chakra-study-strip,.b-coordinate-search,.b-map-view,.b-map-provenance,.b-map-evidence,.b-hls-legend,.b-map-legend,.b-map-label,.b-farm-recovery,.b-technical,.b-parcel-tools,.b-sample-label,.b-observation-card,.b-field-evidence,.b-farm-official,.b-evidence-technical,.b-satellite-details){display:none!important}
- .chakra-farmer-clean #chakra-field .b-muted{display:none!important}
- .chakra-farmer-clean .chakra-study-note{display:none}
- .chakra-farmer-clean .chakra-farmer-extra{display:none!important}
+ .chakra-farmer-clean:not(.chakra-research) #chakra-field :is(.chakra-study-strip,.b-coordinate-search,.b-map-view,.b-map-provenance,.b-map-evidence,.b-hls-legend,.b-map-legend,.b-map-label,.b-farm-recovery,.b-technical,.b-parcel-tools,.b-sample-label,.b-observation-card,.b-field-evidence,.b-farm-official,.b-evidence-technical,.b-satellite-details){display:none!important}
+ .chakra-farmer-clean:not(.chakra-research) #chakra-field .b-muted{display:none!important}
+ .chakra-farmer-clean:not(.chakra-research) .chakra-study-note{display:none}
+ .chakra-farmer-clean:not(.chakra-research) .chakra-farmer-extra{display:none!important}
  .chakra-farmer-clean #chakra-field .b-intro{padding:20px 0 6px!important}
  .chakra-farmer-clean #chakra-field .b-hero-copy h1{font-size:clamp(28px,3.3vw,44px)!important}
  .chakra-farmer-clean #chakra-field .b-field-ready{display:flex!important;align-items:center!important;gap:12px;padding:11px 18px!important;border-color:#D6F86644!important;margin:10px 0!important}
@@ -80,7 +80,7 @@
  .chakra-zone-page .chakra-zone-map-actions .b-btn{font-size:13px;min-height:45px!important}
  .chakra-zone-page .chakra-zone-map-note{font-size:13px;color:#c7d9c0;margin:9px 4px}
  .chakra-zone-page .chakra-zone-choices .chakra-zone-choice.chosen{background:#D6F86617;border-color:#D6F866!important}
- .chakra-farmer-clean .chakra-more-science{display:none!important}
+ .chakra-farmer-clean:not(.chakra-research) .chakra-more-science{display:none!important}
  /* Keep the on-screen result calm: the print report still contains provenance. */
  .chakra-farmer-clean .chakra-strategy-status{font-size:13px}
  .chakra-farmer-clean .chakra-zone-result .chakra-result-heading h1{font-size:clamp(26px,3.4vw,42px)}

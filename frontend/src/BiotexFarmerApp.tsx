@@ -300,7 +300,7 @@ export default function BiotexFarmerApp(){
  const [planError,setPlanError]=useState('')
  const [economicReport,setEconomicReport]=useState<EconomicReport|null>(null)
  const [otherOpen,setOtherOpen]=useState(false)
- const [mapLayer,setMapLayer]=useState<BaseOrScienceLayer>('photo')
+ const [mapLayer,setMapLayer]=useState<BaseOrScienceLayer>(()=>new URLSearchParams(window.location.search).get('research')==='1'?'hls':'photo')
  const [mapDate,setMapDate]=useState(()=>new Date(Date.now()-7*86400000).toISOString().slice(0,10))
  const [mapOpacity,setMapOpacity]=useState(.72)
  const [mapLayerFailed,setMapLayerFailed]=useState(false)
@@ -690,7 +690,7 @@ export default function BiotexFarmerApp(){
   </div>}
   <p>{sampleNote?(lang==='es'?'Terreno mostrado para demostración; los cultivos registrados fueron proporcionados durante esta sesión.':'Field used for demonstration; crop inputs were supplied during this session.'):''}</p></div></div>}
  if(infoPage)return <ChakraInfoPage page={infoPage} lang={lang} onBack={()=>showPage(null)} onNavigate={showPage}/>
- return <div className={'b-app chakra-farmer-clean '+(spatialPlan?'chakra-has-zone-print':'')}>
+ return <div className={'b-app chakra-farmer-clean '+(new URLSearchParams(window.location.search).get('research')==='1'?'chakra-research ':'')+(spatialPlan?'chakra-has-zone-print':'')}>
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
   <header className="b-header"><div className="b-header-inner">
  <button type="button" className="b-brand" aria-label={lang==='es'?'Inicio CHAKRA':'CHAKRA home'} onClick={()=>{showPage(null);navigate(0);setLanding(true)}}><span className="b-brand-mark"><ChakraMark/></span><div><b>chakra</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></button>

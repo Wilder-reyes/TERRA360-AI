@@ -30,13 +30,15 @@ test('Farmer-facing workflow keeps optional geometry import and never auto-confi
 
  assert.match(app,/¿Dónde está tu chacra\?/)
 
- assert.match(app,/¿Qué sembraste y en qué parte\?/)
+ assert.match(app,/Muéstranos qué sembraste/)
 
- assert.match(app,/¿Qué sembraste aquí\?/)
+ assert.match(app,/Elige tus cultivos/)
 
  assert.doesNotMatch(app,/Comparar 3 rotaciones/)
 
  assert.match(app,/Importar contorno GeoJSON \(opcional\)/)
+ assert.match(app,/chakra-farmer-clean/)
+ assert.match(app,/ChakraInfoPage/)
 
  assert.match(app,/buildSpatialPlan\(\)/)
 
