@@ -1,0 +1,19 @@
+# AI-assisted: written with Claude Code (Anthropic) and reviewed by the CHAKRA X team.
+# Keeps the free Render API awake during judging: a single GET /api/health every 10 minutes.
+# No data download, no deployment, no secrets. Disable after the evaluation period.
+name: Keep CHAKRA API warm
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping /api/health
+        run: |
+          code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 90 https://terra360-api.onrender.com/api/health || true)
+          echo "HTTP $code"; cat /tmp/health.json || true
