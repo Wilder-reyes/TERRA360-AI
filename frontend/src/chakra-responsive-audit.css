@@ -163,3 +163,48 @@
  .b-app.chakra-farmer-clean .chakra-zone-choice{min-height:76px!important}
 }
 @media screen and (prefers-reduced-motion:reduce){.b-app.chakra-farmer-clean button,.bio-tour{transition:none!important;animation:none!important}}
+
+
+/* CHAKRA X finishing pass: footer, map clearance, compact advice and mobile safe areas */
+@media screen {
+ .b-app.chakra-farmer-clean .b-footer {display:flex!important;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 28px;border-top:1px solid #ffffff22}
+ .b-app.chakra-farmer-clean .b-footer>div:first-child strong{font-size:20px;letter-spacing:.07em;text-transform:uppercase;color:#D6F866;white-space:nowrap}
+ .b-app.chakra-farmer-clean .b-footer-links{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center;gap:10px 24px!important;min-width:0}
+ .b-app.chakra-farmer-clean .b-footer-links>a{display:inline-flex;align-items:center;min-height:44px;white-space:nowrap}
+ .b-app.chakra-farmer-clean .b-footer-links>span{flex:1 1 100%;font-size:12px;color:#b5c9b0}
+ .b-app.chakra-farmer-clean .chakra-zone-map-wrap{position:relative!important;top:auto!important;bottom:auto!important;z-index:1!important;transform:none!important}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-next{position:relative!important;top:auto!important;bottom:auto!important;z-index:2!important;transform:none!important;clear:both;margin-top:24px!important;background:#101a13;border:1px solid #ffffff28;border-radius:16px;padding:14px!important;display:flex;flex-wrap:wrap;gap:10px}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-next button{flex:1 1 180px;min-width:0;min-height:48px}
+ .b-app.chakra-farmer-clean .chakra-advice-card{box-shadow:0 12px 35px #0003;min-width:0}
+ .b-app.chakra-farmer-clean .chakra-advice-card h2{display:flex;align-items:center;gap:8px;font-size:clamp(22px,3vw,30px)}
+ .b-app.chakra-farmer-clean .chakra-advice-card details[open] ol{display:grid;gap:10px;padding-left:23px}
+ .b-app.chakra-farmer-clean .chakra-advice-card details[open] li{padding-left:7px;line-height:1.5}
+ .b-app.chakra-farmer-clean .chakra-result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+ .b-app.chakra-farmer-clean .chakra-result-actions button{flex:1 1 180px;min-height:48px}
+ .choklito-welcome{position:fixed;inset:0;display:grid;place-items:center;padding:18px;background:#020702e8;backdrop-filter:blur(9px);z-index:3000}
+ .choklito-welcome-card{width:min(470px,100%);max-height:calc(100dvh - 36px);overflow:auto;text-align:center;background:linear-gradient(160deg,#172517,#090e0b);border:1px solid #d6f86666;border-radius:26px;padding:clamp(20px,4vw,34px);color:#f7f9ef;box-shadow:0 20px 90px #000a}
+ .choklito-welcome-card>.bio-mascot{height:120px;width:88px;display:block;margin:0 auto 12px}
+ .choklito-welcome-card>span{display:block;color:#D6F866;font-weight:900;letter-spacing:.16em}
+ .choklito-welcome-card h2{font-size:clamp(24px,5vw,33px);line-height:1.17;margin:12px 0}
+ .choklito-welcome-card p{font-size:15px;line-height:1.6;color:#d9e4d4}
+ .choklito-welcome-card button{display:block;width:100%;min-height:50px;padding:11px 15px;border:0;border-radius:12px;background:#D6F866;color:#081109;font-weight:800;cursor:pointer;margin-top:12px}
+ .choklito-welcome-card button.choklito-welcome-skip{background:#ffffff17;color:#eef5e9;border:1px solid #ffffff44}
+ .choklito-drag-example{margin:10px 0;display:flex;align-items:center;justify-content:space-around;gap:8px;font-size:12px;font-weight:800;background:#e8f5e3;border-radius:10px;padding:9px}
+ .choklito-example-path{position:relative;flex:1;border-top:2px dashed #3b7d4e;height:2px}
+ .choklito-moving-crop{position:absolute;top:-15px;left:0;animation:choklito-drag 2.8s ease-in-out infinite}
+ @keyframes choklito-drag{0%,10%{left:0;transform:scale(1)}70%,90%{left:calc(100% - 20px);transform:scale(1.2)}100%{left:0;transform:scale(1)}}
+}
+@media screen and (max-width:640px){
+ .b-app.chakra-farmer-clean .b-footer{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important;align-items:flex-start}
+ .b-app.chakra-farmer-clean .b-footer-links{gap:3px 14px!important}
+ .b-app.chakra-farmer-clean .b-footer-links>a{white-space:normal}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-next{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:15px}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-next button:last-child{grid-column:1/-1}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-next button{width:100%}
+ .b-app.chakra-farmer-clean .chakra-result-actions{display:grid;grid-template-columns:1fr}
+ .choklito-welcome{padding:10px}
+ .choklito-welcome-card{padding:18px;border-radius:19px;max-height:calc(100dvh - 20px)}
+ .choklito-welcome-card>.bio-mascot{height:90px;width:65px}
+}
+@media print{.choklito-welcome,.choklito-drag-example{display:none!important}.chakra-print-zone{break-inside:avoid}.chakra-spatial-print header strong{text-transform:uppercase}}
+@media (prefers-reduced-motion:reduce){.choklito-moving-crop{animation:none!important}}
