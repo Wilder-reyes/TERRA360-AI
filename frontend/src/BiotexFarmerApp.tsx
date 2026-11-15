@@ -1,6 +1,6 @@
 // AI-assisted: farmer-first CHAKRA interface. Scientific calculations remain on the server.
 import {lazy,Suspense,useEffect,useMemo,useRef,useState,type FormEvent} from 'react'
-import {CircleMarker,MapContainer,Polygon,Polyline,Rectangle,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
+import {CircleMarker,MapContainer,Polygon,Polyline,Rectangle,TileLayer,Tooltip,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {API,httpErrorMessage,readableApiError} from './network'
 import {approximatePolygonHectares,validatePolygon,validateSubplotLayout} from './geometry'
 import {TEAM_FIELDS,type GeoPolygon} from './rotationZones'
@@ -20,6 +20,8 @@ import BarrancaLegend from './BarrancaLegend'
 import './agricultural-dark.css'
 import './chakra.css'
 import './chakra-light.css'
+import './chakra-ppt-flow.css'
+import {cropVisual} from './chakraCropVisuals'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
 import ChakraZonePlan,{ChakraZonePrint,type ChakraSpatialPlan} from './ChakraZonePlan'
@@ -200,6 +202,36 @@ function EditableCorners({points,selected,onPick,onMove}:{points:Point[]|null;se
   {points.map((v,i)=><CircleMarker key={i} center={[v.lat,v.lng]} radius={selected===i?10:7} pathOptions={{color:'#0B0E0C',weight:2,fillColor:selected===i?'#F59E0B':'#4CD964',fillOpacity:1}} eventHandlers={{click:(event:{originalEvent:MouseEvent})=>{event.originalEvent.stopPropagation();onPick(i)}}}/>)}
  </>
 }
+function insideCropArea(lng:number,lat:number,poly:GeoPolygon):boolean{
+ const points=poly.coordinates[0]
+ let inside=false
+ for(let i=0,j=points.length-1;i<points.length;j=i++){
+  const a=points[i],b=points[j]
+  if(((a[1]>lat)!==(b[1]>lat))&&(lng<(b[0]-a[0])*(lat-a[1])/(b[1]-a[1])+a[0]))inside=!inside
+ }
+ return inside
+}
+function ZoneDropBridge({field,subplots,onAssign}:{field:GeoPolygon;subplots:Subplot[];onAssign:(zoneId:string,cropId:string)=>void}){
+ const map=useMap()
+ useEffect(()=>{
+  const element=map.getContainer()
+  const over=(event:DragEvent)=>{if(event.dataTransfer?.types.includes('application/x-chakra-crop'))event.preventDefault()}
+  const drop=(event:DragEvent)=>{
+   const id=event.dataTransfer?.getData('application/x-chakra-crop')
+   if(!id||!CROPS.includes(id))return
+   event.preventDefault()
+   const box=element.getBoundingClientRect()
+   const point=map.containerPointToLatLng([event.clientX-box.left,event.clientY-box.top])
+   if(!insideCropArea(point.lng,point.lat,field))return
+   const zone=subplots.slice().reverse().find(z=>insideCropArea(point.lng,point.lat,z.polygon))
+   onAssign(zone?.id||'rest',id)
+  }
+  element.addEventListener('dragover',over)
+  element.addEventListener('drop',drop)
+  return()=>{element.removeEventListener('dragover',over);element.removeEventListener('drop',drop)}
+ },[map,field,subplots,onAssign])
+ return null
+}
 const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,1)
 const SAVED_FARM_KEY='biotex-farm-v1'
 export default function BiotexFarmerApp(){
@@ -223,6 +255,8 @@ export default function BiotexFarmerApp(){
  const [drawingSubplot,setDrawingSubplot]=useState(false)
  const [subplots,setSubplots]=useState<Subplot[]>([])
  const [zoneCrops,setZoneCrops]=useState<Record<string,{crop_id:string;planted_month:string}>>({})
+ const [pendingCrop,setPendingCrop]=useState<string|null>(null)
+ const [planningMonths,setPlanningMonths]=useState(12)
  const [activeZone,setActiveZone]=useState('rest')
  const [spatialPlan,setSpatialPlan]=useState<ChakraSpatialPlan|null>(null)
  const [spatialBusy,setSpatialBusy]=useState(false)
@@ -307,7 +341,7 @@ export default function BiotexFarmerApp(){
   if(!field)return
   try{
    localStorage.setItem(SAVED_FARM_KEY,JSON.stringify({version:1,field,place,fieldLabel,isDemoField,
-    plantings,baseYear,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear,subplots,zoneCrops}))
+    plantings,baseYear,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear,planningMonths,subplots,zoneCrops}))
    setSavedAvailable(true);setSavedNotice(lang==='es'?'Tus datos se guardaron en este dispositivo.':'Your details are saved on this device.')
   }catch{setSavedNotice(lang==='es'?'El navegador no permitió guardar los datos.':'Your browser could not save these details.')}
  }
@@ -335,6 +369,7 @@ export default function BiotexFarmerApp(){
    setSoil(data.soil&&typeof data.soil==='object'?data.soil:{})
    setWaterAllowance(String(data.waterAllowance||''))
    if(Number.isInteger(data.planStartYear))setPlanStartYear(data.planStartYear)
+   setPlanningMonths(Number.isInteger(data.planningMonths)&&data.planningMonths>=3&&data.planningMonths<=60?data.planningMonths:12)
    setSavedNotice(lang==='es'?'Recuperamos tu chacra. Verifica las fechas; campañas fuera de la ventana actual no se importan.':'Your field is restored. Check dates; campaigns outside the current window were not imported.')
   }catch{setSavedNotice(lang==='es'?'No pudimos recuperar el terreno guardado.':'Unable to restore saved field.')}
  }
@@ -439,11 +474,14 @@ export default function BiotexFarmerApp(){
  }
  const seasons=(history?.detection.campaigns||[]).filter(c=>{const n=relativeMonthIndex(c.start,baseYear);return n>=0&&n<=23}).slice(0,8)
 
- function applyZoneCrop(){
+ function assignZoneCrop(zoneId:string,cropId:string){
+  if(!availableZones.some(z=>z.id===zoneId)||!CROPS.includes(cropId))return
   const month=new Date(Date.UTC(baseYear,7+cropMonth,1)).toISOString().slice(0,7)
-  setZoneCrops(entries=>({...entries,[selectedZone]:{crop_id:crop,planted_month:month}}))
+  setZoneCrops(entries=>({...entries,[zoneId]:{crop_id:cropId,planted_month:month}}))
+  setActiveZone(zoneId);setCrop(cropId);setPendingCrop(null)
   setSpatialPlan(null);setSpatialError('')
  }
+ function applyZoneCrop(){assignZoneCrop(selectedZone,crop)}
  async function buildSpatialPlan(){
   if(!field)return
   if(!availableZones.length||availableZones.some(z=>!zoneCrops[z.id])){
@@ -452,7 +490,7 @@ export default function BiotexFarmerApp(){
   setSpatialBusy(true);setSpatialError('');setPrecomputedAt('');setSlowServer(false)
   const slowTimer=window.setTimeout(()=>setSlowServer(true),4000)
   try{
-   const payload={polygon:field,zones:availableZones.map(zone=>({
+   const payload={polygon:field,planning_months:planningMonths,zones:availableZones.map(zone=>({
     id:zone.id,crop_id:zoneCrops[zone.id].crop_id,planted_month:zoneCrops[zone.id].planted_month,
     ...(zone.polygon?{polygon:zone.polygon}:{})
    }))}
@@ -465,7 +503,7 @@ export default function BiotexFarmerApp(){
    setSpatialPlan(data);navigate(2)
    if(province)void compareZones()
   }catch(e){
-   if(isPrecomputedExample()){
+   if(planningMonths===12&&isPrecomputedExample()){
     setSpatialPlan(BARRANCA_EXAMPLE.spatial_plan as ChakraSpatialPlan);setResult(BARRANCA_EXAMPLE.compare as unknown as Result)
     setPrecomputedAt(BARRANCA_EXAMPLE.computed_at);navigate(2)
    }else setSpatialError(readableApiError(e,lang==='en'))
@@ -503,7 +541,7 @@ export default function BiotexFarmerApp(){
    const v=await r.json() as Result
    if(token===request.current)setResult(v)
   }catch(e){if(token===request.current){
-   if(isPrecomputedExample()){setResult(BARRANCA_EXAMPLE.compare as unknown as Result);setPrecomputedAt(BARRANCA_EXAMPLE.computed_at)}
+   if(planningMonths===12&&isPrecomputedExample()){setResult(BARRANCA_EXAMPLE.compare as unknown as Result);setPrecomputedAt(BARRANCA_EXAMPLE.computed_at)}
    else setCompareError(readableApiError(e,lang==='en'))}}
   finally{if(token===request.current)setCompareBusy(false)}
  }
