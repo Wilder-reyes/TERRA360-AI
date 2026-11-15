@@ -6,6 +6,7 @@ import {approximatePolygonHectares,validatePolygon} from './geometry'
 import {TEAM_FIELDS,ZONES,type GeoPolygon} from './rotationZones'
 import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
 import SatelliteEvidence from './SatelliteEvidence'
+import FarmDecisionEvidence,{type EconomicReport} from './FarmDecisionEvidence'
 import './biotex-farmer.css'
 
 type Lang='es'|'en'
@@ -24,7 +25,12 @@ type Strategy={
  sections:{why:{es:string[];en:string[]};benefits:{es:string[];en:string[]};gaps:{es:string[];en:string[]};risks:{es:string[];en:string[]};evidence:{es:string[];en:string[]}}
 }
 type FieldSoil={texture?:'arenosa'|'franca'|'arcillosa';ph?:number;salinity_ds_m?:number;organic_matter_percent?:number;drainage?:'bueno'|'regular'|'malo'}
-type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};upper_basin_rain?:{status:string;last_season?:{season:string;percent_of_normal:number};note_es?:string;note_en?:string};
+type OfficialContext={
+ ana_historical_context?:{status:string;reference_url?:string;statistics?:{river:string;average_flow_m3_s:number}[]};
+ basin?:{status:string};weather_alerts?:{status:string};market_prices?:{status:string}
+}
+type SoilResult={status:string;alerts?:{crop_id:string;message_es:string}[];needs_review?:string[]}
+type Result={status:string;strategies:Strategy[];official_evidence?:OfficialContext;soil_assessment?:SoilResult;recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';farm_inputs?:{soil?:FieldSoil;irrigation_allowance_m3_ha_season?:number;status:string};upper_basin_rain?:{status:string;last_season?:{season:string;percent_of_normal:number};note_es?:string;note_en?:string};
  recommendation_reason_es?:string;recommendation_reason_en?:string;
  climate?:{period:string;annual_et0_mm:number;cell_adjustment?:{reason_es:string;reason_en:string}|null};
  income_crop?:string;disclaimer_es?:string;disclaimer_en?:string;method?:Record<string,unknown>}
@@ -216,6 +222,7 @@ export default function BiotexFarmerApp(){
  const [result,setResult]=useState<Result|null>(null)
  const [planBusy,setPlanBusy]=useState(false)
  const [planError,setPlanError]=useState('')
+ const [economicReport,setEconomicReport]=useState<EconomicReport|null>(null)
  const [otherOpen,setOtherOpen]=useState(false)
  const [mapLayer,setMapLayer]=useState<'photo'|'vegetation'|'rain'>('photo')
  const [mapLayerFailed,setMapLayerFailed]=useState(false)
@@ -331,7 +338,7 @@ export default function BiotexFarmerApp(){
    if(!r.ok)throw new Error(await httpErrorMessage(r,lang==='en'))
    const v=await r.json() as Result
    if(token!==request.current)return
-   setResult(v);setOtherOpen(false);navigate(3)
+   setResult(v);setEconomicReport(null);setOtherOpen(false);navigate(3)
   }catch(e){if(token===request.current)setPlanError(readableApiError(e,lang==='en'))}
   finally{if(token===request.current)setPlanBusy(false)}
  }
@@ -424,6 +431,10 @@ export default function BiotexFarmerApp(){
   {result.farm_inputs?.soil&&<p>{lang==='es'?'Suelo declarado (sin validación de laboratorio):':'Reported soil (without laboratory verification):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+': '+v).join(' · ')}</p>}
   {result.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por el usuario, todavía no usada como restricción:':'Reported irrigation water, not yet a hard constraint:'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha.</p>}
   {result.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season}, {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de precipitación habitual en la cabecera; no es caudal del río.':'of usual upper-basin precipitation; not river discharge.'}</p>}
+  {economicReport&&<div className="b-print-economics"><h3>{lang==='es'?'Cuenta económica basada en los datos del agricultor':'Farmer-input economic estimate'}</h3>
+   <p>{lang==='es'?'Estimación por hectárea para un ciclo de 24 meses, no ganancia garantizada.':'Estimate per hectare for a 24-month cycle, not guaranteed profit.'}</p>
+   {economicReport.strategies.map(x=><p key={x.strategy_id}><strong>{x.strategy_id==='S0'?t.current:x.strategy_id}:</strong> {x.margin_soles_ha_24months==null?(lang==='es'?'Datos incompletos':'Incomplete inputs'):'S/ '+x.margin_soles_ha_24months.toLocaleString(lang==='es'?'es-PE':'en-US')}</p>)}
+  </div>}
   <p>{sampleNote?(lang==='es'?'Terreno mostrado para demostración; los cultivos registrados fueron proporcionados durante esta sesión.':'Field used for demonstration; crop inputs were supplied during this session.'):''}</p></div></div>}
  return <div className="b-app">
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
@@ -559,6 +570,10 @@ export default function BiotexFarmerApp(){
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
     {result.status==='partial'&&<p className="b-note"><Icon name="info" size={18}/>{t.partial}</p>}
     {preferred?mainCard(preferred):<div className="b-card b-no-recommend"><Icon name="info"/><h2>{t.noRecommend}</h2><p>{t.unavailable}</p></div>}
+    <FarmDecisionEvidence lang={lang} strategies={result.strategies} names={NAMES}
+      context={result.official_evidence} soil={result.soil_assessment}
+      irrigationKnown={waterAllowance.trim().length>0}
+      report={economicReport} onBudget={setEconomicReport}/>
     <div className="b-caution"><Icon name="alert" size={21}/><p>{t.warning}</p></div>
     {other.some(x=>(x.relative_to_current?.water_low_river_change_percent??0)>25)&&<p className="b-water-caution">{lang==='es'?'Hay otra opción que necesita bastante más agua en meses secos. Revisa esta diferencia antes de considerarla.':'Another option needs considerably more crop water in dry months. Review this difference before considering it.'}</p>}
     {other.length>0||original?<section className="b-compare-wrap"><button type="button" className="b-compare-trigger" aria-expanded={otherOpen} onClick={()=>setOtherOpen(v=>!v)}><span>{t.other}</span><span>{otherOpen?'−':'+'}</span></button>
