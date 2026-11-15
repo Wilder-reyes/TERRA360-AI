@@ -33,7 +33,7 @@ test('place search and crop reference lookup are inside the shared journey',asyn
 test('mobile viewport preserves map drawing and readable controls',async({page})=>{
  await page.setViewportSize({width:390,height:844});await page.goto('/?research=1')
  await expect(page.locator('.b-map')).toBeVisible()
- await page.getByRole('button',{name:'Delimitar otro terreno'}).click()
+ await page.getByRole('button',{name:'Dibujar mi terreno'}).click()
  await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeDisabled()
  await page.getByRole('button',{name:'Cancelar',exact:true}).click()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(391)

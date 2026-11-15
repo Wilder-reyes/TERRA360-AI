@@ -7,10 +7,10 @@ test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setIte
 
 test('Barranca is the only public study example and users may outline another place',async({page})=>{
  await page.goto('/?vista=chalhuas&research=1')
- await expect(page.getByRole('button',{name:/Explorar parcela de Barranca/})).toBeVisible()
+ await expect(page.getByRole('button',{name:/Ver un ejemplo/})).toBeVisible()
  await expect(page.getByText(/Chalhuas/)).toHaveCount(0)
  await expect(page.locator('.b-map')).toBeVisible()
- await expect(page.getByRole('button',{name:'Delimitar otro terreno'})).toBeVisible()
+ await expect(page.getByRole('button',{name:'Dibujar mi terreno'})).toBeVisible()
 })
 
 test('NASA HLS uses the archived observations and explains low vegetation in plain language',async({page})=>{
@@ -75,7 +75,7 @@ test('desktop and mobile show three accessible steps without horizontal overflow
 
 test('English retains the same three-step process and map',async({page})=>{
  await page.goto('/?lang=en&research=1')
- await expect(page.getByRole('button',{name:/Explore the Barranca example/})).toBeVisible()
+ await expect(page.getByRole('button',{name:/Try an example/})).toBeVisible()
  await expect(page.locator('.b-progress button')).toHaveCount(3)
  await page.getByRole('button',{name:'Record crops by zone'}).click()
  await expect(page.getByRole('heading',{name:'Show what you planted'})).toBeVisible()

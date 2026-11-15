@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test'
+import {registerAllCropZones} from './chakra-fixtures'
 
 const plan={
  status:'prepared',parcel_area_ha:2.25,scope:'barranca_reference',
@@ -58,11 +59,14 @@ test('the farmer has a readable quarter calendar and last crop when no campaign 
  await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
+ await registerAllCropZones(page)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await expect(page.getByRole('heading',{name:/¿Para cuántos meses/})).toBeVisible()
  await page.getByRole('slider',{name:'Personaliza la duración'}).fill('18')
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await expect(page.getByRole('heading',{name:'Mi plan de cultivos'})).toBeVisible()
+ await expect(page.locator('.chakra-aerial-map')).toBeVisible()
+ await expect(page.locator('.chakra-plan-highlight')).toContainText('hectáreas')
  await expect(page.locator('.chakra-quarter-row')).toHaveCount(1)
  await expect(page.getByText('Vainita').first()).toBeVisible()
  await expect(page.locator('.chakra-quarter-zone')).toContainText('Camote')
@@ -80,6 +84,9 @@ test('mobile keeps crop cards compact and map in the same step without horizonta
  await page.goto('/')
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await expect(page.locator('.chakra-zone-map')).toBeVisible()
+ await expect(page.locator('.chakra-zone-choice')).toHaveCount(3)
+ await expect(page.locator('.chakra-zone-move-icon')).toHaveCount(1)
+ await expect(page.locator('.chakra-zone-resize-icon')).toHaveCount(4)
  await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(391)
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()

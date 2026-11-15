@@ -9,7 +9,7 @@ test.beforeEach(async({page})=>{
 test('starts with a clearly labeled Barranca study example and accepts other coordinates',async({page})=>{
  await page.goto('/?research=1')
  await expect(page.locator('.b-field-ready')).toHaveCount(1)
- await expect(page.getByRole('button',{name:'Delimitar otro terreno'})).toBeVisible()
+ await expect(page.getByRole('button',{name:'Dibujar mi terreno'})).toBeVisible()
  await page.getByText('Buscar por coordenadas').click()
  await page.getByRole('spinbutton',{name:'Latitud',exact:true}).fill('-10.738')
  await page.getByRole('spinbutton',{name:'Longitud',exact:true}).fill('-77.729')

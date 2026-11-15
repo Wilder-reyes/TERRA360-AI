@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test'
+import {registerAllCropZones} from './chakra-fixtures'
 
 const daily={
  source:'NASA POWER',data_status:'available',records:[
@@ -34,7 +35,7 @@ test.beforeEach(async({page})=>{
  await page.route('**/api/arie/crop-guidance**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify(guidance)}))
  await page.route('**/api/arie/crops?**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({items:[{id:'sweet_potato',name:'Camote',scientific_name:'Ipomoea batatas'}]})}))
 })
-async function selectedField(page:import('@playwright/test').Page){await page.goto('/?research=1');await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()}
+async function selectedField(page:import('@playwright/test').Page){await page.goto('/?research=1');await page.getByRole('button',{name:/Ver un ejemplo/}).click()}
 async function context(page:import('@playwright/test').Page){await selectedField(page);await page.getByText('Datos ambientales y satélite (opcional)',{exact:true}).click();await page.getByRole('button',{name:'Consultar datos del terreno'}).click()}
 async function cropReference(page:import('@playwright/test').Page){
  await selectedField(page);await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click();await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('camote');await page.getByRole('button',{name:'Buscar en catálogo'}).click();await page.getByRole('button',{name:'Camote · Ipomoea batatas'}).click();await page.getByRole('button',{name:'Revisar referencia regional'}).click()
@@ -51,7 +52,7 @@ test('searched crop reference does not become declared crop history or suitabili
  await cropReference(page)
  await expect(page.getByText(/La temperatura regional coincide/)).toBeVisible()
  await expect(page.getByText(/NO recomendaciones de siembra/)).toBeVisible()
- await expect(page.locator('.chakra-zone-choice')).toContainText(['Por registrar'])
+ await expect(page.locator('.chakra-zone-choice').first()).toContainText('Por registrar')
  await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
 })
 test('zone-by-zone PDF uses the native print entry point and a geometric map',async({page})=>{
@@ -67,6 +68,7 @@ test('zone-by-zone PDF uses the native print entry point and a geometric map',as
  await selectedField(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
+ await registerAllCropZones(page)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
  await page.getByRole('button',{name:'Guardar mi plan'}).click()
@@ -103,7 +105,7 @@ test('NASA GIBS layers and POWER figures keep distinct regional provenance',asyn
  await expect(page.getByRole('region',{name:'Clima histórico'})).toContainText('NASA POWER')
 })
 test('mobile map controls stay usable without a separate dashboard page',async({page})=>{
- await page.setViewportSize({width:375,height:812});await page.goto('/?research=1');await expect(page.locator('.b-map')).toBeVisible();await page.getByRole('button',{name:'Delimitar otro terreno'}).click();await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeDisabled();await page.getByRole('button',{name:'Cancelar',exact:true}).click()
+ await page.setViewportSize({width:375,height:812});await page.goto('/?research=1');await expect(page.locator('.b-map')).toBeVisible();await page.getByRole('button',{name:'Dibujar mi terreno'}).click();await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeDisabled();await page.getByRole('button',{name:'Cancelar',exact:true}).click()
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(376)
  await expect(page.locator('a[href*="vista="]')).toHaveCount(0)
 })

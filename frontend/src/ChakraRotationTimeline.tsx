@@ -29,11 +29,11 @@ export function quarterName(quarter:number,lang:'es'|'en'){
  return names[quarter]
 }
 export function quarterCrops(zone:ChakraZoneAdvice,months:string[]){
- const map=new Map<string,{crop_id:string;label:string;label_en:string;when:string}>()
+ const map=new Map<string,{crop_id:string;label:string;label_en:string;when:string;continues:boolean}>()
  for(const month of months){
   const campaign=campaignAt(zone,month)
   if(campaign&&!map.has(campaign.sow_month)){
-   map.set(campaign.sow_month,{crop_id:campaign.crop_id,label:campaign.crop_es,label_en:campaign.crop_en,when:campaign.sow_month})
+   map.set(campaign.sow_month,{crop_id:campaign.crop_id,label:campaign.crop_es,label_en:campaign.crop_en,when:campaign.sow_month,continues:!months.includes(campaign.sow_month)})
   }
  }
  return [...map.values()]
@@ -70,7 +70,7 @@ export default function ChakraRotationTimeline({plan,lang,monthIndex,onMonth}:{
      return <div className="chakra-quarter-cell" role="cell" key={quarter}>
       <span className="chakra-quarter-period">{quarterName(quarter,lang)}</span>
       {qMonths.length===0?<span className="chakra-quarter-muted">—</span>:values.length?values.map(c=>{const visual=cropVisual(c.crop_id);return <div key={c.when} className="chakra-quarter-crop" style={{background:visual.color}}>
-       <span>{visual.icon}</span><strong>{es?c.label:c.label_en}</strong><small>{displayMonth(c.when,lang).replace('.','')}</small>
+       <span>{visual.icon}</span><strong>{es?c.label:c.label_en}</strong><small>{c.continues?(es?'Continúa':'Ongoing'):displayMonth(c.when,lang).replace('.','')}</small>
       </div>}):<div className="chakra-quarter-empty">{es?'Entre campañas':'Between seasons'}<small>{es?'Último: ':'Last: '}{es?zone.current_crop:zone.current_crop_en||zone.current_crop}</small></div>}
      </div>
     })}
@@ -80,6 +80,6 @@ export default function ChakraRotationTimeline({plan,lang,monthIndex,onMonth}:{
    const currentCrop=campaignAt(zone,current),visual=cropVisual(currentCrop?.crop_id||zone.current_crop_id)
    return <span key={zone.zone_id}><i style={{background:visual.color}}/>{zoneLabel(zone.zone_id,es,i)}: <strong>{currentCrop?(es?currentCrop.crop_es:currentCrop.crop_en):((es?'Último cultivo: ':'Last grown: ')+(es?zone.current_crop:zone.current_crop_en||zone.current_crop))}</strong></span>
   })}</div>
-  <p className="chakra-calendar-note">{es?'Las fechas son sugerencias para revisar según agua, suelo y temporada. No son predicciones de cosecha.':'Dates are references to review against water, soil and the planting season; they are not harvest predictions.'}</p>
+  <p className="sr-only">{es?'Consulta las fuentes y limitaciones del plan en la página Fuentes.':'See sources and limitations on the Sources page.'}</p>
  </section>
 }

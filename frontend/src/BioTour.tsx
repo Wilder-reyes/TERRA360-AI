@@ -30,13 +30,13 @@ export default function BioTour({lang='es',step=0,assigned=0,zoneCount=1,landing
  const guide=useMemo(()=>{
   const es=lang==='es'
   const messages:Record<string,[string,string]>={
-   start:es?['¡Hola! Soy BIO','Comencemos juntos. Pulsa «Explorar parcela de Barranca» para ver cómo funciona tu terreno.']:['Hi! I’m BIO','Let’s begin. Tap “Explore the Barranca example” to see the field.'],
-   map:es?['Marca tu terreno','Toca las esquinas de tu parcela en el mapa y confirma el contorno.']:['Outline your land','Tap the field corners on the map and confirm the outline.'],
-   next:step===0?(es?['¡Terreno listo!','Ahora pulsa «Registrar cultivos» para indicarme qué sembraste.']:['Your field is ready!','Tap “Record crops” and show what you planted.']):(es?['¡Muy bien!','Ya registraste tus zonas. Pulsa «Continuar a mi plan».']:['Well done!','Your areas are recorded. Tap “Continue to my plan”.']),
-   crops:es?['¿Qué sembraste antes?','Elige el mes y toca el dibujo de un cultivo. Luego selecciona en el mapa la zona donde creció.']:['What did you grow before?','Choose a planting month and a crop card. Then tap the area on the map where it grew.'],
-   zone:es?['¡Ahora el mapa!','Toca la zona de la parcela donde sembraste ese cultivo. El color cambiará al guardarlo.']:['Now the map!','Tap the area where you planted that crop. Its color will change when saved.'],
-   plan:es?['Organiza tus próximas siembras','Selecciona cuántos meses quieres preparar y pulsa «Crear mi calendario».']:['Plan your next plantings','Choose how many months ahead to plan and tap “Create my calendar”.'],
-   result:es?['¡Este es tu plan!','Explora los años para ver qué podrías sembrar en cada zona. Revisa las fechas antes de decidir.']:['Here is your plan!','Explore the years to see what you could plant in each area. Check dates before deciding.']
+   start:es?['¡Hola! Soy BIO','Yo te acompañaré en tres pasos. Si ya tienes tu terreno, pulsa «Dibujar mi terreno». Si quieres practicar, selecciona «Ver un ejemplo».']:['Hi! I’m BIO','I will guide you through three steps. Choose “Outline my land”, or “Try an example” to practice.'],
+   map:es?['Paso 1: tu terreno','Busca el lugar de tu chacra, toca cada esquina en el mapa y cierra el contorno. Si te equivocas, puedes corregirlo.']:['Outline your land','Tap the field corners on the map and confirm the outline.'],
+   next:step===0?(es?['¡Ya tenemos tu terreno!','Comprueba el borde verde y pulsa «Registrar cultivos por zona» para comenzar.']:['Your field is ready!','Tap “Record crops” and show what you planted.']):(es?['¡Registraste tus cultivos!','Ahora pulsa «Continuar a mi plan». Con el historial de cada zona prepararemos tus próximas siembras.']:['Well done!','Your areas are recorded. Tap “Continue to my plan”.']),
+   crops:es?['Paso 2: tus cultivos','Aquí tienes '+zoneCount+' zonas. Elige qué cultivo sembraste y cuándo. Después toca su zona en el mapa. Puedes mover los rectángulos desde el centro o sus esquinas.']:['Step 2: your crops','There are '+zoneCount+' areas. Choose what and when you planted, then tap the corresponding area on the map. Move rectangles using their centre or corners.'],
+   zone:es?['Marca dónde lo sembraste','¡Perfecto! Ahora toca el rectángulo correspondiente en el mapa. Su color cambiará. Llevar la tarjeta al mapa también funciona en computadora.']:['Now the map!','Tap the area where you planted that crop. Its color will change when saved.'],
+   plan:es?['Paso 3: las próximas siembras','Elige entre 3 y 60 meses, según lo que necesites organizar. Pulsa «Crear mi calendario» para ver qué puedes sembrar en cada zona y en qué mes.']:['Plan your next plantings','Choose how many months ahead to plan and tap “Create my calendar”.'],
+   result:es?['¡Tu plan está listo!','Este es el mapa aéreo de tu terreno. Selecciona un año y un mes; verás cómo cambian las propuestas de cultivo y cuándo podrías sembrarlas.']:['Here is your plan!','Explore the years to see what you could plant in each area. Check dates before deciding.']
   }
   return messages[phase]
  },[phase,step,lang])

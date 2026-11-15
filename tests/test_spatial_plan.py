@@ -41,6 +41,18 @@ class SpatialPlanTests(unittest.TestCase):
             self.assertGreater(item["area_ha"], 0)
             self.assertIsNotNone(item["reference_water_mm"])
 
+    def test_large_parcel_outside_barranca_is_supported_as_reference(self):
+        # A real field need not be in Barranca or smaller than 500 hectares.
+        field = polygon(-71.990, -13.55, -71.950, -13.515)
+        result = build_spatial_plan(field, [
+            {"id": "rest", "crop_id": "camote", "planted_month": "2026-02"}
+        ], planning_months=12)
+        self.assertGreater(result["parcel_area_ha"], 500)
+        self.assertLess(result["parcel_area_ha"], 10000)
+        self.assertEqual(result["scope"], "exploratory_reference")
+        self.assertEqual(result["ai_status"], "agronomic_rule_engine")
+        self.assertEqual(len(result["zone_plans"]), 1)
+
     def test_other_region_does_not_inherit_lima_calendar_or_ai(self):
         field = polygon(-71.993, -13.517, -71.991, -13.515)
         result = build_spatial_plan(field, [

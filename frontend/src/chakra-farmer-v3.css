@@ -158,3 +158,39 @@
  .chakra-farmer-clean:not(.chakra-research) #chakra-field .b-map-actions{background:transparent!important}
  .chakra-farmer-clean:not(.chakra-research) #chakra-field .b-map-frame .leaflet-control-attribution{display:block!important;opacity:.9}
 }
+
+/* V4: movable zones with clear grips. The central handle moves, corner grips resize. */
+.chakra-zone-move-icon,.chakra-zone-resize-icon{border:0!important;background:none!important}
+.chakra-zone-move-icon>span{width:31px;height:31px;border:2px solid #fff;display:grid;place-items:center;border-radius:50%;background:#D6F866;color:#14251b;font-size:22px;line-height:1;box-shadow:0 3px 13px #0009;cursor:grab;touch-action:none;user-select:none}
+.chakra-zone-resize-icon>span{display:block;width:20px;height:20px;border:3px solid #fff;border-radius:5px;background:#E2B966;box-shadow:0 3px 12px #0008;cursor:nwse-resize;touch-action:none}
+.chakra-zone-move-icon:active>span{cursor:grabbing}
+.chakra-zone-map .leaflet-marker-icon.chakra-zone-move-icon{z-index:550!important}
+.chakra-zone-map .leaflet-marker-icon.chakra-zone-resize-icon{z-index:551!important}
+.chakra-zone-choices>.chakra-zone-choice{box-shadow:inset 5px 0 var(--zone-color,#D6F866)!important}
+.chakra-zone-choices>.chakra-zone-choice.chosen{box-shadow:inset 6px 0 var(--zone-color,#D6F866),0 0 0 2px #D6F86699!important}
+.chakra-month-why{color:#cde2c5!important;font-size:13px;line-height:1.45;grid-column:1/-1;padding:9px 12px;margin:0;background:#1e3525;border-left:3px solid #D6F866;border-radius:7px}
+.chakra-zone-page .chakra-crop-when{display:flex!important;flex-direction:column;align-items:stretch!important;gap:10px}
+.chakra-zone-page .chakra-crop-when label{width:100%;display:flex;flex-direction:column;gap:7px;font-size:15px;font-weight:750}
+.chakra-zone-page .chakra-crop-when select{width:100%;font-size:15px}
+.chakra-zone-page .chakra-crop-when button{width:100%}
+.chakra-aerial-plan{margin:18px 0 24px;padding:16px;border:1px solid #395841;border-radius:25px;background:#101f15;color:#fff;overflow:hidden}
+.chakra-aerial-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:13px;margin:3px 2px 15px}
+.chakra-aerial-heading strong{display:block;font-size:clamp(20px,3vw,28px);color:#e9f6e0}
+.chakra-aerial-heading p{color:#bcd3b5;font-size:13px;max-width:540px;line-height:1.45;margin:5px 0}
+.chakra-aerial-heading>span{font-weight:800;font-size:18px;background:#D6F866;color:#193019;border-radius:12px;padding:10px 15px}
+.chakra-aerial-frame{border:3px solid #D6F866;border-radius:19px;overflow:hidden;box-shadow:0 12px 40px #0007}
+.chakra-aerial-map{height:clamp(350px,49vw,580px)!important;width:100%;background:#283923}
+.chakra-aerial-plan figcaption{font-size:12px;color:#c2d5ba;margin:12px 3px 1px}
+.chakra-aerial-map .leaflet-control-attribution{font-size:10px;background:#101f15cd;color:#fff}
+.chakra-aerial-map .leaflet-control-attribution a{color:#D6F866}
+.chakra-aerial-plan .leaflet-tooltip.chakra-crop-map-label{font-size:12px;max-width:170px;white-space:normal;line-height:1.3;text-align:center}
+.chakra-farmer-clean:not(.chakra-research) .chakra-plan-scope{display:none!important}
+@media(max-width:650px){.chakra-aerial-plan{padding:9px}.chakra-aerial-map{height:380px!important}.chakra-aerial-heading{padding:4px}.chakra-aerial-map .leaflet-tooltip.chakra-crop-map-label{font-size:10px;max-width:110px}}
+@media print{.chakra-aerial-plan{display:none!important}.chakra-plan-sketch{display:block!important}}
+
+.chakra-crop-planting-month{background:#203827;border:1px solid #4f7250;border-radius:14px;padding:13px 16px;margin:12px 0 14px}
+.chakra-crop-planting-month label{display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:800}
+.chakra-crop-planting-month select{width:100%;min-height:48px;background:#f3f7ed;color:#183322;padding:9px 12px;border:2px solid #9ab890;border-radius:11px;font-size:16px}
+.chakra-crop-planting-month .chakra-month-why{margin:10px 0 0}
+.chakra-zone-choices .chakra-zone-choice span{font-weight:850;line-height:1.25}
+.chakra-zone-choices .chakra-zone-choice strong{color:inherit}
