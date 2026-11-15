@@ -24,6 +24,17 @@ All indicators are **relative to the current rotation**. They are not yield, pro
 - **NASA GPM IMERG basin climatology:** when `backend/app/data/imerg_basin_seed.json` is absent, the app displays an unavailable state rather than inventing precipitation. Basin precipitation is not river discharge or the farmer's irrigation entitlement.
 - **Validation status:** documented methods and automated tests are not field validation. Crop water is a relative Kc × ET0 estimate, not measured irrigation needs or yield.
 
+## BIOTEX v0.25 — contrastar evidencia antes de recomendar
+
+* **Design:** the farmer sees the crop sequence first, followed by a short irrigation/soil checklist. Official water, alerts, prices and model methods are progressively disclosed. The target-persona and field testing protocol are in [docs/BIOTEX_v025_analisis_usuario_y_validacion.md](docs/BIOTEX_v025_analisis_usuario_y_validacion.md). No farmer interviews or agronomist approval have been claimed.
+* **ANA:** official Pativilca and Supe published historical average flow context is separated from parcel water allocation. The official-source service `/api/rotation/evidence-sources` does not invent live observations; curated dated records require a review and provenance.
+* **SENAMHI:** farmers can open the official alert page. A missing verified alert feed is never presented as “no warning.”
+* **FAO soil:** optional field measurements can screen crops only when laboratory-sourced entries AND signed agronomist-reviewed species ranges exist in a verified dataset. Without both, the API abstains.
+* **Costs / income:** optional `/api/rotation/economics` calculates per-hectare two-year revenue minus costs using farmer-provided sowings, yield, expected farmgate prices and costs. Missing data yields incomplete status. MIDAGRI wholesale prices are references, not automatically substituted as farmgate revenue.
+* **ML:** `scripts/train_agro_model.py` can train a candidate from 200+ consented real campaigns across 30+ distinct plots. It is NOT trained or used in production; see [docs/BIOTEX_v025_estado_IA.md](docs/BIOTEX_v025_estado_IA.md).
+* **NASA IMERG:** bounded Barranca workflow exists but the 10+ year historical summary cannot be declared complete until a private Earthdata credential and GES DISC authorisation allow processing and the results are reviewed.
+* **R2:** a one-original-granule uploader exists and is deliberately disabled. It now fails closed without account-wide inventory and stops above 8 GB (Cloudflare standard storage free allowance 10 GB-month account-wide). Operation quotas need separate Cloudflare billing checks; no upload is triggered by API calls.
+
 ## v0.24 · Barranca farmer-first visual evidence
 
 - **One** public Barranca field to explore; the user may search other locations and mark a farm, but noncoastal agricultural models abstain.
