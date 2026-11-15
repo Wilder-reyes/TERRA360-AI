@@ -158,3 +158,16 @@ Destino: Wilder-reyes/TERRA360-AI, base main 28359f896e305e1656884e99cef664b92a7
 
 Commit b101c21919f3dcee04b1dfe4a26d66c8ccaea041: quality checks (backend 266, frontend 39, build y Docker) y HLS reproducible aprobados. Playwright: 39/43; cuatro expectativas de versión/copy heredadas del paquete se actualizan al contrato actual (stage-8, advertencia IMERG y asignaciones propuestas). No se omiten pruebas.
 Respaldo duradero: BIOTEX-branches-20261115.bundle, libfile_44a6cac587388191ab6b8a9e07154504. Ninguna rama eliminada: autenticación adicional de Google bloqueada por revisión automática del navegador; continuar requiere autorización de ese origen.
+
+## Corrección Barranca exclusiva — 2026-11-15
+
+Encargo vigente: corregir la aplicación publicada y ofrecer solo Barranca. Sustituye la selección pública Chalhuas/Mantaro; se preservan módulos, datos y modelos históricos fuera del bundle público.
+
+- Conexión comprobada: terra360-api.onrender.com es el servicio Docker/FastAPI activo del repositorio en Render, workspace AI confirmado por el propietario. /api/health y OpenAPI HTTP 200. POST /api/rotation/compare de Barranca devuelve HTTP 200, tres estrategias y ai_weighted=true.
+- frontend/vercel.json reenvía exclusivamente /api/:path* a ese backend mediante HTTPS. Sin VITE_API_URL se usa la misma dirección pública de Vercel; se conserva el override explícito. No se ejecuta Python dentro de Vercel y no se transfieren credenciales al navegador.
+- Inicio/mapa/selección limitados a Barranca; retiro del selector y montaje público de AndesRotation. Guardados fuera del ámbito se conservan sin aplicarse al modelo.
+- Una sola tarjeta de estudio antes del mapa, texto de promesa corregido, edición de límites/subparcelas desplegable, leyenda original NASA visible e interpretación en lenguaje simple.
+- Nueva capa HLS: copia byte-idéntica del historial del modelo, fechas originales, 44 observaciones válidas y huecos null. Color del resumen mensual seleccionado en toda la parcela, no un ráster por píxel; rangos orientativos de vegetación, no salud o aptitud. Desactivada si se cambia el contorno. El historial de la parcela puede verse sin consultas al servidor.
+- npm test: 41 pruebas aprobadas; build TypeScript/Vite aprobado; backend unittest: 266 aprobadas; modelo HLS reproducido; auditoría estática sin credenciales ni imports rotos.
+- Playwright/visual y verificación del proxy en Vercel: pendientes de CI y publicación de este cambio. El entorno local no permite arrancar Chromium (socket EPERM).
+- Commit: el commit que incorpora esta sección. No se modificó imerg_basin_seed.json ni el entrenamiento original.

@@ -1,3 +1,5 @@
+> Actualización 2026-11-15: Barranca es el único piloto público. Root Directory `frontend`. El proxy HTTPS `/api/:path*` ya apunta al servicio Render verificado `https://terra360-api.onrender.com/api/:path*`; deja `VITE_API_URL` sin definir para utilizarlo. Si se define explícitamente, debe ser un origen HTTPS de la API sin `/api`, y ese backend debe permitir el dominio mediante CORS. El frontend sigue siendo estático. Una publicación requiere comprobar `/api/health` y una comparación real a través del dominio Vercel, además del build y tests.
+
 # Despliegue manual de BIOTEX — configuración vigente
 
 No se ha publicado esta rama ni se ha configurado un backend nuevo. No utilizar los proyectos o dominios históricos como dependencia.

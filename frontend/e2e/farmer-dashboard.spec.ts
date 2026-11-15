@@ -75,7 +75,7 @@ test('missing NASA data remains unknown and catalogue review never invents plant
 })
 test('release describes the unified application with no published-site dependency',async({page})=>{
  await page.goto('/');await expect(page).toHaveTitle('BIOTEX | Tu chacra y tu plan de siembra')
- const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('stage-8-preview-candidate');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('stages-2-through-8-integrated')
+ const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('barranca-only-connected-api');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('barranca-map-first')
 })
 test('NASA GIBS layers and POWER figures keep distinct regional provenance',async({page})=>{
  await context(page);await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()

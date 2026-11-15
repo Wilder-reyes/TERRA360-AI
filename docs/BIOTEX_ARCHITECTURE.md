@@ -1,6 +1,6 @@
 # BIOTEX — Arquitectura vigente desde la etapa 1
 
-Una aplicación React/Vite y una API FastAPI independiente. No hay despliegue nuevo configurado ni servicio antiguo implícito. La rama local parte del commit de auditoría `ea75de7`; no se ha publicado.
+Una aplicación React/Vite y una API FastAPI independiente. Configuración vigente: único piloto público Barranca, frontend en Vercel y API verificada en Render (terra360-api). `frontend/vercel.json` reenvía `/api/:path*` a esa API por HTTPS. El propietario confirmó usar el workspace AI de Render para esta corrección. Las secciones posteriores sobre perfiles andinos se conservan como historia técnica; no son recorridos públicos activos.
 
 ## Recorrido único
 

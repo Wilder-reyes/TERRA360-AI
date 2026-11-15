@@ -12,7 +12,7 @@ test('science overlays expose NASA provenance and actual provider legend rather 
  await expect(panel).toContainText('250 m')
  await expect(panel).toContainText('La fecha es una solicitud')
  await expect(panel).toContainText('NDVI')
- await panel.getByText('Leyenda NASA original',{exact:true}).click()
+ await expect(panel.locator('.b-map-legend')).toHaveAttribute('open','')
  await expect(panel.locator('img[src*="GetLegendGraphic"]')).toHaveCount(1)
  await expect(panel.getByRole('link',{name:'Ver capa en NASA Worldview'})).toHaveAttribute('href',/MODIS_Terra_NDVI_8Day/)
  await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()

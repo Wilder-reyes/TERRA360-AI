@@ -29,8 +29,8 @@ export async function httpErrorMessage(response: Response, en: boolean): Promise
   ? 'The server or satellite provider is temporarily unavailable. Please retry shortly.'
   : 'El servidor o proveedor satelital no está disponible temporalmente. Vuelve a intentarlo en un momento.'
  if(response.status===404)return en
-  ? 'This feature is not yet available on the deployed server.'
-  : 'Esta función todavía no está disponible en el servidor publicado.'
+  ? 'BIOTEX could not find this API route. Please retry; if it continues, the server connection needs attention.'
+  : 'BIOTEX no encontró esta consulta en el servidor. Reintenta; si continúa, hay que revisar la conexión del servicio.'
  if(response.status===429)return en
   ? 'The server is handling too many requests. Please retry shortly.'
   : 'El servidor está procesando demasiadas consultas. Vuelve a intentarlo en un momento.'
