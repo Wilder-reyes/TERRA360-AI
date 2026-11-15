@@ -157,7 +157,7 @@ function labelCrop(id:string,lang:Lang){return (NAMES[id]||[id,id])[lang==='es'?
 function mon(i:number,lang:Lang){const m=(7+i)%12;return (lang==='es'?MONTHS_ES:MONTHS_EN)[m]}
 function monthYear(index:number,baseYear:number,lang:Lang){const d=new Date(Date.UTC(baseYear,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}
 function planMonth(index:number,lang:Lang,year?:number){if(year){const d=new Date(Date.UTC(year,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}return mon(index,lang)+' · '+(lang==='es'?'año ':'year ')+(index<12?'1':'2')}
-function recentAugust(){const now=new Date();const year=now.getUTCFullYear(),m=now.getUTCMonth()+1;return (m>=8?year:year-1)-1}
+function recentAugust(){const now=new Date();const year=now.getUTCFullYear(),m=now.getUTCMonth()+1;return (m>=8?year:year-1)-2}
 function simpleDate(lang:Lang){return new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US',{year:'numeric',month:'long',day:'numeric'})}
 function fromGeo(p:GeoPolygon):Point[]{return p.coordinates[0].slice(0,-1).map(([lng,lat])=>({lat,lng}))}
 function toGeo(p:Point[]):GeoPolygon{return{type:'Polygon',coordinates:[[...p.map(a=>[a.lng,a.lat]),[p[0].lng,p[0].lat]]]}}
@@ -232,7 +232,7 @@ export default function BiotexFarmerApp(){
  const [fieldError,setFieldError]=useState('')
  const [plantings,setPlantings]=useState<Planting[]>([])
  const [crop,setCrop]=useState('maiz_amarillo_duro')
- const [cropMonth,setCropMonth]=useState(()=>{const d=new Date();return Math.max(0,Math.min(23,(d.getUTCFullYear()-recentAugust())*12+d.getUTCMonth()-7))})
+ const [cropMonth,setCropMonth]=useState(()=>{const d=new Date();return Math.max(0,Math.min(35,(d.getUTCFullYear()-recentAugust())*12+d.getUTCMonth()-7))})
  const [entryError,setEntryError]=useState('')
  const [history,setHistory]=useState<History|null>(null)
  const [historyBusy,setHistoryBusy]=useState(false)
@@ -268,7 +268,7 @@ export default function BiotexFarmerApp(){
  const availableZones=[...(remArea>=.005?[{id:'rest',polygon:null as GeoPolygon|null,ha:remArea}]:[]),...subplots.map(z=>({id:z.id,polygon:z.polygon as GeoPolygon|null,ha:approximatePolygonHectares(fromGeo(z.polygon))}))]
  const selectedZone=availableZones.some(z=>z.id===activeZone)?activeZone:(availableZones[0]?.id||'rest')
  const assignedCount=availableZones.filter(z=>Boolean(zoneCrops[z.id])).length
- const monthChoices=Array.from({length:24},(_,i)=>i).filter(i=>new Date(Date.UTC(recentAugust(),7+i,1)).getTime()<=Date.now())
+ const monthChoices=Array.from({length:36},(_,i)=>i).filter(i=>new Date(Date.UTC(recentAugust(),7+i,1)).getTime()<=Date.now())
   const confirmedOptions=[...new Set(plantings.map(p=>p.crop_id))]
  const supported=isBarranca(point)
  const studyParcel=isStudyParcel(field)
@@ -295,7 +295,7 @@ export default function BiotexFarmerApp(){
   try{
    const data=JSON.parse(localStorage.getItem(SAVED_FARM_KEY)||'null')
    if(!data||data.version!==1||!data.field||!Array.isArray(data.plantings))throw new Error('bad saved farm')
-   if(!isBarranca(centroid(data.field))){setSavedNotice(lang==='es'?'El terreno guardado está fuera de Barranca. Se conserva en tu dispositivo; elige la parcela de estudio para continuar.':'Saved field is outside Barranca. It remains on this device; choose the study field to continue.');return}
+   // A saved polygon can be restored anywhere; the trained NASA model still remains geographically scoped.
    const vertices=fromGeo(data.field)
    if(!validatePolygon(vertices).valid||approximatePolygonHectares(vertices)<0.1||approximatePolygonHectares(vertices)>500)throw new Error('bad polygon')
    const safe=migrateSavedPlantings(((data.plantings||[]) as Planting[]).filter(v=>CROPS.includes(v.crop_id)),Number.isInteger(data.baseYear)?data.baseYear:null,baseYear).slice(0,10)
@@ -387,7 +387,7 @@ export default function BiotexFarmerApp(){
    const next={id:'Subparcela '+(1+Math.max(0,...subplots.map(v=>Number(v.id.split(' ')[1])||0))),polygon:toGeo(points)}
    const result=validateSubplotLayout(fromGeo(field),[...subplots,next].map(v=>({id:v.id,points:fromGeo(v.polygon)})))
    if(!result.valid){setFieldError(lang==='es'?'La subparcela debe quedar dentro del terreno, sin solaparse con otras.':'The subplot must remain inside the field without overlapping others.');return}
-   setSubplots(v=>[...v,next]);setDrawingSubplot(false);setPoints([]);setFieldError('');return
+   setSubplots(v=>[...v,next]);setSpatialPlan(null);setDrawingSubplot(false);setPoints([]);setFieldError('');return
   }
   setSubplots([]);setField(toGeo(points));setFieldLabel(lang==='es'?'Chacra marcada por ti':'Field marked by you');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
  function addCrop(){const x=addPlantingToRotation(plantings,crop,cropMonth)
@@ -586,7 +586,7 @@ export default function BiotexFarmerApp(){
   <div className="chakra-background" aria-hidden="true"><img src="/chakra-fields.webp" alt=""/><div/></div>
   <main id="main" className={'b-main '+(landing&&step===0?'chakra-home':'chakra-workspace')}>
    {landing&&step===0&&<ChakraLanding lang={lang} onStart={()=>{setExample(BARRANCA_FIELD);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}} onMap={()=>{changeArea();setDrawing(true);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}}/>}
-  <div className="b-progress-wrap"><div className="b-progress-shell"><div className="b-progress-label"><span>{lang==='es'?'Tu recorrido':'Your journey'}</span><strong>{lang==='es'?'Paso '+(step+1)+' de 4':'Step '+(step+1)+' of 4'}</strong></div>
+  <div className="b-progress-wrap"><div className="b-progress-shell"><div className="b-progress-label"><span>{lang==='es'?'Tu recorrido':'Your journey'}</span><strong>{lang==='es'?'Paso '+(Math.min(step,2)+1)+' de 3':'Step '+(Math.min(step,2)+1)+' of 3'}</strong></div>
 <nav className="b-progress" data-bio-target="bio-steps" aria-label={lang==='es'?'Progreso del plan':'Plan progress'}>{t.steps.map((name,i)=><button key={i} type="button" disabled={i>step} aria-current={step===i?'step':undefined} className={step===i?'active':i<step?'done':''} onClick={()=>navigate(i as Step)}><span className="b-step-number">{i<step?<Icon name="check" size={17}/>:i+1}</span><span>{name}</span></button>)}</nav></div></div>
 
    {step===0&&<section id="chakra-field" className="b-layout">
@@ -711,7 +711,7 @@ export default function BiotexFarmerApp(){
     {fieldError&&<p className="b-error" role="alert">{fieldError}</p>}
     <div className="chakra-zones-heading"><h2>{lang==='es'?'¿Dónde sembraste?':'Where did you plant?'}</h2><span>{assignedCount}/{availableZones.length} {lang==='es'?'zonas registradas':'areas recorded'}</span></div>
     <div className="chakra-zone-choices">{availableZones.map(z=><button className={'chakra-zone-choice '+(selectedZone===z.id?'chosen':'')} type="button" key={z.id} aria-pressed={selectedZone===z.id}
-     onClick={()=>{setActiveZone(z.id);const previous=zoneCrops[z.id];if(previous){setCrop(previous.crop_id);const idx=relativeMonthIndex(previous.planted_month,baseYear);if(idx>=0&&idx<24)setCropMonth(idx)}}}>
+     onClick={()=>{setActiveZone(z.id);const previous=zoneCrops[z.id];if(previous){setCrop(previous.crop_id);const idx=relativeMonthIndex(previous.planted_month,baseYear);if(idx>=0&&idx<36)setCropMonth(idx)}}}>
      <span>{z.id==='rest'?(lang==='es'?'Resto del terreno':'Remaining field'):z.id}</span><small>{z.ha.toFixed(2)} ha</small>
      <strong>{zoneCrops[z.id]?labelCrop(zoneCrops[z.id].crop_id,lang):(lang==='es'?'Por registrar':'To register')}</strong></button>)}</div>
     <section className="chakra-crop-section"><h2>{lang==='es'?'¿Qué sembraste aquí?':'What did you grow here?'}</h2>
