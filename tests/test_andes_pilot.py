@@ -19,6 +19,13 @@ class AndeanPilotTest(unittest.TestCase):
     def test_rejects_undocumented_crop(self):
         with self.assertRaises(ValueError):
             andes_rotation.compare(["papa","arveja","plátano","avena"],2027,"soil")
+    def test_ecostress_metadata_never_becomes_a_temperature(self):
+        from app.api.andes_routes import summarize_ecostress_granules
+        out=summarize_ecostress_granules({"feed":{"entry":[{"producer_granule_id":"tile",
+         "time_start":"2026-09-01T12:00:00Z"}]}})
+        self.assertEqual(out["status"],"metadata_only_quality_unverified")
+        self.assertFalse(out["temperature_values_available"])
+        self.assertIsNone(out["scenes"][0]["temperature_c"])
     def test_era5_summary_does_not_replace_missing_with_zero(self):
         self.assertEqual(summarize_era5_land({"daily":{"time":["2025-01-01"],
              "temperature_2m_min":[0],"precipitation_sum":[0]}},2025)["status"],"insufficient_data")

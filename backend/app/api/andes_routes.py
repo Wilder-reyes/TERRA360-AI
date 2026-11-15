@@ -105,6 +105,49 @@ def validate_subplots(req:GeometryRequest):
     try:return verified_subplots(req.field,req.subplots)
     except ValueError as exc:raise HTTPException(422,str(exc)) from exc
 
+
+def summarize_ecostress_granules(payload:dict)->dict:
+    """Only public catalogue metadata; no thermal image nor land temperature."""
+    entries=(payload.get("feed") or {}).get("entry") or []
+    if not isinstance(entries,list):entries=[]
+    values=[]
+    for x in entries[:8]:
+        if not isinstance(x,dict):continue
+        ts=x.get("time_start")
+        title=x.get("producer_granule_id") or x.get("title") or x.get("id")
+        if isinstance(title,str) and isinstance(ts,str) and len(ts)>=10:
+            values.append({"granule_name":title[:160],"acquisition_time":ts,
+                           "temperature_c":None,"quality_verified":False})
+    return {
+        "status":"metadata_only_quality_unverified" if values else "no_catalogued_granules",
+        "source":"NASA CMR · ECOSTRESS ECO_L2T_LSTE V003",
+        "source_url":"https://ecostress.jpl.nasa.gov/data",
+        "resolution_m_nominal":70,
+        "scenes":values,
+        "temperature_values_available":False,
+        "note_es":"Se encontraron metadatos de escenas, no mediciones térmicas verificadas. Hay que descargar y validar LST, máscara de nubes y calidad por píxel antes de generar una capa.",
+    }
+
+@router.get("/ecostress-scenes")
+async def ecostress_scenes(latitude:float=Query(...,ge=-90,le=90),
+                          longitude:float=Query(...,ge=-180,le=180)):
+    if not -12.6<=latitude<=-11.5 or not -75.9<=longitude<=-74.8:
+        raise HTTPException(422,"Consulta limitada al piloto del Valle del Mantaro.")
+    # Limit scope to approximately 2km around the requested point.
+    bbox=f"{longitude-.01:.5f},{latitude-.01:.5f},{longitude+.01:.5f},{latitude+.01:.5f}"
+    params={"short_name":"ECO_L2T_LSTE","version":"003",
+            "bounding_box":bbox,
+            "temporal":"2025-01-01T00:00:00Z,2026-11-14T23:59:59Z",
+            "sort_key[]":"-start_date","page_size":8}
+    try:
+        async with httpx.AsyncClient(timeout=17,follow_redirects=False) as client:
+            r=await client.get("https://cmr.earthdata.nasa.gov/search/granules.json",
+                               params=params,headers={"Accept":"application/json","User-Agent":"BIOTEX-Research-Pilot/0.28"})
+            r.raise_for_status()
+            return summarize_ecostress_granules(r.json())
+    except (httpx.HTTPError,ValueError,TypeError) as exc:
+        raise HTTPException(503,"No fue posible consultar el catálogo NASA CMR. No hay datos térmicos verificados.") from exc
+
 @router.get("/era5-land")
 async def era5_land(latitude:float=Query(...,ge=-90,le=90),
                     longitude:float=Query(...,ge=-180,le=180),
