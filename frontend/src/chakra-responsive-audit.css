@@ -1,0 +1,165 @@
+/* CHAKRA X — mobile & tablet UX audit, 320–1280px.
+   Imported last. Print reports and technical calculations remain unchanged. */
+@media screen{
+ .b-app.chakra-farmer-clean :is(.b-main,.b-header-inner,.b-progress-shell,.b-farm-grid,.b-search-card,.chakra-zone-page,.chakra-zone-choices,.chakra-crop-grid,.chakra-crop-section,.chakra-zone-map-wrap,.chakra-calendar,.chakra-quarter-row,.chakra-quarter-cell,.chakra-aerial-plan,.chakra-aerial-frame),.chakra-information :is(.chakra-info-nav,.chakra-info-main,.chakra-story-card,.chakra-source-card){min-width:0;max-width:100%}
+ .b-app.chakra-farmer-clean :is(.b-btn,.chakra-crop-card,.chakra-zone-choice,.chakra-primary,.chakra-text-button,.chakra-nav-cta,.chakra-horizon-buttons button,.chakra-calendar-years button,.chakra-calendar-months button){touch-action:manipulation;overflow-wrap:anywhere}
+ .b-app.chakra-farmer-clean :is(.b-btn,.chakra-crop-when button,.chakra-horizon-buttons button,.chakra-calendar-years button,.chakra-calendar-months button,.chakra-zone-map-actions button){min-height:48px;white-space:normal}
+ .b-app.chakra-farmer-clean :is(button,a,input,select,summary):focus-visible,.chakra-information :is(button,a):focus-visible{outline:3px solid #D6F866;outline-offset:3px}
+ .b-app.chakra-farmer-clean .chakra-zone-map-wrap{isolation:isolate}
+ .chakra-zone-move-icon>span{width:44px!important;height:44px!important;font-size:26px!important;display:grid;place-items:center}
+ .chakra-zone-resize-icon>span{width:36px!important;height:36px!important;border-radius:10px!important}
+ .b-app.chakra-farmer-clean .chakra-zone-map-actions .b-btn{min-width:0;flex:1 1 150px;padding:10px 13px}
+ .b-app.chakra-farmer-clean .chakra-zone-choice{max-width:100%;overflow-wrap:anywhere}
+ .b-app.chakra-farmer-clean .chakra-calendar-v3 .chakra-quarter-crop{min-width:0;overflow-wrap:anywhere}
+ .chakra-information .chakra-info-nav :is(a,button),.chakra-information .chakra-info-bottom button,.chakra-information .chakra-source-card a{min-height:48px;touch-action:manipulation}
+ .chakra-information .chakra-source-card a{align-self:stretch;justify-content:center;text-align:center;white-space:normal}
+}
+@media screen and (max-width:1100px){
+ .b-app.chakra-farmer-clean .b-header-inner{display:grid!important;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;gap:7px 12px;padding:10px clamp(11px,2.5vw,24px)!important}
+ .b-app.chakra-farmer-clean .b-header-inner>.b-brand{grid-column:1;grid-row:1;min-width:0}
+ .b-app.chakra-farmer-clean .b-header-inner>.b-header-tools{grid-column:2;grid-row:1;margin:0!important;gap:7px}
+ .b-app.chakra-farmer-clean .b-header-inner>.chakra-nav{grid-column:1/-1;grid-row:2;display:flex!important;gap:7px!important;width:100%;justify-content:stretch}
+ .b-app.chakra-farmer-clean .chakra-nav a{display:flex!important;flex:1 1 0;min-height:44px;align-items:center;justify-content:center;border:1px solid #ffffff26;border-radius:11px;padding:8px 12px;background:#ffffff0b;color:#fff!important;font-size:13px;text-align:center}
+ .b-app.chakra-farmer-clean .b-main{padding-left:clamp(14px,2.5vw,28px)!important;padding-right:clamp(14px,2.5vw,28px)!important}
+ .b-app.chakra-farmer-clean .chakra-theme-toggle{min-width:44px!important;min-height:44px!important}
+ .b-app.chakra-farmer-clean .b-language button{min-height:44px!important;min-width:42px}
+}
+@media screen and (min-width:961px) and (max-width:1100px){
+ .b-app.chakra-farmer-clean .chakra-zone-page{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;column-gap:14px}
+ .b-app.chakra-farmer-clean .chakra-zone-page .chakra-crop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .b-app.chakra-farmer-clean .chakra-zone-page .chakra-zone-map-wrap{top:12px!important}
+}
+@media screen and (min-width:641px) and (max-width:960px){
+ .b-app.chakra-farmer-clean .b-main{padding-bottom:68px!important}
+ .b-app.chakra-farmer-clean .chakra-zone-map,.b-app.chakra-farmer-clean .chakra-zone-map-frame{height:440px!important;min-height:440px!important}
+ .b-app.chakra-farmer-clean .chakra-zone-page .chakra-crop-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px}
+ .b-app.chakra-farmer-clean .chakra-zone-page .chakra-crop-card{min-height:104px!important;padding:11px 7px!important}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-next{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-next .b-btn{min-width:0;width:100%}
+ .b-app.chakra-farmer-clean .chakra-horizon-actions,.b-app.chakra-farmer-clean .chakra-result-actions{display:flex;gap:10px;flex-wrap:wrap}
+ .b-app.chakra-farmer-clean :is(.chakra-horizon-actions,.chakra-result-actions) .b-btn{flex:1 1 205px}
+ .b-app.chakra-farmer-clean .chakra-calendar-months{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+ .b-app.chakra-farmer-clean .chakra-aerial-map{height:clamp(390px,53vw,525px)!important}
+ .chakra-information .chakra-info-main{padding:40px 22px}
+}
+@media screen and (max-width:640px){
+ html{scroll-padding-top:14px}
+ .b-app.chakra-farmer-clean{overflow-x:clip}
+ .b-app.chakra-farmer-clean .b-header{position:relative!important;top:auto!important;left:auto!important;right:auto!important;margin:8px 9px 0!important;padding:0!important}
+ .b-app.chakra-farmer-clean .b-header-inner{padding:9px!important;gap:7px!important}
+ .b-app.chakra-farmer-clean .b-brand{gap:5px;overflow:hidden}
+ .b-app.chakra-farmer-clean .b-brand b{font-size:clamp(18px,5vw,22px);line-height:1}
+ .b-app.chakra-farmer-clean .b-brand small{display:none}
+ .b-app.chakra-farmer-clean .b-brand-mark{width:33px!important;height:33px!important;flex:none}
+ .b-app.chakra-farmer-clean .b-brand-mark svg{width:30px;height:30px}
+ .b-app.chakra-farmer-clean .b-header-tools{gap:4px!important}
+ .b-app.chakra-farmer-clean .chakra-nav-cta{width:44px!important;min-width:44px!important;height:44px!important;padding:0!important;font-size:0!important;border-radius:12px}
+ .b-app.chakra-farmer-clean .chakra-nav-long,.b-app.chakra-farmer-clean .chakra-nav-short{display:none!important}
+ .b-app.chakra-farmer-clean .chakra-theme-toggle{width:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;font-size:18px!important}
+ .b-app.chakra-farmer-clean .b-language{gap:0;padding:1px!important}
+ .b-app.chakra-farmer-clean .b-language button{min-width:37px!important;width:37px!important;min-height:44px!important;font-size:12px!important;padding:0!important}
+ .b-app.chakra-farmer-clean .chakra-nav{gap:6px!important}
+ .b-app.chakra-farmer-clean .chakra-nav a{min-height:44px;font-size:13px;padding:7px 8px}
+ .b-app.chakra-farmer-clean .b-main{padding:14px 13px calc(125px + env(safe-area-inset-bottom,0px))!important}
+ .b-app.chakra-farmer-clean .chakra-map-intro{padding:10px 0!important}
+ .b-app.chakra-farmer-clean .chakra-map-intro h1{font-size:clamp(29px,7.5vw,39px)!important;line-height:1.12;margin:12px 0!important}
+ .b-app.chakra-farmer-clean .chakra-map-intro>p{font-size:15px!important;line-height:1.5}
+ .b-app.chakra-farmer-clean .chakra-map-intro-actions{display:grid;grid-template-columns:1fr;gap:9px}
+ .b-app.chakra-farmer-clean .chakra-map-intro-actions :is(.chakra-primary,.chakra-text-button){width:100%;min-height:52px;justify-content:center;padding:12px 14px;font-size:15px}
+ .b-app.chakra-farmer-clean .b-progress-wrap{position:fixed!important;inset:auto 0 0!important;z-index:1040!important;margin:0!important;padding:5px 9px calc(5px + env(safe-area-inset-bottom,0px))!important;border-radius:17px 17px 0 0;background:#0b160eec;box-shadow:0 -6px 24px #0007}
+ .b-app.chakra-farmer-clean .b-progress-shell{padding:3px!important;display:block!important}
+ .b-app.chakra-farmer-clean .b-progress-label{display:none}
+ .b-app.chakra-farmer-clean .b-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .b-app.chakra-farmer-clean .b-progress button{min-width:0;min-height:60px;padding:6px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;text-align:center}
+ .b-app.chakra-farmer-clean .b-step-number{width:27px;height:27px;font-size:12px}
+ .b-app.chakra-farmer-clean #chakra-field .b-search-card{padding:12px!important;gap:9px}
+ .b-app.chakra-farmer-clean #chakra-field .b-map{height:clamp(300px,53vh,420px)!important;min-height:300px!important}
+ .b-app.chakra-farmer-clean #chakra-field .b-map-frame{border-radius:17px!important}
+ .b-app.chakra-farmer-clean #chakra-field .b-map-actions{padding:9px!important;display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+ .b-app.chakra-farmer-clean #chakra-field .b-map-actions .b-btn{flex:1 1 128px;min-width:0;min-height:48px}
+ .b-app.chakra-farmer-clean #chakra-field .b-search{display:grid;grid-template-columns:1fr;gap:9px}
+ .b-app.chakra-farmer-clean #chakra-field .b-search input{min-width:0;width:100%;min-height:48px;font-size:16px}
+ .b-app.chakra-farmer-clean #chakra-field .b-search button{width:100%;min-height:50px}
+ .b-app.chakra-farmer-clean .b-next{display:flex!important;flex-direction:column;align-items:stretch;gap:9px;padding:12px!important}
+ .b-app.chakra-farmer-clean .b-next .b-btn{width:100%;min-width:0!important;flex:0 0 auto;min-height:49px}
+ .b-app.chakra-farmer-clean .b-next-context{width:100%;flex:0 0 auto}
+ .b-app.chakra-farmer-clean .chakra-zone-page{gap:11px;padding-top:0!important}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-intro{padding:9px 0!important}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-intro h1{font-size:clamp(26px,7.3vw,35px)!important}
+ .b-app.chakra-farmer-clean .chakra-zone-page>.b-intro>p{font-size:15px;line-height:1.5}
+ .b-app.chakra-farmer-clean .chakra-zones-heading{margin:5px 0;gap:7px;flex-wrap:wrap}
+ .b-app.chakra-farmer-clean .chakra-zone-choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .b-app.chakra-farmer-clean .chakra-zone-choice{min-width:0;min-height:92px!important;padding:12px 10px!important;gap:5px}
+ .b-app.chakra-farmer-clean .chakra-zone-choice :is(span,small,strong){max-width:100%;font-size:clamp(11px,3.3vw,14px);line-height:1.3;overflow-wrap:anywhere}
+ .b-app.chakra-farmer-clean .chakra-crop-section{padding:13px!important;margin:5px 0;border-radius:18px}
+ .b-app.chakra-farmer-clean .chakra-crop-section h2{font-size:21px;margin:0 0 9px!important}
+ .b-app.chakra-farmer-clean .chakra-crop-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+ .b-app.chakra-farmer-clean .chakra-crop-card{min-height:94px!important;padding:10px 5px!important;gap:7px}
+ .b-app.chakra-farmer-clean .chakra-crop-card .chakra-crop-art{font-size:30px}
+ .b-app.chakra-farmer-clean .chakra-crop-card>span:nth-child(2){font-size:13px;line-height:1.3}
+ .b-app.chakra-farmer-clean .chakra-zone-map-wrap{padding:8px!important;border-radius:17px}
+ .b-app.chakra-farmer-clean .chakra-zone-map-frame,.b-app.chakra-farmer-clean .chakra-zone-map{height:350px!important;min-height:350px!important}
+ .b-app.chakra-farmer-clean .chakra-zone-map-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:9px 0}
+ .b-app.chakra-farmer-clean .chakra-zone-map-actions span{grid-column:1/-1;min-width:0}
+ .b-app.chakra-farmer-clean .chakra-zone-map-actions .b-btn{width:100%;min-height:48px}
+ .b-app.chakra-farmer-clean .chakra-horizon{width:100%;max-width:100%;margin:15px 0;padding:19px 15px!important;border-radius:19px}
+ .b-app.chakra-farmer-clean .chakra-horizon h1{font-size:clamp(25px,7.2vw,35px)}
+ .b-app.chakra-farmer-clean .chakra-horizon-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:15px 0}
+ .b-app.chakra-farmer-clean .chakra-horizon-buttons button{width:100%;min-height:50px}
+ .b-app.chakra-farmer-clean .chakra-horizon-actions,.b-app.chakra-farmer-clean .chakra-result-actions{display:grid;grid-template-columns:1fr;gap:9px}
+ .b-app.chakra-farmer-clean :is(.chakra-horizon-actions,.chakra-result-actions) .b-btn{width:100%;min-height:50px}
+ .b-app.chakra-farmer-clean .chakra-plan-highlight{padding:12px 14px;gap:5px 14px;align-items:baseline}
+ .b-app.chakra-farmer-clean .chakra-plan-highlight strong{font-size:clamp(23px,6.6vw,30px)}
+ .b-app.chakra-farmer-clean .chakra-aerial-plan{margin:13px 0;padding:9px;border-radius:18px}
+ .b-app.chakra-farmer-clean .chakra-aerial-map{height:clamp(300px,63vw,385px)!important;min-height:300px!important}
+ .b-app.chakra-farmer-clean .chakra-aerial-plan .leaflet-tooltip.chakra-crop-map-label{font-size:10px;max-width:110px}
+ .b-app.chakra-farmer-clean .chakra-calendar-v3{padding:12px!important;border-radius:17px}
+ .b-app.chakra-farmer-clean .chakra-calendar-intro{gap:10px}
+ .b-app.chakra-farmer-clean .chakra-calendar-intro h2{font-size:clamp(22px,6vw,27px)}
+ .b-app.chakra-farmer-clean .chakra-calendar-v3 .chakra-calendar-active{min-width:0;padding:8px 11px}
+ .b-app.chakra-farmer-clean .chakra-calendar-v3 .chakra-calendar-active strong{font-size:18px}
+ .b-app.chakra-farmer-clean .chakra-calendar-years{gap:7px;margin:14px 0 12px}
+ .b-app.chakra-farmer-clean .chakra-calendar-years button{min-height:47px;min-width:65px;padding:8px 12px;font-size:15px}
+ .b-app.chakra-farmer-clean .chakra-calendar-months{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:14px}
+ .b-app.chakra-farmer-clean .chakra-calendar-months button{min-height:46px;font-size:13px;padding:7px 2px}
+ .b-app.chakra-farmer-clean .chakra-quarter-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .b-app.chakra-farmer-clean .chakra-quarter-cell{min-height:90px;padding:8px}
+ .b-app.chakra-farmer-clean .chakra-quarter-crop{padding:9px 7px}
+ .b-app.chakra-farmer-clean .chakra-quarter-crop strong{font-size:12px}
+ .b-app.chakra-farmer-clean .chakra-advice-card{padding:16px;border-radius:16px}
+ .b-app.chakra-farmer-clean .chakra-result-advice{grid-template-columns:minmax(0,1fr);gap:12px}
+ .b-app.chakra-farmer-clean .b-footer{display:grid;gap:15px;padding:22px 15px calc(104px + env(safe-area-inset-bottom,0px))}
+ .b-app.chakra-farmer-clean .b-footer-links{display:flex;flex-wrap:wrap;gap:10px}
+ .b-app.chakra-farmer-clean .b-footer-links a{min-height:44px;display:inline-flex;align-items:center}
+ .bio-guide-root{inset:auto 9px calc(89px + env(safe-area-inset-bottom,0px)) auto!important;max-width:calc(100vw - 18px)}
+ .bio-tour.bio-guided-card{max-width:min(350px,calc(100vw - 18px));max-height:min(250px,45dvh);overflow-y:auto;padding:12px 13px}
+ .bio-tour.bio-guided-top{top:9px!important;right:9px!important;bottom:auto!important;max-height:min(230px,42dvh)}
+ .bio-tour .bio-tour-top{gap:7px}
+ .bio-tour .bio-tour-top .bio-mascot{width:53px;height:75px}
+ .bio-tour .bio-tour-top strong{font-size:15px}
+ .bio-tour .bio-tour-top p{font-size:12px;line-height:1.42;margin:5px 0}
+ .bio-tour .bio-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .bio-tour .bio-actions button{min-height:44px;font-size:12px;white-space:normal;padding:8px}
+ .bio-repeat{min-height:48px}
+ .chakra-information .chakra-info-nav{padding:11px 13px;gap:7px}
+ .chakra-information .chakra-info-nav nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:6px}
+ .chakra-information .chakra-info-nav nav :is(a,button){min-width:0;width:100%;font-size:12px;padding:7px 5px;overflow-wrap:anywhere;min-height:48px}
+ .chakra-information .chakra-info-main{padding:28px 15px}
+ .chakra-information .chakra-info-intro h1{font-size:clamp(30px,8vw,41px);overflow-wrap:anywhere}
+ .chakra-information .chakra-story-card{padding:13px;border-radius:18px;gap:14px}
+ .chakra-information .chakra-source-card{padding:17px;border-radius:18px}
+ .chakra-information .chakra-source-card h2{font-size:23px;overflow-wrap:anywhere}
+ .chakra-information .chakra-info-bottom button{width:100%;justify-content:center}
+}
+@media screen and (max-width:350px){
+ .b-app.chakra-farmer-clean .b-header{margin-left:5px!important;margin-right:5px!important}
+ .b-app.chakra-farmer-clean .b-header-inner{padding:7px!important}
+ .b-app.chakra-farmer-clean .b-brand b{font-size:18px}
+ .b-app.chakra-farmer-clean .b-brand-mark{width:29px!important;height:29px!important}
+ .b-app.chakra-farmer-clean .b-header-tools{gap:3px!important}
+ .b-app.chakra-farmer-clean .chakra-nav-cta,.b-app.chakra-farmer-clean .chakra-theme-toggle{min-width:40px!important;width:40px!important}
+ .b-app.chakra-farmer-clean .b-language button{min-width:35px!important;width:35px!important}
+ .b-app.chakra-farmer-clean .chakra-zone-choices{grid-template-columns:1fr}
+ .b-app.chakra-farmer-clean .chakra-zone-choice{min-height:76px!important}
+}
+@media screen and (prefers-reduced-motion:reduce){.b-app.chakra-farmer-clean button,.bio-tour{transition:none!important;animation:none!important}}
