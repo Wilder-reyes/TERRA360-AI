@@ -2,9 +2,10 @@
 
 > **Hoja de ruta vigente (15/11/2026):** [BIOTEX — piloto propuesto de rotación de cultivos en Chalhuas, Junín](docs/BIOTEX_HOJA_DE_RUTA_ACTUAL_CHALHUAS.md). La plataforma desplegada continúa en Barranca hasta completar la validación geoespacial, científica y agronómica del nuevo piloto.
 
-**Demostración:** https://terra360-ai-xi.vercel.app/  
+**Demostración:** https://terra360-ai-eta.vercel.app/  
 **API científica:** https://terra360-api.onrender.com/api/health  
-**Versión verificable:** https://terra360-ai-xi.vercel.app/release.json
+**Versión verificable:** https://terra360-ai-eta.vercel.app/release.json  
+**Contrato público Chalhuas:** `python scripts/smoke_chalhuas_public.py` (Vercel + Render)
 
 BIOTEX compara la rotación de cultivos actual con opciones que priorizan agua y cobertura vegetal para una **parcela de estudio de ~2,24 hectáreas en Barranca (Pativilca/Supe), Perú**. Permite marcar la parcela en el mapa, revisar las observaciones NASA, registrar el historial agrícola y obtener un plan comprensible para el agricultor.
 

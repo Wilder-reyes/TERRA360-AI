@@ -1,6 +1,6 @@
 # BIOTEX v0.26 · NSPACE BIOTEX
 
-**Frontend Vercel:** https://terra360-ai-xi.vercel.app/  
+**Frontend Vercel:** https://terra360-ai-eta.vercel.app/  
 **API Render:** https://terra360-api.onrender.com/api/health
 
 La versión final para demostración evalúa **una parcela de ~2,24 hectáreas en Barranca–Pativilca/Supe**. El agricultor ve el mapa, registra sus cultivos y compara rotaciones priorizando cobertura vegetal y demanda estimada de agua.
@@ -13,4 +13,4 @@ La experiencia del agricultor es sencilla; la evidencia detallada está disponib
 - [Cómo publicar la versión ligera en Vercel sin Functions](docs/vercel-deployment.md)
 - [Información principal del proyecto](README.md)
 
-**Arquitectura:** React/Vite estático en Vercel; FastAPI y modelo NASA en Render. No hay despliegue activo de Netlify. Ningún dato científico se fabrica para simular observaciones faltantes.
+**Arquitectura vigente:** frontend React/Vite exclusivamente en Vercel (`terra360-ai-eta.vercel.app`) y API científica FastAPI exclusivamente en Render. Ningún dato científico se fabrica para simular observaciones faltantes.

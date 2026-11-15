@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Smoke test for the published TERRA360 demo: no credentials, no fake readings.
 
-Run manually when Netlify and Render have finished deploying the SAME commit.
+Run manually when Vercel and Render have finished deploying the SAME commit.
 This script is not a substitute for agronomic review, UI accessibility testing,
 raster inspection, or field validation with farmers.
 """
@@ -13,7 +13,7 @@ from urllib.error import URLError, HTTPError
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode
 
-SITE = "https://terra360-ai.netlify.app"
+SITE = "https://terra360-ai-eta.vercel.app"
 BACKEND = "https://terra360-api.onrender.com"
 TIMEOUT = 65
 
@@ -22,7 +22,7 @@ def fetch(path: str, body: dict | None = None, host: str = SITE) -> tuple[int, b
     url = f"{host}{path}"
     raw = None if body is None else json.dumps(body).encode("utf-8")
     req = Request(url, data=raw, headers={"Accept": "application/json",
-                                         "User-Agent": "TERRA360-public-smoke/1.0 (+https://terra360-ai.netlify.app/)"},
+                                         "User-Agent": "TERRA360-public-smoke/1.0 (+https://terra360-ai-eta.vercel.app/)"},
                   method="GET" if body is None else "POST")
     if raw is not None:
         req.add_header("Content-Type", "application/json")
@@ -34,7 +34,7 @@ def fetch(path: str, body: dict | None = None, host: str = SITE) -> tuple[int, b
         except HTTPError as exc:
             failure = exc
             if exc.code in (401, 403):
-                raise RuntimeError(f"HTTP {exc.code} at {path}: anonymous access denied. Check Netlify > Visitor access > Production visibility = Public.") from exc
+                raise RuntimeError(f"HTTP {exc.code} at {path}: anonymous access denied. Check Vercel > Project Settings > Deployment Protection to allow public access.") from exc
             if exc.code == 404:
                 raise RuntimeError(f"HTTP 404 at {path}: verify production site URL and deployment.") from exc
             if attempt < 2:
@@ -75,8 +75,8 @@ def main() -> None:
         ("Production original FAO GAEZ GeoTIFF raw cell", lambda: verify_gaez_raw(BACKEND)),
         ("Render ARIE decision", lambda: verify_decision(BACKEND)),
         ("Render real NASA POWER", lambda: verify_nasa(BACKEND)),
-        ("anonymous Netlify home page", verify_html),
-        ("anonymous Netlify to Render proxy", lambda: verify_health(SITE)),
+        ("anonymous Vercel home page", verify_html),
+        ("anonymous Vercel to Render proxy", lambda: verify_health(SITE)),
     ]
     failed = []
     for name, runner in tasks:
