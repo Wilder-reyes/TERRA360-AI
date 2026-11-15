@@ -1,0 +1,181 @@
+/* CHAKRA: presentation tokens only. NASA rasters and data palettes are untouched. */
+@media screen {
+ :root{--bg-primary:#050806;--bg-surface:#111612;--bg-interactive:#1B211B;--text-primary:#FFFFFF;--text-secondary:#B5B8B6;--accent-primary:#D6F866;--accent-warning:#D6F866;--border-subtle:rgba(255,255,255,.1);--radius-card:28px;--radius-button:999px;--touch-min:48px;--chakra-glass:rgba(17,22,18,.76)}
+ ::selection{background:#D6F866;color:#050806}
+ html{scroll-padding-top:130px}
+ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-family:'Inter Variable',Inter,sans-serif}
+ .b-app{position:relative;isolation:isolate;background:transparent!important;font-family:'Inter Variable',Inter,sans-serif!important;font-weight:400}
+ .chakra-background{position:fixed;inset:0;z-index:-1;pointer-events:none;background:#050806}
+ .chakra-background>img{width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.3}
+ .chakra-background>div{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0,rgba(214,248,102,.05),transparent 55%),linear-gradient(to bottom,rgba(5,8,6,.4),rgba(5,8,6,.8) 42%,#050806 83%)}
+ .b-app :is(button,a,summary,input,select,textarea){transition-duration:300ms;transition-property:background-color,border-color,color,box-shadow,opacity,transform}
+ .b-app :is(a,button,summary,input,select,textarea):focus-visible{outline:2px solid #D6F866;outline-offset:5px}
+ .b-app :is(.b-header,.b-main,.b-footer){position:relative;z-index:10}
+ .b-app .b-header{position:sticky;top:20px;background:transparent;border:0;box-shadow:none;padding:0 24px;z-index:1100}
+ .b-app .b-header-inner{max-width:1180px;margin:auto;padding:12px 18px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.045);backdrop-filter:blur(18px);gap:20px;min-height:70px}
+ .b-app .b-brand{gap:9px;flex-shrink:0}
+ .b-app .b-brand b{font-size:27px;font-weight:500;letter-spacing:-1.1px;text-transform:none;color:white}
+ .b-app .b-brand small{display:none}
+ .b-app .b-brand-mark{background:transparent;color:#D6F866;box-shadow:none;border:0;width:32px;height:36px;border-radius:0}
+ .b-brand-mark>svg{width:32px;height:32px}
+ .chakra-nav{display:flex;align-items:center;justify-content:center;gap:30px;flex:1}
+ .chakra-nav a,.chakra-nav button{font-size:15px;text-decoration:none;color:rgba(255,255,255,.7)!important;background:none;border:0;min-height:48px;display:inline-flex;align-items:center;position:relative}
+ .chakra-nav a:hover{color:#fff!important}
+ .chakra-nav a[aria-current=location]:after{content:'';position:absolute;bottom:3px;left:50%;width:4px;height:4px;border-radius:50%;background:white}
+ .b-app .b-header-tools{display:flex;gap:14px;align-items:center}
+ .chakra-nav-cta{display:flex;gap:10px;align-items:center;border:0;background:#D6F866;color:#050806;min-height:48px;padding:0 19px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 0 20px rgba(214,248,102,.12)}
+ .b-app .b-language{border-color:rgba(255,255,255,.1);background:transparent;padding:3px;flex-shrink:0}
+ .b-app .b-language button{width:42px;min-height:42px;background:transparent;color:#c5c7c5;font-weight:500}
+ .b-app .b-language button.on{background:rgba(255,255,255,.12);color:#fff;box-shadow:none}
+ .b-app .b-main{max-width:1180px;margin:0 auto;background:transparent!important;padding:0 24px 70px}
+ .chakra-hero{text-align:center;padding:90px 0 65px;max-width:1040px;margin:auto}
+ .chakra-badge{display:inline-flex;align-items:center;gap:10px;padding:6px 15px 6px 6px;font-size:13px;border:1px solid rgba(255,255,255,.09);border-radius:999px;background:rgba(255,255,255,.045);color:rgba(255,255,255,.7)}
+ .chakra-badge-tag{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:10px;letter-spacing:.12em;color:#fff}
+ .chakra-badge i{width:5px;height:5px;background:#D6F866;border-radius:50%;box-shadow:0 0 10px #D6F86666}
+ .chakra-hero h1{font-size:clamp(48px,6.2vw,84px);font-weight:300;line-height:1.05;letter-spacing:-.055em;max-width:1050px;margin:30px auto 24px;color:#fff}
+ .chakra-landing em{font-family:'PT Serif',Georgia,serif;font-style:italic;font-weight:400;color:#D6F866}
+ .chakra-hero>p{font-size:19px;line-height:1.65;max-width:630px;margin:0 auto 30px;color:rgba(255,255,255,.7)}
+ .chakra-primary{display:inline-flex;align-items:center;justify-content:center;gap:22px;min-height:56px;padding:15px 25px;border:1px solid #D6F866;border-radius:999px;background:#D6F866;color:#050806;font-weight:600;font-size:16px;box-shadow:0 0 20px rgba(214,248,102,.2)}
+ .chakra-primary:hover,.chakra-nav-cta:hover{background:#e1ff86;box-shadow:0 0 25px rgba(214,248,102,.25)}
+ .chakra-primary iconify-icon,.chakra-nav-cta iconify-icon{transition:transform 300ms}
+ .chakra-primary:hover iconify-icon,.chakra-nav-cta:hover iconify-icon{transform:translateX(4px)}
+ .chakra-trust{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin:26px auto 16px;color:rgba(255,255,255,.6);font-size:13px}
+ .chakra-trust>span{display:flex;align-items:center;gap:7px}
+ .chakra-trust iconify-icon{color:rgba(255,255,255,.55)}
+ .chakra-study-note{display:block;color:rgba(255,255,255,.6);font-size:12px;line-height:1.5}
+ .chakra-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+ .chakra-glass{background:rgba(17,22,18,.6);border:1px solid rgba(255,255,255,.09);backdrop-filter:blur(20px);border-radius:28px;position:relative;overflow:hidden}
+ .chakra-value:after{content:'';position:absolute;bottom:-80px;left:12.5%;width:75%;height:128px;background:rgba(214,248,102,.1);filter:blur(50px);opacity:.5;pointer-events:none;transition:opacity 500ms}
+ .chakra-value:hover:after{opacity:1}
+ .chakra-value>div:last-child{padding:22px 26px 28px}
+ .chakra-card-number{font-size:11px;letter-spacing:.12em;color:rgba(255,255,255,.45)}
+ .chakra-value h2{font-size:20px;font-weight:500;letter-spacing:-.025em;margin:10px 0}
+ .chakra-value p,.chakra-evidence p{font-size:16px;color:rgba(255,255,255,.7);line-height:1.65;margin:0}
+ .chakra-mini{height:165px;border-bottom:1px solid rgba(255,255,255,.05);position:relative;color:#D6F866;display:flex;align-items:center;justify-content:center;overflow:hidden}
+ .chakra-mini>svg{width:100%;height:150px;opacity:.8}
+ .chakra-mini-sources{display:flex;flex-direction:column;justify-content:space-between;height:125px;position:absolute;left:13%;top:18px;color:rgba(255,255,255,.55)}
+ .chakra-mini-node{position:absolute;left:59%;top:57px;width:45px;height:45px;padding:10px;border:1px solid rgba(214,248,102,.22);background:rgba(214,248,102,.08);border-radius:14px;color:#D6F866}
+ .chakra-mini-node svg{width:100%;height:100%}
+ .chakra-mini-note{position:absolute;top:12px;right:18px;background:#182014;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:10px;padding:6px 10px;border-radius:7px;z-index:1}
+ .chakra-radar-label{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;font-size:10px;color:rgba(255,255,255,.6)}
+ .chakra-how{text-align:center;padding:90px 0 65px;scroll-margin-top:140px}
+ .chakra-kicker{display:block;color:rgba(255,255,255,.55);font-size:11px;font-weight:500;letter-spacing:.15em}
+ .chakra-how h2{font-size:clamp(30px,4vw,46px);font-weight:300;letter-spacing:-.045em;margin:18px 0 12px}
+ .chakra-how>p{color:rgba(255,255,255,.6);margin-bottom:35px}
+ .chakra-how ol{padding:0;list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;position:relative}
+ .chakra-how ol:before{content:'';height:1px;background:linear-gradient(to right,transparent,#D6F86655,#ffffff22,transparent);position:absolute;left:10%;right:10%;top:30px}
+ .chakra-how li{display:flex;align-items:center;flex-direction:column;gap:18px;position:relative;font-size:14px}
+ .chakra-how li>span{width:60px;height:60px;background:#0c110c;border:1px solid rgba(255,255,255,.1);border-radius:18px;display:grid;place-items:center;position:relative;color:rgba(255,255,255,.6)}
+ .chakra-how li.active>span{background:#1b2514;border-color:#D6F86633;color:#D6F866}
+ .chakra-how li.active>span:after{content:'';position:absolute;right:-3px;top:-3px;width:7px;height:7px;border-radius:50%;background:#D6F866}
+ .chakra-how li>strong{font-weight:400;color:rgba(255,255,255,.75)}
+ .chakra-evidence{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:0 0 70px}
+ .chakra-evidence article{padding:30px}
+ .chakra-evidence iconify-icon{color:#D6F866}
+ .chakra-evidence h2{font-size:20px;font-weight:400;margin:20px 0 12px}
+ .chakra-final{text-align:center;border-radius:40px;padding:50px 24px 42px;position:relative}
+ .chakra-final:before,.chakra-final:after{content:'';position:absolute;left:8%;right:8%;height:1px;background:linear-gradient(to right,transparent,#D6F86680,transparent);top:0}
+ .chakra-final:after{top:auto;bottom:0;background:linear-gradient(to right,transparent,#ffffff1a,transparent)}
+ .chakra-final-mark{display:block;margin:0 auto 22px;width:52px;height:52px;padding:12px;border-radius:16px;color:#D6F866;background:#171e11;border:1px solid #D6F86633;box-shadow:0 0 25px #D6F86612}
+ .chakra-final-mark svg{width:100%;height:100%}
+ .chakra-final h2{font-size:clamp(32px,4vw,48px);font-weight:300;line-height:1.12;letter-spacing:-.04em;margin:0 0 18px}
+ .chakra-final p{font-size:16px;color:rgba(255,255,255,.65);max-width:500px;margin:0 auto 26px}
+ .chakra-text-button{display:block;margin:18px auto 0;padding:10px 16px;min-height:48px;background:none;border:0;color:rgba(255,255,255,.65);font-size:14px}
+ .chakra-sources{text-align:center;padding:55px 0 65px;scroll-margin-top:120px}
+ .chakra-sources>div{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:50px;margin-top:30px}
+ .chakra-sources a{font-size:21px;text-decoration:none;font-weight:500;letter-spacing:-.03em;color:rgba(255,255,255,.45)!important;filter:grayscale(1);display:inline-flex;align-items:center;gap:8px;min-height:48px}
+ .chakra-sources a:hover{color:#fff!important;filter:grayscale(0)}
+ .chakra-source-grid{display:grid;grid-template-columns:repeat(2,4px);gap:3px}
+ .chakra-source-grid i{width:4px;height:4px;background:currentColor;opacity:.8}
+ .chakra-source-grid i:nth-child(2){opacity:.4}.chakra-source-grid i:nth-child(3){opacity:.6}
+ .b-app .b-progress-wrap{background:rgba(17,22,18,.85);border:1px solid rgba(255,255,255,.09);border-radius:20px;margin:20px 0 0;backdrop-filter:blur(18px);position:relative;top:auto;box-shadow:none}
+ .b-app .b-progress-shell{padding:14px 18px}
+ .b-app .b-progress button{color:rgba(255,255,255,.65);font-weight:400}
+ .b-app .b-progress button.active{background:rgba(214,248,102,.1);border-color:rgba(214,248,102,.3);color:#fff}
+ .b-app .b-step-number{background:rgba(255,255,255,.04);color:rgba(255,255,255,.65);border-color:rgba(255,255,255,.1)}
+ .b-app .b-progress button.active .b-step-number,.b-app .b-progress button.done .b-step-number{background:#D6F866;color:#050806;border-color:#D6F866}
+ .b-app .b-layout{gap:22px;scroll-margin-top:120px}
+ .b-app .b-hero-intro{padding:32px 0 12px!important}
+ .b-app .b-hero-copy h1{font-size:clamp(28px,3.5vw,46px)!important;font-weight:300;letter-spacing:-.04em;line-height:1.15}
+ .b-app .b-hero-copy>p{font-size:18px;color:var(--text-secondary);font-weight:400}
+ .b-app .b-hero-intro .b-hero-promise{display:none!important}
+ .b-app :is(.b-card,.b-hls-legend,.b-technical,.b-parcel-tools,.b-observation-card,.b-priority-card,.b-goal-card,.b-decision-check,.b-farm-econ,.b-farm-official,.b-reference-card){background:var(--chakra-glass);backdrop-filter:blur(18px);border-color:rgba(255,255,255,.1);border-radius:24px;box-shadow:none}
+ .b-app :is(.b-btn-primary,.b-btn-solid){background:#D6F866!important;border-color:#D6F866!important;color:#050806!important;box-shadow:0 0 20px #D6F86618;font-weight:600;border-radius:999px}
+ .b-app :is(.b-btn-light,.b-example-choice){background:rgba(255,255,255,.045);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:999px}
+ .b-app :is(.b-eyebrow,.b-section-kicker,.b-sample-label){color:rgba(255,255,255,.65);font-size:11px;letter-spacing:.12em;font-weight:500}
+ .b-app :is(.b-map-label,.b-note,.b-hls-heading span,.b-field-evidence small,.b-muted){color:var(--text-secondary)}
+ .b-app :is(input,textarea,select){color:#fff;background:#111812;border:1px solid rgba(255,255,255,.16);border-radius:12px;min-height:52px;font-size:17px}
+ .b-app option{color:#fff;background:#111812}
+ .b-app .b-map{border-radius:20px}
+ .b-app .b-map-view button{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-weight:400;min-height:48px}
+ .b-app .b-map-view button[aria-pressed=true]{background:rgba(214,248,102,.1);border-color:#D6F86666;color:#D6F866}
+ .chakra-study-strip{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;border-bottom:1px solid rgba(255,255,255,.1);padding:12px 0 20px;color:#fff}
+ .chakra-study-strip iconify-icon{color:#D6F866}
+ .chakra-study-strip small{color:rgba(255,255,255,.65);font-size:14px}
+ .b-app .b-field-ready{background:rgba(214,248,102,.07);border-color:rgba(214,248,102,.25);color:#fff;border-radius:20px}
+ .b-app .b-field-ready>iconify-icon{color:#D6F866}
+ .b-app .b-goal-card[aria-pressed=true],.b-app .b-priority-card[aria-pressed=true]{background:rgba(214,248,102,.1);border-color:#D6F86677}
+ .b-app .b-next{background:var(--chakra-glass);border:1px solid rgba(255,255,255,.1);border-radius:24px;backdrop-filter:blur(16px)}
+ .b-app :is(.b-intro h1,.b-result-intro h1){font-weight:300;letter-spacing:-.04em}
+ .b-app :is(.b-crop-entry label,.b-goal-page label,.b-parcel-tools summary){font-size:18px}
+ .b-app .b-footer{background:rgba(5,8,6,.9);border-top:1px solid rgba(255,255,255,.06);font-size:14px}
+ .b-app .b-footer strong{font-size:25px;font-weight:500;letter-spacing:-1px;text-transform:lowercase}
+ .b-app .b-footer a{color:rgba(255,255,255,.7)}
+ .b-app .bio-tour{background:rgba(17,22,18,.97);border-color:rgba(214,248,102,.2);color:#fff;backdrop-filter:blur(20px);border-radius:24px;box-shadow:0 20px 80px #0009}
+ .b-app .bio-forward{background:#D6F866;color:#050806}
+ .b-app .bio-kicker,.b-app .bio-back{color:#D6F866}
+ .b-app .bio-repeat{background:#111812;color:#fff;border:1px solid #ffffff1a}
+ .b-app .bio-dots .active{background:#D6F866}
+ .b-app .bio-skip{color:rgba(255,255,255,.7)}
+ .b-app .b-goal-icon{color:#D6F866}
+ @media(max-width:800px){
+  .b-app .b-header{padding:0 12px;top:12px}
+  .b-app .b-header-inner{padding:9px 12px;gap:10px;min-height:66px}
+  .chakra-nav{display:none}
+  .chakra-nav-cta{font-size:12px;padding:0 12px;gap:6px}
+  .b-app .b-header-tools{gap:8px;margin-left:auto}
+  .b-app .b-main{padding:0 16px 120px}
+  .chakra-hero{padding:65px 0 42px}
+  .chakra-hero h1{font-size:52px;letter-spacing:-.055em}
+  .chakra-hero>p{font-size:18px;max-width:560px}
+  .chakra-values{grid-template-columns:1fr}
+  .chakra-mini{height:130px}
+  .chakra-mini>svg{height:125px}
+  .chakra-value>div:last-child{padding:20px 24px 25px}
+  .chakra-how{padding:60px 0 40px}
+  .chakra-how ol{grid-template-columns:1fr 1fr;gap:25px 15px}
+  .chakra-how ol:before{display:none}
+  .chakra-evidence{grid-template-columns:1fr;margin-bottom:40px}
+  .chakra-evidence article{padding:26px}
+  .chakra-sources>div{gap:14px 26px}.chakra-sources a{font-size:18px}
+ }
+ @media(max-width:640px){
+  html{scroll-padding-top:105px}
+  .b-app .b-brand b{font-size:24px}
+  .b-app .b-brand-mark{width:26px}.b-brand-mark>svg{width:26px}
+  .b-app .b-language button{width:32px;min-height:42px;font-size:13px}
+  .chakra-nav-cta{font-size:0;width:44px;padding:0;justify-content:center;min-height:44px}
+  .chakra-nav-cta iconify-icon{width:18px;font-size:18px}
+  .chakra-hero h1{font-size:48px;margin:25px auto 22px}
+  .chakra-badge{font-size:11px;padding-right:10px;gap:7px}
+  .chakra-hero-cta{width:100%;font-size:16px;padding:16px 20px;gap:12px}
+  .chakra-trust{gap:10px 16px;font-size:12px;margin-top:20px}
+  .chakra-study-note{font-size:12px}
+  .b-app .b-progress-wrap{position:fixed;inset:auto 0 0;z-index:1050;border-radius:18px 18px 0 0;margin:0;background:rgba(10,15,10,.98);border-color:#ffffff1a;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .b-app .b-progress-shell{padding:6px 8px}
+  .b-app .b-progress button{font-size:11px;min-height:60px}
+  .b-app .b-hero-copy h1{font-size:30px!important}
+  .b-app .b-hero-copy>p{font-size:18px!important}
+  .b-app .b-map{height:380px!important}
+  .b-app .bio-tour{bottom:92px}
+  .chakra-how li{font-size:14px;line-height:1.5}
+  .chakra-study-strip small{font-size:14px;line-height:1.5}
+  .b-app .b-form-page,.b-app .b-goal-page,.b-app .b-result-page{padding-top:30px}
+ }
+ @media(prefers-reduced-motion:reduce){
+  .b-app *,.b-app *:before,.b-app *:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+ }
+}
+@media print{.chakra-background,.chakra-landing,.chakra-nav,.chakra-nav-cta,.chakra-study-strip{display:none!important}}
+@media screen{.chakra-nav-short{display:none}.b-app .bio-tour-top p{color:var(--text-secondary)}}
+@media screen and (max-width:640px){.chakra-nav-long{display:none}.chakra-nav-short{display:inline}.chakra-nav-cta{font-size:14px;width:auto;gap:6px;padding:0 12px}}

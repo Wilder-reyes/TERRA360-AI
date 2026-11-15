@@ -67,7 +67,7 @@ test('map and observed legend fit mobile and desktop screens',async({page})=>{
 })
 
 test('English retains the four-step Barranca journey',async({page})=>{
- await page.goto('/?lang=en');await expect(page.getByRole('heading',{name:'Your field on the map. A clearer planting plan.'})).toBeVisible()
+ await page.goto('/?lang=en');await expect(page.getByRole('heading',{name:/Know your land/})).toBeVisible()
  await page.getByRole('button',{name:'Explore a Barranca field'}).click()
  await expect(page.getByRole('region',{name:'Observed Barranca vegetation'})).toBeVisible()
  await page.getByRole('button',{name:'Continue',exact:true}).click()

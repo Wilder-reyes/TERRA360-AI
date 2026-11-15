@@ -79,3 +79,7 @@ This is the NASA Space Apps Field Shift crop-rotation decision-support project, 
 - La publicación del release candidato requiere build, pruebas y verificación del backend; utilizar `docs/CURRENT_REPOSITORY_DEPLOY.md` y los scripts de publicación/limpieza incluidos.
 - Las instrucciones de no hacer push durante las etapas anteriores eran restricciones de aquella ejecución; el propietario autorizó posteriormente publicar el proyecto. Esta copia de entrega todavía no ha sido publicada remotamente.
 - No borrar las ramas `main`, `David` ni ramas de PR abiertos, y no purgar refs remotas sin un respaldo Git verificado.
+
+## Identidad y diseño vigentes — CHAKRA (autorizado 2026-11-15)
+
+El propietario renombró el producto público a CHAKRA y autorizó el rediseño premium con fondo #050806, acento #D6F866, Inter y PT Serif cursiva en una palabra del hero. La fuente de los nuevos tokens es frontend/src/chakra.css. Estas instrucciones reemplazan la paleta e identidad históricas anteriores. Conservar nombre del repositorio, claves localStorage y los IDs/artefactos científicos del modelo; no son nombres públicos de producto. Solo Barranca permanece como recorrido público. Las imágenes de fondo son ilustrativas y nunca evidencia NASA. La UI debe usar lenguaje simple, alto contraste y controles táctiles claros. No inventar testimonios, rendimiento ni mediciones.

@@ -171,3 +171,11 @@ Encargo vigente: corregir la aplicación publicada y ofrecer solo Barranca. Sust
 - npm test: 41 pruebas aprobadas; build TypeScript/Vite aprobado; backend unittest: 266 aprobadas; modelo HLS reproducido; auditoría estática sin credenciales ni imports rotos.
 - Playwright/visual y verificación del proxy en Vercel: pendientes de CI y publicación de este cambio. El entorno local no permite arrancar Chromium (socket EPERM).
 - Commit: el commit que incorpora esta sección. No se modificó imerg_basin_seed.json ni el entrenamiento original.
+
+## CHAKRA — cambio de identidad y diseño autorizado, 2026-11-15
+
+- Nombre público actualizado en web, tutorial, informes, compartir y metadatos; IDs científicos, repository y claves de guardado conservados.
+- Portada premium con Inter/PT Serif locales, acento lima, vidrio y fondo agrícola decorativo; tres tarjetas ilustrativas y cuatro pasos, sin testimonios inventados.
+- Recorrido de Barranca conservado; CTA retira la portada y abre el mapa. Edición científica, leyendas y valores originales preservados.
+- Compilación aprobada; 41 pruebas frontend y 266 backend aprobadas localmente. Navegador/QA visual y publicación pendientes de CI de este commit.
+- Ver docs/CHAKRA_DESIGN.md y frontend/src/chakra.css. Commit: el que incorpora esta sección.

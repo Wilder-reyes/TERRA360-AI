@@ -25,7 +25,7 @@ export default function FarmerAIEvidence({ai,lang}:{ai?:AIEvidence;lang:'es'|'en
  return <section className="b-ai-farmer" aria-label={es?'Análisis de inteligencia artificial del terreno':'Artificial intelligence field analysis'}>
   <div className="b-ai-farmer-heading">
    <span className="b-ai-mark" aria-hidden="true">✳</span>
-   <div><h3>{es?'¿Qué aprendió BIOTEX de esta chacra?':'What did BIOTEX learn from this field?'}</h3>
+   <div><h3>{es?'¿Qué aprendió CHAKRA de esta chacra?':'What did CHAKRA learn from this field?'}</h3>
     <p>{es?'Revisamos la vegetación de esta parcela en imágenes anteriores de NASA para encontrar temporadas que conviene vigilar.':'We reviewed NASA imagery of this field to find seasons worth watching closely.'}</p>
    </div>
   </div>
@@ -59,7 +59,7 @@ export default function FarmerAIEvidence({ai,lang}:{ai?:AIEvidence;lang:'es'|'en
      <small>{Math.round(x.prob*100)}%</small>
     </div>)}</div>
     <p className="b-ai-method-note">{es?'Se entrenó una regresión logística con patrones estacionales y una tendencia temporal. Se excluyeron los meses sin observación. Solo es válida para el terreno del estudio y la señal histórica de vegetación; no predice la cosecha.':'A logistic model was trained on seasonality and time trend; cloudy months were excluded. It applies only to this study field and historical vegetation, not crop yield.'}</p>
-    <a target="_blank" rel="noreferrer" href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/BIOTEX_v026_IA_reproducible.md">{es?'Ver procedimiento reproducible':'View reproducible method'}</a>
+    <a target="_blank" rel="noreferrer" href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md">{es?'Ver procedimiento reproducible':'View reproducible method'}</a>
    </div>
   </details>
  </section>

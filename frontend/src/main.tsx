@@ -1,3 +1,5 @@
+import '@fontsource-variable/inter'
+import '@fontsource/pt-serif/400-italic.css'
 import React from 'react'
 import {createRoot} from 'react-dom/client'
 import BiotexFarmerApp from './BiotexFarmerApp'

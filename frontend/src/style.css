@@ -16,6 +16,6 @@
  @page {
   size:A4 portrait;
   margin:18mm;
-  @bottom-right {content:"NSPACE BIOTEX · " counter(page);font:8pt Arial,sans-serif;color:#607365}
+  @bottom-right {content:"CHAKRA · " counter(page);font:8pt Arial,sans-serif;color:#607365}
  }
 }

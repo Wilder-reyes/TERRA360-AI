@@ -16,7 +16,7 @@ from app.api.scientific_sources_routes import router as scientific_sources_route
 from app.api.ai_evidence_routes import router as ai_evidence_router
 
 app = FastAPI(
-    title="BIOTEX API",
+    title="CHAKRA API",
     description="Earth observation and agricultural decision support for user-selected coordinates worldwide.",
     version="0.5.0-preview",
 )
