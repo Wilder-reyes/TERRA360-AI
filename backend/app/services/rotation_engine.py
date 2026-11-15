@@ -787,6 +787,15 @@ def compare(current: list[dict], climate: dict, *, priorities: dict | None = Non
                                             "tmax_seasonal_range_c", "limitations", "limitations_en", "method",
                                             "cell_adjustment", "power_grid_elevation_m")},
         "strategies": strategies,
+        # Maize finding (team verification note 09, 2b): share of one maize campaign's crop water that
+        # falls in low-river months, by sowing month (mid-month sowing; NASA POWER ET0 x FAO-56 Kc).
+        "maize_low_river_share": {
+            "source": "NASA POWER climatology ET0 x FAO-56 Kc (mid-month sowing)",
+            "low_river_months": seasons["river_low_months"],
+            "by_sow_month": {str(m): low_river_share("maiz_amarillo_duro", m, climate)["low_river_share_percent"]
+                             for m in range(1, 13)},
+            "current_sow_months": sorted({cal_month(p["start_index"]) for p in s0 if p["crop_id"] == "maiz_amarillo_duro"}),
+        },
         "method": {
             "water": "Σ Kc(day) × ET0(month) over 730 days (FAO-56 single Kc; Kc from the team catalogue; ET0 FAO-56 Penman-Monteith from NASA POWER climatology). Bare-soil evaporation is not counted.",
             "sowing_rules": "S1 Water: yellow maize sown only Nov-Feb. S2 Soil: no yellow maize sown May-Jul. S0 is not restricted.",

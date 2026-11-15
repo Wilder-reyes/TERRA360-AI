@@ -22,7 +22,7 @@ import './chakra.css'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
 import ChakraZonePlan,{ChakraZonePrint,type ChakraSpatialPlan} from './ChakraZonePlan'
-import StrategyCompare,{StrategyComparePrint,type CompareStrategy} from './StrategyCompare'
+import StrategyCompare,{StrategyComparePrint,type CompareStrategy,type MaizeShare} from './StrategyCompare'
 import BARRANCA_EXAMPLE from './barrancaExampleResult.json'
 const FieldEvidence=lazy(()=>import('./FieldEvidence'))
 const CropReference=lazy(()=>import('./CropReference'))
@@ -649,7 +649,7 @@ export default function BiotexFarmerApp(){
 <div className="b-hero-promise"><span><Icon name="check" size={16}/>{lang==='es'?'Sin conocimientos técnicos':'No technical skills needed'}</span><span><Icon name="check" size={16}/>{lang==='es'?'Sin crear una cuenta':'No account required'}</span></div>
 </div></div>
     <div className="b-farm-grid">
-     <div className="chakra-study-strip">{!landing&&!studyParcel&&<button type="button" className="chakra-return-study" onClick={()=>setExample(BARRANCA_FIELD)}>{lang==='es'?'Usar parcela de Barranca':'Use Barranca study field'}<Icon name="right" size={16}/></button>}<Icon name="pin" size={19}/><span>{lang==='es'?'Barranca · Pativilca / Supe':'Barranca · Pativilca / Supe'}</span><small>{lang==='es'?'La IA entrenada solo se aplica a esta parcela; los cultivos reales no están confirmados.':'Trained AI applies only to the study parcel; actual crops are unconfirmed.'}</small></div>
+     <div className="chakra-study-strip">{!landing&&!studyParcel&&<button type="button" className="chakra-return-study" onClick={()=>setExample(BARRANCA_FIELD)}>{lang==='es'?'Usar parcela de Barranca':'Use Barranca study field'}<Icon name="right" size={16}/></button>}<Icon name="pin" size={19}/><span>{lang==='es'?'Barranca · Pativilca / Supe':'Barranca · Pativilca / Supe'}</span><small>{lang==='es'?'Modelo estacional pequeño y reproducible (44 observaciones NASA HLS, una parcela de estudio) — prueba de concepto; se aplica solo a esta parcela. Los cultivos reales no están confirmados.':'Small reproducible seasonal model (44 NASA HLS observations, one study field) — proof of concept; it applies only to this field. Actual crops are unconfirmed.'}</small></div>
      <div className="b-card b-search-card"><div className="b-card-heading"><span className="b-section-kicker">{lang==='es'?'PRIMERO · UBICA TU PARCELA':'FIRST · FIND YOUR FIELD'}</span><h2><Icon name="pin"/>{t.search}</h2><p>{lang==='es'?'Busca tu localidad o marca las esquinas directamente en el mapa.':'Search for your town or mark the corners directly on the map.'}</p></div>
       <form className="b-search" onSubmit={searchPlace}><label htmlFor="b-search" className="sr-only">{t.search}</label>
        <input id="b-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={t.searchHint} autoComplete="off"/>
@@ -765,7 +765,7 @@ export default function BiotexFarmerApp(){
     <div className="chakra-zones-heading"><h2>{lang==='es'?'¿Dónde sembraste?':'Where did you plant?'}</h2><span>{assignedCount}/{availableZones.length} {lang==='es'?'zonas registradas':'areas recorded'}</span></div>
     <div className="chakra-zone-choices">{availableZones.map(z=><button className={'chakra-zone-choice '+(selectedZone===z.id?'chosen':'')} type="button" key={z.id} aria-pressed={selectedZone===z.id}
      onClick={()=>{setActiveZone(z.id);const previous=zoneCrops[z.id];if(previous){setCrop(previous.crop_id);const idx=relativeMonthIndex(previous.planted_month,baseYear);if(idx>=0&&idx<36)setCropMonth(idx)}}}>
-     <span>{z.id==='rest'?(lang==='es'?'Resto del terreno':'Remaining field'):z.id}</span><small>{z.ha.toFixed(2)} ha</small>
+     <span>{z.id==='rest'?(lang==='es'?'Resto del terreno':'Remaining field'):(lang==='en'?z.id.replace(/^Subparcela /,'Area '):z.id)}</span><small>{z.ha.toFixed(2)} ha</small>
      <strong>{zoneCrops[z.id]?labelCrop(zoneCrops[z.id].crop_id,lang):(lang==='es'?'Por registrar':'To register')}</strong></button>)}</div>
     <section className="chakra-crop-section"><h2>{lang==='es'?'¿Qué sembraste aquí?':'What did you grow here?'}</h2>
      <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>setCrop(id)}>
@@ -798,7 +798,8 @@ export default function BiotexFarmerApp(){
     lang={lang} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
    {step===2&&precomputedAt&&<p role="note" className="chakra-strategy-scope">{lang==='es'?'Resultado precalculado del ejemplo de Barranca ('+precomputedAt.slice(0,10)+'): el servidor no respondió a tiempo. Son los mismos cálculos del motor CHAKRA.':'Precomputed result for the Barranca example ('+precomputedAt.slice(0,10)+'): the server did not answer in time. Same CHAKRA engine calculations.'}</p>}
    {step===2&&spatialPlan&&field&&<StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}
-    crop={id=>labelCrop(id,lang)} busy={compareBusy} error={compareError} outOfScope={!province} onRetry={()=>void compareZones()}/>}
+    crop={id=>labelCrop(id,lang)} busy={compareBusy} error={compareError} outOfScope={!province} onRetry={()=>void compareZones()}
+    maize={(result as unknown as {maize_low_river_share?:MaizeShare}|null)?.maize_low_river_share||null} upperBasin={result?.upper_basin_rain||null}/>}
    {step===2&&spatialPlan&&result?.ai_analysis&&<FarmerAIEvidence ai={result.ai_analysis} lang={lang}/>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
