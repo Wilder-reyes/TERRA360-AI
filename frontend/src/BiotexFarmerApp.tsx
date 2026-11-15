@@ -22,6 +22,7 @@ import './chakra.css'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
 import ChakraZonePlan,{ChakraZonePrint,type ChakraSpatialPlan} from './ChakraZonePlan'
+import StrategyCompare,{StrategyComparePrint,type CompareStrategy} from './StrategyCompare'
 const FieldEvidence=lazy(()=>import('./FieldEvidence'))
 const CropReference=lazy(()=>import('./CropReference'))
 
@@ -442,8 +443,42 @@ export default function BiotexFarmerApp(){
    const data=await response.json() as ChakraSpatialPlan
    if(data.status!=='prepared'||!Array.isArray(data.zone_plans))throw new Error('Plan response needs review')
    setSpatialPlan(data);navigate(2)
+   if(province)void compareZones()
   }catch(e){setSpatialError(readableApiError(e,lang==='en'))}
   finally{setSpatialBusy(false)}
+ }
+
+ /** Challenge requirement (step 3): S0 current vs S1 Water vs S2 Soil, inline with the zone plan.
+  * Current rotation = farmer-declared history if present, otherwise the crop and sowing month
+  * recorded for each zone (farmer-declared, never inferred from NDVI). */
+ const zoneRotation=useMemo<Planting[]>(()=>{
+  if(current.length)return current
+  const seen=new Set<number>(),out:Planting[]=[]
+  for(const z of availableZones){
+   const zc=zoneCrops[z.id];if(!zc)continue
+   const idx=relativeMonthIndex(zc.planted_month,baseYear);if(idx<-24)continue
+   const start=((idx%24)+24)%24
+   if(seen.has(start))continue
+   seen.add(start);out.push({crop_id:zc.crop_id,start_index:start})
+  }
+  return out.sort((a,b)=>a.start_index-b.start_index)
+ },[current,availableZones,zoneCrops,baseYear])
+ const [compareBusy,setCompareBusy]=useState(false)
+ const [compareError,setCompareError]=useState('')
+ async function compareZones(){
+  if(!field||!zoneRotation.length)return
+  const token=++request.current;setCompareBusy(true);setCompareError('');setResult(null)
+  const priorities=goal==='water'?{water:2,soil:0,income:1,pests:1}:goal==='soil'?{water:0,soil:2,income:1,pests:1}:{water:2,soil:2,income:1,pests:1}
+  const payload={zone:'barranca',latitude:point.lat,longitude:point.lng,polygon:field,current:zoneRotation,priorities,
+   water_turn:scarcity,current_source:'farmer_declared',use_team_templates_as_fallback:false,
+   income_crop_id:confirmedOptions.includes(incomeCrop)?incomeCrop:null}
+  try{
+   const r=await fetch(API+'/api/rotation/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+   if(!r.ok)throw new Error(await httpErrorMessage(r,lang==='en'))
+   const v=await r.json() as Result
+   if(token===request.current)setResult(v)
+  }catch(e){if(token===request.current)setCompareError(readableApiError(e,lang==='en'))}
+  finally{if(token===request.current)setCompareBusy(false)}
  }
 
  async function showPlan(){
@@ -742,6 +777,8 @@ export default function BiotexFarmerApp(){
    </section>}
    {step===2&&spatialPlan&&field&&<ChakraZonePlan plan={spatialPlan} field={field} subplots={subplots}
     lang={lang} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
+   {step===2&&spatialPlan&&field&&<StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}
+    crop={id=>labelCrop(id,lang)} busy={compareBusy} error={compareError} outOfScope={!province} onRetry={()=>void compareZones()}/>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
@@ -769,6 +806,7 @@ export default function BiotexFarmerApp(){
   </main>
   <footer className="b-footer"><div><strong>CHAKRA</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span><BioTour lang={lang}/></div></footer>
   {printable()}
-  {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}/>}
+  {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}
+   extra={result?.strategies?.length?<StrategyComparePrint strategies={result.strategies as CompareStrategy[]} lang={lang}/>:null}/>}
  </div>
 }
