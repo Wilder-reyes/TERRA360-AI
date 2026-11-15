@@ -1,35 +1,18 @@
-import Icon,{ChakraMark} from './ChakraIcon'
+import Icon from './ChakraIcon'
 
 type Props={lang:'es'|'en';onStart:()=>void;onMap:()=>void}
-function MiniVisual({kind}:{kind:number}){
- return <div className={'chakra-mini chakra-mini-'+kind} aria-hidden="true">
- {kind===0?<><div className="chakra-mini-sources"><Icon name="satellite"/><Icon name="droplets"/><Icon name="sprout"/></div><svg viewBox="0 0 300 150"><path d="M55 28C125 28 110 75 195 75M55 75H195M55 122C125 122 110 75 195 75" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" fill="none"/><circle cx="195" cy="75" r="32" stroke="currentColor" fill="none" opacity=".2"/><circle cx="195" cy="75" r="45" stroke="currentColor" strokeDasharray="2 6" fill="none" opacity=".15"/></svg><div className="chakra-mini-node"><ChakraMark/></div></>:
- kind===1?<><span className="chakra-mini-note">Tu historial</span><svg viewBox="0 0 300 150"><defs><linearGradient id="chakra-wave" x1="0" y1="0" x2="0" y2="1"><stop stopColor="currentColor" stopOpacity=".25"/><stop offset="1" stopColor="currentColor" stopOpacity="0"/></linearGradient></defs><path d="M5 115C40 115 40 45 75 45S110 100 145 100 180 30 215 30 250 70 295 35V150H5Z" fill="url(#chakra-wave)"/><path d="M5 115C40 115 40 45 75 45S110 100 145 100 180 30 215 30 250 70 295 35" stroke="currentColor" strokeWidth="1.5" fill="none"/><circle cx="215" cy="30" r="4" fill="currentColor"/></svg></>:
- <><svg viewBox="0 0 300 150"><circle cx="150" cy="78" r="62" stroke="currentColor" opacity=".15" strokeDasharray="3 5" fill="none"/><circle cx="150" cy="78" r="43" stroke="currentColor" opacity=".3" fill="none"/><circle cx="150" cy="78" r="22" fill="currentColor" opacity=".08"/><path d="M150 78 190 30" stroke="currentColor" opacity=".5"/><circle cx="190" cy="30" r="4" fill="currentColor"/><circle cx="112" cy="100" r="3" fill="currentColor" opacity=".6"/><circle cx="164" cy="118" r="3" fill="currentColor" opacity=".4"/></svg><span className="chakra-radar-label"><Icon name="map-pin" size={17}/> Barranca</span></>}
- </div>
-}
-export default function ChakraLanding({lang,onStart,onMap}:Props){const es=lang==='es'
- const cards=es?[
-  ['Mira tu terreno','Consulta cómo cambió la vegetación de la parcela. Elige un mes y entiende los colores.'],
-  ['Anota lo que sembraste','Elige el cultivo y el mes que recuerdas. Tú conoces tu chacra; el satélite no reconoce tus cultivos.'],
-  ['Compara tu próxima siembra','Revisa opciones según el agua, la cobertura del terreno y tus prioridades.']
- ]:[['See your field','See how field vegetation changed. Choose a month and understand the colors.'],['Record your crops','Choose the crop and month you remember. You know your field; the satellite does not identify crops.'],['Compare your next planting','Review options based on water, soil cover and your priorities.']]
- return <div className="chakra-landing">
-  <section className="chakra-hero" data-bio-target="bio-hero">
-   <div className="chakra-badge"><span className="chakra-badge-tag">{es?'BARRANCA':'BARRANCA'}</span><i/>{es?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</div>
-   <h1>{es?<>Conoce tu tierra.<br/>Organiza tu próxima <em>siembra.</em></>:<>Know your land.<br/>Plan your next <em>planting.</em></>}</h1>
-   <p>{es?'Una ayuda sencilla para mirar tu terreno, recordar lo que sembraste y comparar qué podrías sembrar después.':'A simple way to see your field, record past crops and compare what you could plant next.'}</p>
-   <button className="chakra-primary chakra-hero-cta" onClick={onStart}>{es?'Explorar parcela de Barranca':'Explore a Barranca field'}<Icon name="arrow-right"/></button>
-   <div className="chakra-trust">{(es?['Sin crear una cuenta','Paso a paso','Datos NASA con fecha']:['No account needed','Step by step','Dated NASA observations']).map(v=><span key={v}><Icon name="check" size={16}/>{v}</span>)}</div>
-   <small className="chakra-study-note">{es?'Parcela de estudio · 2,25 ha · propietario y cultivos reales no confirmados':'Study field · 2.25 ha · owner and actual crops unconfirmed'}</small>
-  </section>
-  <section className="chakra-values" aria-label={es?'Cómo te ayuda CHAKRA':'How CHAKRA helps'}>{cards.map(([title,copy],i)=><article className="chakra-glass chakra-value" key={title}><MiniVisual kind={i}/><div><span className="chakra-card-number">0{i+1}</span><h2>{title}</h2><p>{copy}</p></div></article>)}</section>
-  <section className="chakra-how" id="chakra-how"><span className="chakra-kicker">{es?'ASÍ DE SENCILLO':'KEEP IT SIMPLE'}</span><h2>{es?'De tu terreno a tus opciones.':'From your field to your options.'}</h2><p>{es?'Cuatro pasos, una pregunta a la vez.':'Four steps, one question at a time.'}</p><ol>{(es?['Ubica el terreno','Cuéntanos qué sembraste','Elige qué necesitas cuidar','Revisa tus opciones']:['Find your field','Record your crops','Choose your priorities','Review your options']).map((v,i)=><li key={v} className={i===0?'active':''}><span>{String(i+1).padStart(2,'0')}</span><strong>{v}</strong></li>)}</ol></section>
-  <section className="chakra-evidence" aria-label={es?'Lo que puedes comprobar':'What you can verify'}>
-   <article className="chakra-glass"><Icon name="calendar-days" size={25}/><h2>{es?'Datos que puedes revisar':'Data you can inspect'}</h2><p>{es?'Cada lectura muestra su fecha. Si no hay una observación válida, verás «Sin datos», nunca un valor inventado.':'Each reading has a date. Missing valid observations say “No data”, never an invented value.'}</p></article>
-   <article className="chakra-glass"><Icon name="shield-check" size={25}/><h2>{es?'La decisión sigue siendo tuya':'You remain in charge'}</h2><p>{es?'Las opciones sirven para comparar. Antes de sembrar, comprueba tu agua disponible, tu suelo y quién comprará tu cosecha.':'Options help you compare. Before planting, check water, soil and who will buy your crop.'}</p></article>
-  </section>
-  <section className="chakra-final chakra-glass"><span className="chakra-final-mark"><ChakraMark/></span><h2>{es?<>Tu próxima campaña<br/>empieza por <em>conocer.</em></>:<>Your next season<br/>starts with <em>knowing.</em></>}</h2><p>{es?'Prueba con la parcela de estudio de Barranca. No necesitas dibujar ni registrarte.':'Try the Barranca study field. No drawing or registration required.'}</p><button className="chakra-primary" onClick={onStart}>{es?'Empezar con Barranca':'Start with Barranca'}<Icon name="arrow-right"/></button><button className="chakra-text-button" onClick={onMap}>{es?'Prefiero explorar el mapa':'Explore the map first'}</button></section>
-  <section className="chakra-sources" id="chakra-sources"><span className="chakra-kicker">{es?'FUENTES CONSULTADAS · NO SON PATROCINADORES':'DATA SOURCES · NOT SPONSORS'}</span><div><a href="https://hls.gsfc.nasa.gov/" target="_blank" rel="noreferrer">NASA HLS</a><a href="https://power.larc.nasa.gov/" target="_blank" rel="noreferrer">NASA POWER</a><a href="https://gpm.nasa.gov/" target="_blank" rel="noreferrer">NASA GPM</a><a href="https://www.fao.org/4/x0490e/x0490e00.htm" target="_blank" rel="noreferrer">FAO<span className="chakra-source-grid" aria-hidden="true"><i/><i/><i/><i/></span></a></div></section>
- </div>
+
+/** A compact invitation: the interactive map immediately below is the hero. */
+export default function ChakraLanding({lang,onStart,onMap}:Props){
+ const es=lang==='es'
+ return <section className="chakra-landing chakra-map-intro" data-bio-target="bio-hero">
+  <div className="chakra-badge"><span className="chakra-badge-tag">CHAKRA</span><i/>{es?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</div>
+  <h1>{es?<>Conoce tu terreno.<br/>Prepara tu próxima <em>siembra.</em></>:<>Explore your field.<br/>Plan your next <em>planting.</em></>}</h1>
+  <p>{es?'Delimita tu tierra, ubica lo que sembraste y revisa un plan por zonas. Tres pasos sencillos, con información científica detrás.':'Outline your field, record crops by area and review a zone-by-zone plan. Three simple steps, backed by evidence.'}</p>
+  <div className="chakra-map-intro-actions">
+   <button type="button" className="chakra-primary" onClick={onStart}>{es?'Explorar parcela de Barranca':'Explore the Barranca example'}<Icon name="arrow-right" size={18}/></button>
+   <button type="button" className="chakra-text-button" onClick={onMap}>{es?'Delimitar otro terreno':'Outline another field'}</button>
+  </div>
+  <small className="chakra-study-note">{es?'Mapa interactivo a continuación · Barranca es una parcela de estudio con cultivos reales por confirmar.':'Interactive map below · Barranca is a study parcel with actual crops yet to be confirmed.'}</small>
+ </section>
 }

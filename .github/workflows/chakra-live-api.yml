@@ -1,0 +1,55 @@
+name: CHAKRA live API contract check
+on:
+  pull_request:
+    paths:
+      - 'backend/app/api/rotation_routes.py'
+      - 'backend/app/services/spatial_plan.py'
+      - 'tests/test_spatial_plan.py'
+      - '.github/workflows/chakra-live-api.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  spatial-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Verify Render health and public spatial plan POST
+        run: |
+          python - <<'PY'
+          import json
+          import time
+          from urllib.request import Request, urlopen
+          root="https://terra360-api.onrender.com"
+          payload={
+            "polygon":{"type":"Polygon","coordinates":[[
+              [-71.995,-13.517],[-71.991,-13.517],
+              [-71.991,-13.513],[-71.995,-13.513],[-71.995,-13.517]
+            ]]},
+            "zones":[{"id":"rest","crop_id":"camote","planted_month":"2026-05"}]
+          }
+          for attempt in range(1,4):
+            try:
+              with urlopen(root+"/api/health",timeout=40) as r:
+                assert r.status==200
+              req=Request(root+"/api/rotation/spatial-plan",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type":"application/json"},method="POST")
+              with urlopen(req,timeout=60) as r:
+                assert r.status==200
+                body=json.loads(r.read())
+              assert body["status"]=="prepared",body
+              assert body["scope"]=="exploratory_reference",body
+              assert body["ai_status"]=="agronomic_rule_engine",body
+              zone=body["zone_plans"][0]
+              assert zone["current_crop"]=="Camote",zone
+              assert len(zone["how_es"])>=3,zone
+              assert zone["sow_month"] and zone["suggested_crop"],zone
+              print("Live Render API verified: planning from off-study parcel, no HLS extrapolation")
+              break
+            except Exception as exc:
+              if attempt==3:
+                raise
+              print(f"Retrying public endpoint ({type(exc).__name__}); attempt {attempt}/3")
+              time.sleep(8)
+          PY
