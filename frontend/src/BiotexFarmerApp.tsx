@@ -1,10 +1,11 @@
 // AI-assisted: farmer-first BIOTEX interface. Scientific calculations remain on the server.
 import {useEffect,useMemo,useRef,useState,type ReactNode,type FormEvent} from 'react'
-import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,useMap,useMapEvents} from 'react-leaflet'
+import {CircleMarker,MapContainer,Polygon,Polyline,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {API,httpErrorMessage,readableApiError} from './network'
 import {approximatePolygonHectares,validatePolygon} from './geometry'
 import {TEAM_FIELDS,ZONES,type GeoPolygon} from './rotationZones'
 import {addPlantingToRotation,removePlantingFromRotation} from './manualRotation'
+import SatelliteEvidence from './SatelliteEvidence'
 import './biotex-farmer.css'
 
 type Lang='es'|'en'
@@ -13,7 +14,7 @@ type Point={lat:number;lng:number}
 type Planting={crop_id:string;start_index:number}
 type Suggestion={crop_id:string;name_es:string}
 type Campaign={start:string;end:string;candidates:Suggestion[]}
-type History={sensor:string;period:{start:string;end:string};months_with_data:number;months_total:number;months:{month:string;ndvi:number|null}[];detection:{campaigns:Campaign[]}}
+type History={sensor:string;period:{start:string;end:string};months_with_data:number;months_total:number;months:{month:string;ndvi:number|null;best_scene?:{date:string;scene_id?:string;collection?:string;platform?:string;valid_pixels?:number}|null}[];detection:{campaigns:Campaign[]}}
 type OneCrop={crop_id:string;name_es:string;start_index:number;months:number;approximate:boolean}
 type Strategy={
  id:string;key:string;title_es:string;title_en:string;origin:string;
@@ -22,7 +23,7 @@ type Strategy={
  relative_to_current:{water_low_river_change_percent:number|null;water_total_change_percent:number|null;bare_months_change:number;legume_plantings_change:number}|null;
  sections:{why:{es:string[];en:string[]};benefits:{es:string[];en:string[]};gaps:{es:string[];en:string[]};risks:{es:string[];en:string[]};evidence:{es:string[];en:string[]}}
 }
-type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;
+type Result={status:string;strategies:Strategy[];recommended_strategy_id?:string|null;recommendation_confidence?:'limited'|'relative_evidence'|'insufficient';
  recommendation_reason_es?:string;recommendation_reason_en?:string;
  climate?:{period:string;annual_et0_mm:number;cell_adjustment?:{reason_es:string;reason_en:string}|null};
  income_crop?:string;disclaimer_es?:string;disclaimer_en?:string;method?:Record<string,unknown>}
@@ -42,12 +43,12 @@ const LABELS={
  steps:['Mi chacra','Mis cultivos','Mis prioridades','Mi plan'],
  title:'Cultiva mejor, cuidando tu agua y tu tierra.',
  subtitle:'Marca tu chacra, cuéntanos qué sembraste y descubre opciones para tus próximas campañas.',
- pilot:'Ejemplo disponible: Barranca · Pativilca / Supe',region:'Empezamos por Barranca',
+ pilot:'',region:'Barranca · Pativilca y Supe',
  search:'¿Dónde está tu chacra?',searchHint:'Escribe el nombre de tu localidad o distrito',find:'Buscar lugar',
  waitSearch:'Buscando lugares…',notFound:'No encontramos ese lugar. Prueba con el distrito o provincia.',
  mapHint:'Acerca el mapa y marca las esquinas de tu chacra.',draw:'Marcar mi chacra',finish:'Terminar terreno',
  undo:'Deshacer esquina',cancel:'Cancelar',area:'Área aproximada',changeField:'Cambiar terreno',
- examples:'¿Quieres conocer cómo funciona?',exampleNote:'Estos terrenos son ejemplos para probar BIOTEX. No representan cultivos confirmados por sus dueños.',
+ examples:'Conoce BIOTEX en Barranca',exampleNote:'Parcela seleccionada para mostrar cómo se analizan imágenes de satélite.',
  pick:'Usar este ejemplo',fieldReady:'Tu terreno está marcado',fieldMissing:'Primero marca un terreno en el mapa.',
  locationUnavailable:'No pudimos buscar lugares. Intenta de nuevo.',invalidArea:'Marca entre 0,1 y 500 hectáreas.',
  invalidShape:'Revisa las esquinas: el terreno no debe cruzarse ni repetirse.',
@@ -68,14 +69,14 @@ const LABELS={
  income:'¿Qué cultivo quieres seguir sembrando?',incomeAuto:'El cultivo que más siembro',
  scarcity:'¿Entre mayo y noviembre te suele faltar agua?',yes:'Sí',no:'No',unknown:'No estoy seguro',
  action:'Ver mi plan',working:'Estamos preparando tu plan para esta chacra…',
- planTitle:'Tu plan de siembra',planLead:'Estas opciones se calcularon con los datos que nos diste y referencias agrícolas de Lima.',
- recommended:'Opción destacada para tu chacra',noRecommend:'Aún no encontramos una opción claramente mejor.',
+ planTitle:'Tu propuesta para sembrar',planLead:'Revisa el orden de los cultivos, las fechas y los cambios que podría tener tu chacra.',
+ recommended:'Rotación para revisar',noRecommend:'Todavía no encontramos una rotación claramente mejor.',
  current:'Tu forma de sembrar',alternative:'Otra opción para revisar',other:'Ver otras opciones',keyWater:'Agua en meses secos',keySoil:'Meses sin cultivo',fewer:'menos',more:'más',
- waterTrade:'Consumo de agua estimado respecto a lo que haces hoy',coverage:'meses de 24 con la tierra descubierta',
- where:'Chacra',when:'Fecha',areaPrint:'Superficie aproximada',planSchedule:'Ejemplo de rotación para 24 meses',
+ waterTrade:'Agua que podrían necesitar los cultivos',coverage:'meses sin sembrar en el ciclo de 24 meses',
+ where:'Chacra',when:'Fecha',areaPrint:'Área aproximada',planSchedule:'Orden propuesto de siembra',
  year1:'Primer año',year2:'Segundo año',noCrop:'Sin cultivo previsto',sowing:'Siembra',
  benefits:'Qué puede mejorar',risks:'Qué debes tener en cuenta',verify:'Por confirmar en tu chacra',
- compare:'Comparación de opciones',details:'Cómo hicimos el análisis',warning:'Estos cálculos son orientativos: antes de cambiar tu siembra, revísalos con un técnico agrícola.',
+ compare:'Comparación de opciones',details:'Cómo hicimos el análisis',warning:'Antes de empezar, comprueba el agua disponible y las condiciones de tu suelo.',
  report:'Imprimir o guardar PDF',startOver:'Revisar mis respuestas',sources:'Fuentes y límites',
  evidence:'Datos usados',reportTech:'Datos técnicos y cálculos',printFooter:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',
  unsupported:'Aquí todavía no tenemos un calendario de cultivos local comprobado. Puedes marcar y revisar tu terreno, pero las recomendaciones de siembra están disponibles para la costa de Lima.',
@@ -86,12 +87,12 @@ const LABELS={
  en:{
  steps:['My field','My crops','My priorities','My plan'],
  title:'Better harvests, caring for soil and water.',subtitle:'Mark your field, tell us what you grew, and discover options for your next seasons.',
- pilot:'Demo area: Barranca · Pativilca / Supe',region:'Start in Barranca',
+ pilot:'',region:'Barranca · Pativilca and Supe',
  search:'Where is your field?',searchHint:'Enter your town or district',find:'Find a place',
  waitSearch:'Searching for places…',notFound:'No places found. Try a district or province.',
  mapHint:'Zoom in and mark the corners of your field.',draw:'Mark my field',finish:'Finish field',
  undo:'Undo corner',cancel:'Cancel',area:'Approximate area',changeField:'Change field',
- examples:'Want to see how it works?',exampleNote:'These fields are examples for trying BIOTEX. Their actual crops have not been confirmed by farmers.',
+ examples:'Explore BIOTEX in Barranca',exampleNote:'Selected field showing how satellite imagery is analysed.',
  pick:'Use this example',fieldReady:'Your field is marked',fieldMissing:'First mark a field on the map.',
  locationUnavailable:'We could not search places. Please try again.',invalidArea:'Mark an area from 0.1 to 500 hectares.',
  invalidShape:'Check the corners: field edges cannot cross or repeat.',
@@ -112,14 +113,14 @@ const LABELS={
  income:'Which crop do you need to keep growing?',incomeAuto:'My most frequent crop',
  scarcity:'Do you have less irrigation water from May to November?',yes:'Yes',no:'No',unknown:'Not sure',
  action:'Show my plan',working:'Preparing a plan for your field…',
- planTitle:'Your planting plan',planLead:'Options use the information you entered and crop references for coastal Lima.',
- recommended:'Highlighted option for your field',noRecommend:'We have not found a clearly better option yet.',
+ planTitle:'Your planting proposal',planLead:'Review crop order, dates and estimated changes for your field.',
+ recommended:'A rotation to review',noRecommend:'No clearly better rotation has been found yet.',
  current:'Your current planting',alternative:'Another option to review',other:'See other options',keyWater:'Water in dry months',keySoil:'Months without crops',fewer:'less',more:'more',
  waterTrade:'Estimated crop water compared with your current planting',coverage:'out of 24 months without a crop',
- where:'Field',when:'Date',areaPrint:'Approximate area',planSchedule:'Illustrative 24-month rotation',
+ where:'Field',when:'Date',areaPrint:'Approximate area',planSchedule:'Suggested crop order',
  year1:'Year one',year2:'Year two',noCrop:'No crop planned',sowing:'Sown',
  benefits:'What could improve',risks:'What to consider',verify:'Check on your field',
- compare:'Comparison of options',details:'How this was calculated',warning:'These are estimates. Review them with an agricultural technician before changing crops.',
+ compare:'Comparison of options',details:'How this was calculated',warning:'Before planting, check available water and your soil conditions.',
  report:'Print or save PDF',startOver:'Review my answers',sources:'Sources and limitations',
  evidence:'Data used',reportTech:'Technical calculations',printFooter:'BIOTEX · NSPACE BIOTEX · NASA Space Apps 2026',
  unsupported:'We do not yet have a verified local crop calendar here. You can mark and review the field, but planting options are available for coastal Lima.',
@@ -131,7 +132,7 @@ const LABELS={
 function labelCrop(id:string,lang:Lang){return (NAMES[id]||[id,id])[lang==='es'?0:1]}
 function mon(i:number,lang:Lang){const m=(7+i)%12;return (lang==='es'?MONTHS_ES:MONTHS_EN)[m]}
 function monthYear(index:number,baseYear:number,lang:Lang){const d=new Date(Date.UTC(baseYear,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}
-function planMonth(index:number,lang:Lang){return mon(index,lang)+' · '+(lang==='es'?'año ':'year ')+(index<12?'1':'2')}
+function planMonth(index:number,lang:Lang,year?:number){if(year){const d=new Date(Date.UTC(year,7+index,1));return (lang==='es'?MONTHS_ES:MONTHS_EN)[d.getUTCMonth()]+' '+d.getUTCFullYear()}return mon(index,lang)+' · '+(lang==='es'?'año ':'year ')+(index<12?'1':'2')}
 function ymNumber(s:string){return Number(s.slice(0,4))*12+Number(s.slice(5,7))-1}
 function recentAugust(){const now=new Date();const year=now.getUTCFullYear(),m=now.getUTCMonth()+1;return (m>=8?year:year-1)-2}
 function simpleDate(lang:Lang){return new Date().toLocaleDateString(lang==='es'?'es-PE':'en-US',{year:'numeric',month:'long',day:'numeric'})}
@@ -178,7 +179,7 @@ function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Poi
  return <>{points.length>1&&<Polyline positions={points.map(p=>[p.lat,p.lng] as [number,number])} pathOptions={{color:'#F7C85C',weight:4}}/>}
  {points.map((p,i)=><CircleMarker key={i} center={[p.lat,p.lng]} radius={i===0?9:6} pathOptions={{color:'#134638',weight:2,fillColor:i===0?'#F7C85C':'#fff',fillOpacity:1}} eventHandlers={i===0?{click:()=>{if(points.length>=3)onFinish()}}:undefined}/>)}</>
 }
-const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,2)
+const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,1)
 export default function BiotexFarmerApp(){
  const [lang,setLang]=useState<Lang>(()=>new URLSearchParams(window.location.search).get('lang')==='en'?'en':'es')
  const t=LABELS[lang]
@@ -212,6 +213,9 @@ export default function BiotexFarmerApp(){
  const [planBusy,setPlanBusy]=useState(false)
  const [planError,setPlanError]=useState('')
  const [otherOpen,setOtherOpen]=useState(false)
+ const [mapLayer,setMapLayer]=useState<'photo'|'vegetation'|'rain'>('photo')
+ const [mapLayerFailed,setMapLayerFailed]=useState(false)
+ const [planStartYear,setPlanStartYear]=useState(()=>{const d=new Date();return d.getUTCFullYear()+(d.getUTCMonth()>=7?1:0)})
  const request=useRef(0)
  const baseYear=recentAugust()
  const point=field?centroid(field):centre
