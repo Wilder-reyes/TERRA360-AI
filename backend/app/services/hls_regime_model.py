@@ -190,7 +190,16 @@ def assess_field(history: dict | None, *, model: dict | None = None) -> dict:
     months = [m for m in history.get("months",[]) if
               isinstance(m.get("ndvi"), (int,float)) and not isinstance(m.get("ndvi"), bool)
               and math.isfinite(m["ndvi"]) and m.get("best_scene")]
-    recent = sorted(months,key=lambda m:m["month"])[-24:]
+    latest_month = max((m["month"] for m in history.get("months", [])
+                        if isinstance(m.get("month"), str) and len(m["month"]) == 7),
+                       default=None)
+    if not latest_month:
+        return {"status": "insufficient_field_observations", "months_observed": 0}
+    y, mo = map(int, latest_month.split("-"))
+    first_ordinal = y*12+(mo-1)-23
+    recent = sorted((m for m in months if
+                     int(m["month"][:4])*12+int(m["month"][5:7])-1 >= first_ordinal),
+                    key=lambda m:m["month"])
     if len(recent)<12:
         return {"status":"insufficient_field_observations", "months_observed":len(recent)}
     classification = [
