@@ -23,5 +23,14 @@
   "ai_model_source": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
   "ai_model_training": "33 chronological HLS observations for holdout evaluation; production fit on all 44",
   "ui_release": "v0.27-farmer-first-ux-pro-max",
-  "design_system": "UI UX Pro Max · Campo Claro"
+  "design_system": "UI UX Pro Max · Campo Claro",
+  "experimental_pilots": [
+    {
+      "id": "chalhuas",
+      "url": "https://terra360-ai-eta.vercel.app/?pilot=chalhuas",
+      "status": "exploratory_no_local_ai_model",
+      "parcel": "synthetic_example_or_user_drawn",
+      "scientific_claims": "no_local_agronomic_recommendation"
+    }
+  ]
 }
