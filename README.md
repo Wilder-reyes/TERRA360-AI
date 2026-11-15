@@ -24,6 +24,14 @@ All indicators are **relative to the current rotation**. They are not yield, pro
 - **NASA GPM IMERG basin climatology:** when `backend/app/data/imerg_basin_seed.json` is absent, the app displays an unavailable state rather than inventing precipitation. Basin precipitation is not river discharge or the farmer's irrigation entitlement.
 - **Validation status:** documented methods and automated tests are not field validation. Crop water is a relative Kc × ET0 estimate, not measured irrigation needs or yield.
 
+## BIOTEX v0.26 — real, reproducible NASA HLS-trained AI in Barranca
+
+**The model IS trained**, using 44 genuinely observed monthly NASA HLS vegetation readings on a single 2.24 ha study polygon in Barranca. Frozen logistic model coefficients and a real chronological 33/11 holdout evaluation are versioned in the repository. Holdout Brier score **0.23408** versus a train-only prevalence baseline **0.48026**; this is a one-field retrospective vegetation proxy benchmark, **not** a crop yield or profit prediction.
+
+The backend reproduces the model from the original SHA-checked HLS observations without any fake labels. In `POST /api/rotation/compare`, pass the **exact polygon** along with current crops; the learned seasonality of low vegetation contributes to the S0/S1/S2 soil-coverage choice and cannot override the scarce-water guard. The frontend shows this as a simple explanation, with model technical metrics behind an accordion. The standalone reproducibility endpoint is `GET /api/rotation/ai-demo`.
+
+**Reproduce on any machine:** `python scripts/reproduce_field_shift_ai.py --check`. Full method, source hashes, training/test split and limitations: [docs/BIOTEX_v026_IA_reproducible.md](docs/BIOTEX_v026_IA_reproducible.md).
+
 ## BIOTEX v0.25 — contrastar evidencia antes de recomendar
 
 * **Design:** the farmer sees the crop sequence first, followed by a short irrigation/soil checklist. Official water, alerts, prices and model methods are progressively disclosed. The target-persona and field testing protocol are in [docs/BIOTEX_v025_analisis_usuario_y_validacion.md](docs/BIOTEX_v025_analisis_usuario_y_validacion.md). No farmer interviews or agronomist approval have been claimed.
