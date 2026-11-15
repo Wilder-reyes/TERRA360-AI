@@ -187,3 +187,10 @@
 .chakra-farmer-clean:not(.chakra-research) .chakra-plan-scope{display:none!important}
 @media(max-width:650px){.chakra-aerial-plan{padding:9px}.chakra-aerial-map{height:380px!important}.chakra-aerial-heading{padding:4px}.chakra-aerial-map .leaflet-tooltip.chakra-crop-map-label{font-size:10px;max-width:110px}}
 @media print{.chakra-aerial-plan{display:none!important}.chakra-plan-sketch{display:block!important}}
+
+.chakra-crop-planting-month{background:#203827;border:1px solid #4f7250;border-radius:14px;padding:13px 16px;margin:12px 0 14px}
+.chakra-crop-planting-month label{display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:800}
+.chakra-crop-planting-month select{width:100%;min-height:48px;background:#f3f7ed;color:#183322;padding:9px 12px;border:2px solid #9ab890;border-radius:11px;font-size:16px}
+.chakra-crop-planting-month .chakra-month-why{margin:10px 0 0}
+.chakra-zone-choices .chakra-zone-choice span{font-weight:850;line-height:1.25}
+.chakra-zone-choices .chakra-zone-choice strong{color:inherit}

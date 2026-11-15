@@ -873,13 +873,18 @@ export default function BiotexFarmerApp(){
      <strong>{zoneCrops[z.id]?labelCrop(zoneCrops[z.id].crop_id,lang):(lang==='es'?'Por registrar':'To register')}</strong></button>)}</div>
     <section className="chakra-crop-section" data-bio-target="bio-crops"><h2>{lang==='es'?'Elige tus cultivos':'Choose your crops'}</h2>
      <p className="chakra-zone-drag-hint">{lang==='es'?'Selecciona el mes, toca un cultivo y marca su lugar en el mapa de al lado. También puedes arrastrarlo.':'Choose the month, select a crop and tap its place on the map beside it. You can also drag it.'}</p>
+     <div className="chakra-crop-planting-month" data-bio-target="bio-plant-month"><label data-bio-target="bio-plant-month">{lang==='es'?'¿Cuándo sembraste este cultivo por última vez?':'When did you last plant this crop?'}
+      <select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{monthChoices.map(i=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label>
+      <p className="chakra-month-why">{lang==='es'?'El mes nos ayuda a saber cuándo terminó el cultivo anterior y cuándo puedes volver a sembrar.':'The month helps us estimate when the previous crop ended and when you could plant again.'}</p>
+     </div>
      <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" draggable onDragStart={event=>{event.dataTransfer.setData('application/x-chakra-crop',id);event.dataTransfer.effectAllowed='copy';setPendingCrop(id);setCrop(id)}} key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>{setCrop(id);setPendingCrop(id);if(window.innerWidth<900)document.getElementById('chakra-zone-map')?.scrollIntoView({behavior:'smooth',block:'center'})}}>
       <span className="chakra-crop-art" aria-hidden="true">{({maiz_amarillo_duro:'🌽',maiz_chala:'🌽',camote:'🍠',papa:'🥔',frijol_grano_seco:'🫘',frijol_castilla:'🫘',vainita:'🫛',pallar:'🫘',arveja_verde:'🫛',cebolla:'🧅',zanahoria:'🥕',brocoli_col:'🥦',alfalfa:'🌿'} as Record<string,string>)[id]}</span>
       <span>{labelCrop(id,lang)}</span><span className="chakra-crop-tick">{crop===id?'✓':''}</span></button>)}</div>
-     <div className="chakra-crop-when"><label data-bio-target="bio-plant-month">{lang==='es'?'¿Cuándo sembraste este cultivo por última vez?':'When did you last plant this crop?'}
-      <select value={cropMonth} onChange={e=>setCropMonth(Number(e.target.value))}>{monthChoices.map(i=><option key={i} value={i}>{monthYear(i,baseYear,lang)}</option>)}</select></label>
+     <div className="chakra-crop-when">
       <p className="chakra-month-why">{lang==='es'?'Conocer el mes nos ayuda a calcular cuándo terminó ese cultivo y cuándo podría empezar el siguiente.':'The month helps estimate when that crop ended and when the next one could start.'}</p>
       <button className="b-btn b-btn-primary" type="button" onClick={applyZoneCrop}>{lang==='es'?'Marcar en zona elegida':'Assign to selected area'}</button></div>
+
+     </div>
     </section>
     <details className="chakra-zone-help chakra-farmer-extra"><summary>{lang==='es'?'Ayuda para reconocer cultivos (opcional)':'Help identifying crops (optional)'}</summary>
      <p>{lang==='es'?'Tus respuestas sobre lo que sembraste son la referencia principal. Puedes consultar catálogos e imágenes como pistas.':'Your crop records are the primary reference. Use catalogues and satellite imagery as supporting clues.'}</p>
