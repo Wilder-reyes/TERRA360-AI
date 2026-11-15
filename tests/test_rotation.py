@@ -481,5 +481,17 @@ class TeamSowingRuleTests(unittest.TestCase):
         self.assertTrue(s1["relative_to_current"]["improves_low_river_water"])
 
 
+class EnglishTextTests(unittest.TestCase):
+    def test_english_sections_have_no_spanish_crop_names(self):
+        import re
+        clim = coastal_climate()
+        current = [{"crop_id": "cebolla", "start_index": 9}, {"crop_id": "camote", "start_index": 22},
+                   {"crop_id": "maiz_amarillo_duro", "start_index": 0}, {"crop_id": "pallar", "start_index": 14}]
+        r = E.compare(current, clim)
+        spanish = re.compile(r"[áéíóúñ]|Maíz|Cebolla|Frijol|Camote|Zanahoria|Pallar|Arveja|Vainita")
+        bad = [t for s in r["strategies"] for v in s["sections"].values() for t in v["en"] if spanish.search(t)]
+        self.assertEqual(bad, [])
+
+
 if __name__ == "__main__":
     unittest.main()
