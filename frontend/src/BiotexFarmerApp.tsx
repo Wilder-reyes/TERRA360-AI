@@ -177,7 +177,7 @@ function Icon({name,size=20}:{name:'search'|'pin'|'check'|'left'|'right'|'undo'|
 }
 function FlyTo({point,polygon}:{point:Point;polygon:Point[]|null}){
  const map=useMap()
- useEffect(()=>{if(polygon&&polygon.length>2){map.fitBounds(polygon.map(p=>[p.lat,p.lng] as [number,number]),{padding:[40,40],maxZoom:17})}else{map.setView([point.lat,point.lng],13)}},[map,point.lat,point.lng,polygon])
+ useEffect(()=>{if(polygon&&polygon.length>2){map.fitBounds(polygon.map(p=>[p.lat,p.lng] as [number,number]),{padding:[40,40],maxZoom:17,animate:false})}else{map.setView([point.lat,point.lng],13)}},[map,point.lat,point.lng,polygon])
  return null
 }
 function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Point[];onPoint:(p:Point)=>void;onFinish:()=>void}){
@@ -558,8 +558,8 @@ export default function BiotexFarmerApp(){
     <div className="b-farm-grid">
      <aside className="b-card b-examples"><span className="b-sample-label">{lang==='es'?'INICIO RÁPIDO':'QUICK START'}</span>
 <div className="b-sample-graphic" aria-hidden="true"><div className="b-sample-plot"><span/><span/><span/></div><span className="b-sample-sun"/></div>
-<h2>{lang==='es'?'Prueba BIOTEX con una parcela observada por NASA':'Explore a field observed by NASA'}</h2>
-<p className="b-sample-explain">{lang==='es'?'Usa un terreno de estudio de Barranca sin dibujar nada. No conocemos a su propietario ni sus cultivos reales.':'Explore a Barranca study field without drawing. Its owner and actual crops have not been verified.'}</p>
+<h2>{lang==='es'?'Una parcela de estudio en Barranca':'A study field in Barranca'}</h2>
+<p className="b-sample-explain">{lang==='es'?'Observada por NASA HLS. Explórala sin dibujar; su propietario y sus cultivos reales no están confirmados.':'Explore a Barranca study field without drawing. Its owner and actual crops have not been verified.'}</p>
       {DEMOS.map((f,i)=><button key={f.id} type="button" className="b-example-choice" onClick={()=>setExample(f)}><span className="b-example-index">{String(i+1).padStart(2,'0')}</span>
         <span><strong>{lang==='es'?'Explorar parcela de Barranca':'Explore a Barranca field'}</strong><small>{approximatePolygonHectares(fromGeo(f.polygon)).toFixed(2)} ha · NASA HLS</small></span><Icon name="right" size={19}/></button>)}
       <p className="b-muted b-sample-foot"><Icon name="info" size={17}/>{lang==='es'?'La IA entrenada solo se aplica a esta parcela; puedes marcar otra para explorar el mapa.':'Trained AI only applies to this field; you can mark another to explore the map.'}</p>

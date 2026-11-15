@@ -293,3 +293,11 @@
   .b-map{height:390px!important}
  }
 }
+@media screen and (max-width:640px){
+ .b-hero-copy h1{font-size:1.45rem!important;line-height:1.2!important}
+ .b-hero-copy>p{font-size:1rem!important;margin:8px 0!important}
+ .b-examples{padding:16px!important;gap:6px!important}
+ .b-examples h2{font-size:1.1rem!important}
+ .b-examples p{font-size:.9rem!important;line-height:1.4!important}
+ .b-examples .b-sample-graphic{display:none!important}
+}
