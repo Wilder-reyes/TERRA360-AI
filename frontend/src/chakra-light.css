@@ -1,0 +1,21 @@
+/* AI-assisted: written with Claude Code (Anthropic) and reviewed by the CHAKRA X team.
+ * CHAKRA light theme for projectors. Screen only (print/PDF stays white), enabled with
+ * html[data-theme="light"] (?theme=light or the ☀/☾ button). Dark remains the default.
+ * Method: luminance inversion of the approved dark palette with hue preserved, so #050806
+ * becomes an off-white background, white text becomes near-black and the lime accent becomes
+ * a darker green with AA contrast on white. Maps, NASA imagery, legends, zone colours and
+ * emoji are restored to their original colours. No structure or logic changes.
+ */
+@media screen {
+ html[data-theme="light"]{background:#050806;filter:invert(1) hue-rotate(180deg)}
+ /* Restore true colours: map tiles and vector zones, NASA imagery/legends, photos, crop emoji, zone sketches */
+ html[data-theme="light"] :is(.leaflet-container,img,video,picture,iframe,canvas,.chakra-plan-sketch svg,.chakra-crop-art,.chakra-sketch-legend i,.chakra-advice-zone i,.b-ai-mark){filter:invert(1) hue-rotate(180deg)}
+ /* Images inside an already-restored map must not be flipped twice */
+ html[data-theme="light"] .leaflet-container :is(img,canvas,svg){filter:none}
+ /* Decorative background photo is not needed on a projector */
+ html[data-theme="light"] .chakra-background>img{opacity:0}
+ /* Softer card edges once inverted (glass → white cards with a light border) */
+ html[data-theme="light"] .b-app :is(.chakra-advice-card,.chakra-plan-highlight,.chakra-strategy-scope,.chakra-strategy-status,.chakra-imerg-line){box-shadow:none}
+}
+.chakra-theme-toggle{min-width:42px;min-height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#e7e9e7;font-size:18px;line-height:1;cursor:pointer}
+.chakra-theme-toggle:hover{background:rgba(255,255,255,.08)}

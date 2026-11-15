@@ -19,6 +19,7 @@ import {BARRANCA_FIELD,BARRANCA_HISTORY,isStudyParcel,vegetationBand} from './ba
 import BarrancaLegend from './BarrancaLegend'
 import './agricultural-dark.css'
 import './chakra.css'
+import './chakra-light.css'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
 import ChakraZonePlan,{ChakraZonePrint,type ChakraSpatialPlan} from './ChakraZonePlan'
@@ -284,6 +285,14 @@ export default function BiotexFarmerApp(){
  const mapPolygon=useMemo(()=>field?fromGeo(field):null,[field])
 
  useEffect(()=>{document.documentElement.lang=lang},[lang])
+ // Light theme for projectors: ?theme=light|dark wins, else the saved choice, else dark (default).
+ const [theme,setTheme]=useState<'dark'|'light'>(()=>{
+  const q=new URLSearchParams(window.location.search).get('theme')
+  if(q==='light'||q==='dark')return q
+  try{const v=localStorage.getItem('chakra-theme');if(v==='light'||v==='dark')return v}catch{/* storage unavailable */}
+  return 'dark'
+ })
+ useEffect(()=>{document.documentElement.dataset.theme=theme;try{localStorage.setItem('chakra-theme',theme)}catch{/* storage unavailable */}},[theme])
  // Cold start: wake the Render API as soon as the app opens (free tier sleeps).
  useEffect(()=>{fetch(API+'/api/health').catch(()=>{})},[])
  const [slowServer,setSlowServer]=useState(false)
@@ -635,6 +644,7 @@ export default function BiotexFarmerApp(){
  <button type="button" className="b-brand" aria-label={lang==='es'?'Inicio CHAKRA':'CHAKRA home'} onClick={()=>{navigate(0);setLanding(true)}}><span className="b-brand-mark"><ChakraMark/></span><div><b>chakra</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></button>
  <nav className="chakra-nav" aria-label={lang==='es'?'Navegación principal':'Main navigation'}>{landing?<><a href="#chakra-how" aria-current={activeNav==='how'?'location':undefined} onClick={()=>setActiveNav('how')}>{lang==='es'?'Cómo funciona':'How it works'}</a><a href="#chakra-sources" aria-current={activeNav==='sources'?'location':undefined} onClick={()=>setActiveNav('sources')}>{lang==='es'?'Fuentes':'Sources'}</a></>:<button type="button" onClick={()=>{navigate(0);setLanding(true)}}>{lang==='es'?'Inicio':'Home'}</button>}</nav>
  <div className="b-header-tools"><button className="chakra-nav-cta" aria-label={lang==='es'?'Ver mapa de Barranca':'Open Barranca map'} onClick={()=>{setLanding(false);navigate(0);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}}><span className="chakra-nav-long">{lang==='es'?'Ver mapa de Barranca':'Open Barranca map'}</span><span className="chakra-nav-short" aria-hidden="true">{lang==='es'?'Mapa':'Map'}</span><Icon name="right" size={16}/></button>
+ <button type="button" className="chakra-theme-toggle" aria-pressed={theme==='light'} aria-label={theme==='light'?(lang==='es'?'Cambiar a modo oscuro':'Switch to dark mode'):(lang==='es'?'Cambiar a modo claro':'Switch to light mode')} title={theme==='light'?'Dark':'Light'} onClick={()=>setTheme(v=>v==='light'?'dark':'light')}>{theme==='light'?'☾':'☀'}</button>
  <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></div></header>
   <div className="chakra-background" aria-hidden="true"><img src="/chakra-fields.webp" alt=""/><div/></div>
   <main id="main" className={'b-main '+(landing&&step===0?'chakra-home':'chakra-workspace')}>
