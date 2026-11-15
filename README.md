@@ -1,66 +1,70 @@
-# NSPACE BIOTEX · plataforma agrícola con evidencia
+# chakra — crop rotation decisions with NASA data
 
-Aplicación React/TypeScript/Vite/Leaflet y backend Python/FastAPI independientes. Estado actual: **candidato de entrega NSPACE BIOTEX — etapas 0–8 integradas en ZIP**, sin despliegue nuevo y con build/Playwright y backend externo todavía por verificar.
+**CHAKRA** by team **CHAKRA X** · NASA Space Apps Challenge 2026 · [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/adapting-farms-with-nasa-data/)
 
-Una aplicación, cuatro pasos: **Mi terreno → Mis cultivos → Mis prioridades → Mi plan agrícola**. Permite dibujar o importar una parcela, registrar cultivos, consultar información científica opcional y comparar opciones dentro del ámbito disponible. Las antiguas vistas por `?vista=` o `?pilot=` ya no son páginas independientes.
+**Demo:** https://biotex-eta.vercel.app/?lang=en (the domain still says *biotex*; the product is CHAKRA) · **API:** https://terra360-api.onrender.com/api/health · Spanish: [README.es.md](README.es.md)
 
-La costa de Lima conserva el comparador relativo de 24 meses. El Valle del Mantaro conserva una comparación exploratoria de cuatro campañas dentro del mismo recorrido. El ejemplo de Chalhuas es sintético y no acredita propiedad ni aptitud. No se aplica a Junín el calendario ni el modelo de Barranca.
+## The problem
 
-## Ciencia y reproducibilidad
+Family farmers in Peru's irrigated coastal valleys decide every season what to plant without seeing how their rotation affects their soil, or how exposed it is to scarce dry-season irrigation water and heat. On the desert coast, irrigation water comes from Andean rivers that carry most of their flow in 3–4 months (Dec–Apr); from May to November the river is low. Only 3.1% of producers received technical assistance in 2024 (INEI, ENA 2024).
 
-- Se conservan los siete historiales HLS, catálogos y evidencia originales versionados, los conectores y los scripts científicos.
-- El modelo HLS de una parcela Barranca utiliza 44 observaciones válidas, entrenamiento temporal 33/11 y Brier reproducido 0.23408067 frente a 0.48025712. Sobre el holdout de 11 meses: accuracy 63.64%, precision 100%, recall 55.56%, F1 71.43% (muestra pequeña; no validez espacial externa). Es un proxy de vegetación baja, no identidad de cultivo, rendimiento, ahorro de agua ni precisión de Chalhuas.
-- POWER, IMERG, SMAP, SRTM y ERA5 son productos con resolución y límites propios. No representan instrumentos dentro de la parcela. ECOSTRESS conserva metadatos sin inventar temperaturas.
-- La foto opcional permanece en el dispositivo; no se sube ni se interpreta automáticamente. BIO es el tutorial, no un chatbot.
+CHAKRA lets a farmer outline a field, record what was planted in each zone, and compare **at least three rotation strategies, including the current one**, with **why, evidence, benefits, gaps and risks** for each. Public pilot: **Barranca** (Pativilca / Supe valleys, Lima).
 
-```sh
-python scripts/reproduce_field_shift_ai.py --check
-python docs/audit/reproduce_classification.py
+## Use the demo in 3 steps
+
+1. **Outline** — open the map and tap *Explore the Barranca example* (study field `barranca-1`, ~2.25 ha), or draw/import (GeoJSON) any field.
+2. **Crops and zones** — draw zones if needed, pick each zone's crop with the cards and its sowing month. Crops are **declared by the farmer**, never inferred from imagery.
+3. **My plan** — a zone-by-zone plan (next crop to consider, reference sowing date, preparation steps) and the **comparison of 3 strategies**: S0 current rotation, S1 *Water* (less crop water when the river is low) and S2 *Soil* (covered soil and legumes), each with Why / Evidence / Benefits / Gaps / Risks. *Print map and PDF plan* produces an A4 PDF with the zone sketch, areas and the 3-strategy table.
+
+Data are saved on the device (key `biotex-farm-v1`); reload and restore to continue. Fields outside Barranca can be outlined and planned, but the result states that it is **guidance from general rules, not a locally validated recommendation**.
+
+## NASA data and their scale
+
+| Data | Scale | What CHAKRA uses it for | Type |
+|---|---|---|---|
+| **NASA HLS v2.0** (Harmonized Landsat Sentinel-2), via Microsoft Planetary Computer | 30 m | Monthly vegetation (NDVI) history of the field, 2021–2026; cloud-masked with Fmask; months without a clear image are left empty | observed |
+| **NASA POWER** climatology 2001–2025 | ~0.5° grid | Reference evapotranspiration (FAO-56 Penman-Monteith) and Tmax; crop water = Kc × ET0. If the field's cell lies in the Andes, the neighbouring coastal cell is used and the app says so | calculated |
+| **NASA GPM IMERG** Final Run monthly | 0.1° | Rain over the approximate upper basin (Pativilca / Chancay-Huaral), 2015–2025, where irrigation water comes from | observed (context) |
+| NASA SMAP, SRTM, GIBS layers | 9 km and coarser | Regional map context only; SMAP pixels are larger than the valley | context |
+| FAO-56, DRA Lima / MIDAGRI 2024–25 | — | Crop coefficients and stage lengths; Lima sowing calendar | agronomic rules |
+
+**Model:** a small reproducible seasonal model — logistic regression on **44 NASA HLS monthly observations of one study field** (barranca-1) predicting a low-vegetation proxy. Chronological holdout of 11 months: Brier 0.234 vs 0.480 for a no-learning baseline. It is a **proof of concept**: it only applies to that exact polygon and does not identify crops, yields or soil health. Details: [docs/CHAKRA_NASA.md](docs/CHAKRA_NASA.md).
+
+Every result distinguishes what is **observed** (satellite), **declared** (farmer), **calculated** (FAO-56/POWER), an **agronomic rule** or a **model inference**.
+
+## Run and reproduce
+
+```bash
+# Backend (Python 3.12)
+python -m venv backend/.venv && backend/.venv/bin/python -m pip install -r backend/requirements.txt
+PYTHONPATH=backend python -m uvicorn app.main:app --app-dir backend --port 8000
+PYTHONPATH=backend python -m unittest discover -s tests -p "test_*.py"
+python scripts/reproduce_field_shift_ai.py --check      # re-trains the HLS model and checks the frozen metrics
+
+# Frontend (Node 22+)
+cd frontend && npm ci && npm run test && npm run build
+VITE_API_URL=http://localhost:8000 npm run dev           # http://localhost:5173/?lang=en
+npx playwright install chromium && npm run test:e2e
 ```
 
-## Despliegue de prueba en el repositorio ACTUAL
+Reproducible data products: `scripts/precompute_rotation_history.py` (HLS histories), `scripts/precompute_imerg_basins.py` (IMERG; needs a NASA Earthdata token in a git-ignored `backend/.env`), `scripts/precompute_barranca_example.py` (cold-start example). Deployment: Vercel serves the static frontend and rewrites `/api/*` to the FastAPI service on Render; both deploy automatically from `main`.
 
-**Repositorio GitHub de prueba: `Wilder-reyes/TERRA360-AI`**. La identidad pública de producto seguirá siendo **NSPACE BIOTEX**. En esta fase no se creará un repositorio nuevo: se publicará el paquete de las etapas 0–8 sobre el `main` actual, conservando el historial. Después se importará ese mismo repositorio en un **proyecto nuevo de Vercel**. La publicación preserva además el archivo IMERG añadido a `main` en el PR #41 después de crear el ZIP original; su estado de revisión científica sigue siendo el declarado en los metadatos.
+## Limits
 
-- [Guía operativa de publicación, pruebas, limpieza segura de ramas y Vercel](docs/CURRENT_REPOSITORY_DEPLOY.md).
-- `scripts/publish_current_repo.ps1` clona el repositorio y ejecuta pruebas antes de `git push`.
-- `scripts/prune_legacy_branches.ps1` respalda las refs remotas, preserva ramas protegidas y limpia las históricas cuando la publicación esté comprobada.
+- Results are **relative comparisons** to discuss with a technician from the Agrarian Agency or the Water Users' Board — not yield, profit, irrigation-saving or soil-fertility predictions. No field validation with farmers has been done yet.
+- NDVI shows vegetation, not which crop or whether it is healthy: greener = more vegetation observed, not necessarily a healthier crop.
+- NASA POWER is a regional grid estimate, not a station on the field. IMERG covers an approximate rectangle, not an official ANA watershed, and may underestimate Andean rain.
+- The Lima sowing calendar covers the whole department; Kc values are generic FAO-56; some catalogue entries are marked approximate.
+- The free Render API may need ~30 s to wake up; the Barranca example falls back to a labelled precomputed result.
 
-**No se ha subido todavía el paquete a GitHub ni se ha iniciado el despliegue.** Las pruebas integrales pendientes impiden declararlo certificado para producción.
+## AI assistance
 
-## Trabajo local y comprobaciones
+The team chose the problem focus, target farmers, demo zone and solution direction. AI assistants (Claude by Anthropic, and OpenAI Codex) were used to research official statistics, draft analysis documents and documentation, and write and test code; the team reviewed all of it. Files written with Claude Code carry the header comment `AI-assisted: written with Claude Code (Anthropic) and reviewed by the … team.` No AI-generated data is presented as an observation: the HLS model is trained only on real NASA HLS observations stored in this repository.
 
-Frontend, dentro de frontend:
+## Next steps
 
-```sh
-npm ci
-npm test
-npm run build
-npx playwright install chromium
-npm run test:e2e
-```
+Validation with Barranca's irrigation users' board and INIA, soil tests and real farmer-declared rotations; ANA river flows for the low-river months. Andean valleys (Mantaro), exploratory.
 
-Backend, desde la raíz con un entorno virtual:
+## License
 
-```sh
-python -m pip install -r backend/requirements.txt
-# PowerShell: $env:PYTHONPATH='backend'
-# POSIX: export PYTHONPATH=backend
-python -m unittest discover -s tests -p 'test_*.py' -v
-python -m pip check
-python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
-```
-
-Las dependencias Node y Playwright están fijadas en package-lock.json. Python 3.12 y Node 22 son los entornos declarados en CI; la laptop utilizada se documenta en el estado de implementación. Los entrenadores opcionales que usan scikit-learn/joblib mantienen `scripts/requirements-ml.txt` separado de producción.
-
-## Documentación vigente
-
-- [Arquitectura y responsabilidades](docs/BIOTEX_ARCHITECTURE.md).
-- [Estado, pruebas, cambios y bloqueos](docs/BIOTEX_IMPLEMENTATION_STATUS.md).
-- [Preparación del despliegue manual y revisión de integraciones](docs/vercel-deployment.md).
-- [Modelo histórico HLS](docs/BIOTEX_v026_IA_reproducible.md).
-- [Reglas permanentes](AGENTS.md).
-
-La única configuración estática está en frontend/vercel.json. Usar **Root Directory = frontend** y `VITE_API_URL` para el origen público de un backend nuevo. No hay direcciones de despliegues antiguos como requisito. Las guías roadmap y matrices v0.x se conservan como documentos históricos, no como instrucciones de publicación vigentes.
-
-La publicación en el repositorio actual está autorizada por el propietario; no se ha podido ejecutar desde el entorno aislado de este asistente. Eliminar archivos locales no desvincula integraciones autorizadas en cuentas externas.
+[MIT](LICENSE) © 2026 CHAKRA X team. Third-party data keep their own terms (NASA open data, FAO, MIDAGRI).

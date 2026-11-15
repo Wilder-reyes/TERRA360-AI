@@ -250,12 +250,16 @@ def build_spatial_plan(polygon: dict, zones: list[dict],
         "ai_status": "trained_hls_on_exact_study_parcel" if verified_ai else "agronomic_rule_engine",
         "disclaimer_es": ("Plan orientativo basado en tus cultivos y referencias FAO."
                           " Confirma agua, suelo, variedad y fechas antes de sembrar."
-                          " La IA histórica HLS se aplica solo a la parcela de estudio de Barranca."),
+                          " El pequeño modelo estacional NASA HLS (prueba de concepto) se aplica solo a la parcela de estudio de Barranca."),
         "disclaimer_en": ("Reference plan based on your crop records and FAO sources."
                           " Verify water supply, soil, varieties and dates before planting."
-                          " The historical HLS AI only applies to the Barranca study field."),
+                          " The small seasonal NASA HLS model (proof of concept) only applies to the Barranca study field."),
         "sources": ["FAO Irrigation and Drainage Paper 56",
                     "NASA POWER (solo cuando se carga su climatología)",
                     "DRA Lima / MIDAGRI (solo para Barranca)",
                     "NASA HLS (solo para el polígono original de estudio)"],
+        "sources_en": ["FAO Irrigation and Drainage Paper 56",
+                       "NASA POWER (only when its climatology is loaded)",
+                       "DRA Lima / MIDAGRI (Barranca only)",
+                       "NASA HLS (only for the original study polygon)"],
     }

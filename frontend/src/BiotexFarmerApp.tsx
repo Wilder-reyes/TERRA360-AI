@@ -23,6 +23,7 @@ import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
 import ChakraZonePlan,{ChakraZonePrint,type ChakraSpatialPlan} from './ChakraZonePlan'
 import StrategyCompare,{StrategyComparePrint,type CompareStrategy} from './StrategyCompare'
+import BARRANCA_EXAMPLE from './barrancaExampleResult.json'
 const FieldEvidence=lazy(()=>import('./FieldEvidence'))
 const CropReference=lazy(()=>import('./CropReference'))
 
@@ -283,6 +284,15 @@ export default function BiotexFarmerApp(){
  const mapPolygon=useMemo(()=>field?fromGeo(field):null,[field])
 
  useEffect(()=>{document.documentElement.lang=lang},[lang])
+ // Cold start: wake the Render API as soon as the app opens (free tier sleeps).
+ useEffect(()=>{fetch(API+'/api/health').catch(()=>{})},[])
+ const [slowServer,setSlowServer]=useState(false)
+ const [precomputedAt,setPrecomputedAt]=useState('')
+ /** Exact Barranca example input that has a precomputed result (scripts/precompute_barranca_example.py). */
+ function isPrecomputedExample(){
+  const demo=BARRANCA_EXAMPLE.input.zones[0]
+  return studyParcel&&!subplots.length&&zoneCrops.rest?.crop_id===demo.crop_id&&zoneCrops.rest?.planted_month===demo.planted_month
+ }
  function navigate(s:Step){setStep(s);window.scrollTo({top:0,behavior:'smooth'})}
  function saveFarm(){
   if(!field)return
@@ -430,7 +440,8 @@ export default function BiotexFarmerApp(){
   if(!availableZones.length||availableZones.some(z=>!zoneCrops[z.id])){
    setSpatialError(lang==='es'?'Registra un cultivo en cada zona para preparar tu plan.':'Record a crop for every area to prepare your plan.');return
   }
-  setSpatialBusy(true);setSpatialError('')
+  setSpatialBusy(true);setSpatialError('');setPrecomputedAt('');setSlowServer(false)
+  const slowTimer=window.setTimeout(()=>setSlowServer(true),4000)
   try{
    const payload={polygon:field,zones:availableZones.map(zone=>({
     id:zone.id,crop_id:zoneCrops[zone.id].crop_id,planted_month:zoneCrops[zone.id].planted_month,
@@ -444,8 +455,13 @@ export default function BiotexFarmerApp(){
    if(data.status!=='prepared'||!Array.isArray(data.zone_plans))throw new Error('Plan response needs review')
    setSpatialPlan(data);navigate(2)
    if(province)void compareZones()
-  }catch(e){setSpatialError(readableApiError(e,lang==='en'))}
-  finally{setSpatialBusy(false)}
+  }catch(e){
+   if(isPrecomputedExample()){
+    setSpatialPlan(BARRANCA_EXAMPLE.spatial_plan as ChakraSpatialPlan);setResult(BARRANCA_EXAMPLE.compare as unknown as Result)
+    setPrecomputedAt(BARRANCA_EXAMPLE.computed_at);navigate(2)
+   }else setSpatialError(readableApiError(e,lang==='en'))
+  }
+  finally{window.clearTimeout(slowTimer);setSlowServer(false);setSpatialBusy(false)}
  }
 
  /** Challenge requirement (step 3): S0 current vs S1 Water vs S2 Soil, inline with the zone plan.
@@ -477,7 +493,9 @@ export default function BiotexFarmerApp(){
    if(!r.ok)throw new Error(await httpErrorMessage(r,lang==='en'))
    const v=await r.json() as Result
    if(token===request.current)setResult(v)
-  }catch(e){if(token===request.current)setCompareError(readableApiError(e,lang==='en'))}
+  }catch(e){if(token===request.current){
+   if(isPrecomputedExample()){setResult(BARRANCA_EXAMPLE.compare as unknown as Result);setPrecomputedAt(BARRANCA_EXAMPLE.computed_at)}
+   else setCompareError(readableApiError(e,lang==='en'))}}
   finally{if(token===request.current)setCompareBusy(false)}
  }
 
@@ -532,7 +550,7 @@ export default function BiotexFarmerApp(){
    <h4>{t.verify}</h4><ul>{s.sections.gaps[lang].map((a,i)=><li key={i}>{a}</li>)}</ul>
    {result?.farm_inputs?.soil&&<p>{lang==='es'?'Datos del suelo anotados por ti (todavía no utilizados para descartar cultivos):':'Your recorded soil data (not yet used to exclude crops):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+' '+v).join(' · ')}</p>}
    {result?.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por ti (sin comprobar contra necesidades reales de riego):':'Water volume you entered (not yet compared with actual irrigation needs):'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha</p>}
-   {result?.ai_analysis?.status==='trained_and_verified'&&<p>{lang==='es'?'Modelo IA entrenado con observaciones NASA HLS reales de esta parcela: ':'AI trained on real NASA HLS observations from this parcel: '}{result.ai_analysis.observed_months} {lang==='es'?'meses. Los patrones estacionales contribuyen a la comparación de cobertura, no a predecir la cosecha.':'months. Seasonal patterns help compare crop coverage, not predict harvest.'}</p>}
+   {result?.ai_analysis?.status==='trained_and_verified'&&<p>{lang==='es'?'Modelo estacional pequeño y reproducible (prueba de concepto) con observaciones NASA HLS de esta parcela de estudio: ':'Small reproducible seasonal model (proof of concept) using NASA HLS observations of this study field: '}{result.ai_analysis.observed_months} {lang==='es'?'meses. Los patrones estacionales contribuyen a la comparación de cobertura, no a predecir la cosecha.':'months. Seasonal patterns help compare crop coverage, not predict harvest.'}</p>}
    {result?.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season} · {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de la lluvia habitual en cabecera de cuenca; no equivale al caudal del canal.':'of normal rainfall in the upper basin; not canal flow.'}</p>}
    </div>
  </details>}
@@ -595,7 +613,7 @@ export default function BiotexFarmerApp(){
   {result.farm_inputs?.soil&&<p>{lang==='es'?'Suelo declarado (sin validación de laboratorio):':'Reported soil (without laboratory verification):'} {Object.entries(result.farm_inputs.soil).filter(([k])=>k!=='source').map(([k,v])=>k+': '+v).join(' · ')}</p>}
   {result.farm_inputs?.irrigation_allowance_m3_ha_season!=null&&<p>{lang==='es'?'Agua anotada por el usuario, todavía no usada como restricción:':'Reported irrigation water, not yet a hard constraint:'} {result.farm_inputs.irrigation_allowance_m3_ha_season} m³/ha.</p>}
   {result.upper_basin_rain?.status==='available'&&<p>NASA GPM IMERG: {result.upper_basin_rain.last_season?.season}, {result.upper_basin_rain.last_season?.percent_of_normal}% {lang==='es'?'de precipitación habitual en la cabecera; no es caudal del río.':'of usual upper-basin precipitation; not river discharge.'}</p>}
-  {result.ai_analysis?.status==='trained_and_verified'&&<div className="b-print-ai"><h3>{lang==='es'?'Evidencia del modelo de IA':'AI model evidence'}</h3>
+  {result.ai_analysis?.status==='trained_and_verified'&&<div className="b-print-ai"><h3>{lang==='es'?'Modelo estacional pequeño y reproducible (44 observaciones NASA HLS, una parcela de estudio) — prueba de concepto':'Small reproducible seasonal model (44 NASA HLS observations, one study field) — proof of concept'}</h3>
    <p>{lang==='es'?'Regresión logística entrenada con ':'Logistic regression trained with '}{result.ai_analysis.observed_months} {lang==='es'?'observaciones mensuales reales de NASA HLS de esta parcela. La señal aprendida pondera épocas de suelo descubierto; no identifica cultivos ni garantiza rendimientos.':'real NASA HLS monthly observations of this field. Learned patterns weight bare-surface seasons; they do not identify crops or guarantee yields.'}</p>
    <p>{lang==='es'?'Evaluación cronológica: 33 observaciones de entrenamiento y 11 posteriores de prueba.':'Chronological evaluation: 33 training observations and 11 later holdout observations.'}</p>
    {result.ai_analysis.holdout_classification&&<p>{lang==='es'?'Clasificación de vegetación baja, solo Barranca':'Low-vegetation classification, Barranca only'}:
@@ -772,13 +790,16 @@ export default function BiotexFarmerApp(){
      <button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}>{t.back}</button>
      <button type="button" className="b-btn b-btn-light" onClick={saveFarm}>{lang==='es'?'Guardar avance':'Save progress'}</button>
      <button type="button" className="b-btn b-btn-primary" disabled={spatialBusy||!availableZones.length} onClick={()=>void buildSpatialPlan()}>{spatialBusy?(lang==='es'?'Preparando…':'Preparing…'):(lang==='es'?'Preparar mi plan':'Prepare my plan')}</button></div>
+    {spatialBusy&&slowServer&&<p role="status" className="chakra-strategy-status">{lang==='es'?'Despertando el servidor, ~30 s…':'Waking up the server, ~30 s…'}</p>}
     {spatialError&&<p className="b-error" role="alert">{spatialError}</p>}
     {savedNotice&&<p role="status">{savedNotice}</p>}
    </section>}
    {step===2&&spatialPlan&&field&&<ChakraZonePlan plan={spatialPlan} field={field} subplots={subplots}
     lang={lang} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
+   {step===2&&precomputedAt&&<p role="note" className="chakra-strategy-scope">{lang==='es'?'Resultado precalculado del ejemplo de Barranca ('+precomputedAt.slice(0,10)+'): el servidor no respondió a tiempo. Son los mismos cálculos del motor CHAKRA.':'Precomputed result for the Barranca example ('+precomputedAt.slice(0,10)+'): the server did not answer in time. Same CHAKRA engine calculations.'}</p>}
    {step===2&&spatialPlan&&field&&<StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}
     crop={id=>labelCrop(id,lang)} busy={compareBusy} error={compareError} outOfScope={!province} onRetry={()=>void compareZones()}/>}
+   {step===2&&spatialPlan&&result?.ai_analysis&&<FarmerAIEvidence ai={result.ai_analysis} lang={lang}/>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
@@ -804,7 +825,7 @@ export default function BiotexFarmerApp(){
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
   </main>
-  <footer className="b-footer"><div><strong>CHAKRA</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span><BioTour lang={lang}/></div></footer>
+  <footer className="b-footer"><div><strong>CHAKRA · CHAKRA X</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span><BioTour lang={lang}/></div></footer>
   {printable()}
   {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}
    extra={result?.strategies?.length?<StrategyComparePrint strategies={result.strategies as CompareStrategy[]} lang={lang}/>:null}/>}

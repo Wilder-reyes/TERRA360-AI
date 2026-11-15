@@ -72,7 +72,8 @@ async def health():
     return {
         "status": "ok",
         "application": "CHAKRA",
-        "version": "0.10.0",
+        "team": "CHAKRA X",
+        "version": "1.0.0",
     }
 
 

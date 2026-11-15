@@ -17,8 +17,9 @@ from app.api.ai_evidence_routes import router as ai_evidence_router
 
 app = FastAPI(
     title="CHAKRA API",
-    description="Earth observation and agricultural decision support for user-selected coordinates worldwide.",
-    version="0.5.0-preview",
+    description=("CHAKRA by team CHAKRA X (NASA Space Apps 2026, Field Shift): crop-rotation decision support "
+                 "for irrigated coastal farms using NASA HLS, NASA POWER and GPM IMERG. Relative estimates, not yield or savings guarantees."),
+    version="1.0.0",
 )
 app.add_middleware(
     CORSMiddleware,

@@ -12,7 +12,7 @@ export type ChakraZoneAdvice={
 export type ChakraSpatialPlan={
  status:string;parcel_area_ha:number;zone_plans:ChakraZoneAdvice[];
  scope:'barranca_reference'|'exploratory_reference';
- climate_status:string;ai_status:string;disclaimer_es:string;disclaimer_en?:string;sources:string[]
+ climate_status:string;ai_status:string;disclaimer_es:string;disclaimer_en?:string;sources:string[];sources_en?:string[]
 }
 export type ChakraParcel={id:string;polygon:GeoPolygon}
 const SHADES=['#A3D99D','#E9B56D','#8CB9E1','#D0A4E8','#B9D76F','#E4A0A0','#94C4B6']
@@ -68,8 +68,8 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
   <div className="chakra-plan-scope"><strong>{referenceOnly?(es?'Orientación para revisar en tu localidad':'General planning reference'):(es?'Calendario referencial para Barranca':'Barranca reference calendar')}</strong>
    <p>{es?plan.disclaimer_es:plan.disclaimer_en||'This planning comparison uses your crop history and reference methods. Check local water, soil, season and variety before planting.'}</p>
    <details><summary>{es?'Cómo se preparó este plan':'How this plan was prepared'}</summary>
-    <p>{plan.ai_status==='trained_hls_on_exact_study_parcel'?(es?'La señal histórica NASA HLS se utilizó únicamente en su parcela de estudio; el cultivo se elige con reglas agronómicas.':'HLS historical signal is limited to the original study parcel; crops use reference rotation rules.'):(es?'La propuesta utiliza reglas de rotación y tu información. El modelo NASA HLS permanece reservado a su parcela de estudio.':'The proposal uses crop rotation rules and your input. The NASA HLS model remains limited to its study parcel.')}</p>
-    <p>{es?'Referencias':'References'}: {plan.sources.join(' · ')}</p>
+    <p>{plan.ai_status==='trained_hls_on_exact_study_parcel'?(es?'El pequeño modelo estacional NASA HLS (44 observaciones, una parcela de estudio; prueba de concepto) se usó solo en su parcela; el cultivo se elige con reglas agronómicas.':'Small reproducible seasonal model (44 NASA HLS observations, one study field) — proof of concept, used only on that field; crops come from reference rotation rules.'):(es?'La propuesta utiliza reglas de rotación y tu información. El modelo NASA HLS permanece reservado a su parcela de estudio.':'The proposal uses crop rotation rules and your input. The NASA HLS model remains limited to its study parcel.')}</p>
+    <p>{es?'Referencias':'References'}: {(!es&&plan.sources_en?plan.sources_en:plan.sources).join(' · ')}</p>
    </details>
   </div>
   <div className="chakra-result-actions"><button type="button" className="b-btn b-btn-primary" onClick={onPrint}>{es?'Imprimir mapa y plan PDF':'Print map and PDF plan'}</button>
@@ -96,6 +96,6 @@ export function ChakraZonePrint({plan,field,subplots,lang,place,extra}:{
    <ol>{(!es&&row.how_en?row.how_en:row.how_es).map((s,j)=><li key={j}>{s}</li>)}</ol>
   </section>)}
   {extra}
-  <footer><p>{es?plan.disclaimer_es:plan.disclaimer_en||plan.disclaimer_es}</p><p>{plan.sources.join(' · ')}</p></footer>
+  <footer><p>{es?plan.disclaimer_es:plan.disclaimer_en||plan.disclaimer_es}</p><p>{(!es&&plan.sources_en?plan.sources_en:plan.sources).join(' · ')}</p><p>CHAKRA · {es?'equipo':'team'} CHAKRA X · NASA Space Apps 2026 · Field Shift</p></footer>
  </article>
 }
