@@ -420,7 +420,7 @@ export default function BiotexFarmerApp(){
  function importField(){
   try{
    const polygon=parseGeoJSONPolygon(geoInput);if(!polygon)throw Error('invalid field');const vertices=fromGeo(polygon);const area=approximatePolygonHectares(vertices)
-   if(!validatePolygon(vertices).valid||area<.1||area>500)throw Error('invalid field')
+   if(!validatePolygon(vertices).valid||area<.1||area>10000)throw Error('invalid field')
    resetAfterField();setSubplots([]);setEditVertices(null);setDrawingSubplot(false);setField(polygon);setCentre(centroid(polygon));setFieldLabel(lang==='es'?'Contorno importado por ti':'Outline imported by you');setPlace(lang==='es'?'Terreno importado':'Imported field');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('')
   }catch{setFieldError(t.invalidShape)}
  }
@@ -470,7 +470,7 @@ export default function BiotexFarmerApp(){
  function saveCornerEdit(){
   if(!field||!editVertices)return
   const validation=validatePolygon(editVertices),ha=approximatePolygonHectares(editVertices)
-  if(!validation.valid||ha<.1||ha>500){setFieldError(t.invalidShape+' '+t.invalidArea);return}
+  if(!validation.valid||ha<.1||ha>10000){setFieldError(t.invalidShape+' '+t.invalidArea);return}
   const layout=validateSubplotLayout(editVertices,subplots.map(v=>({id:v.id,points:fromGeo(v.polygon)})))
   if(!layout.valid){setFieldError(lang==='es'?'Una subparcela quedaría fuera del terreno. Ajusta las esquinas o elimina esa subparcela.':'A subplot would fall outside the field. Adjust corners or remove the subplot.');return}
   const previous=JSON.stringify(field),updated=toGeo(editVertices)
@@ -480,7 +480,7 @@ export default function BiotexFarmerApp(){
  function deleteSubplot(id:string){setSubplots(current=>current.filter(v=>v.id!==id));setZoneCrops(v=>{const next={...v};delete next[id];return next});setSpatialPlan(null);setFieldError('')}
  function finish(){const check=validatePolygon(points);const ha=approximatePolygonHectares(points)
   if(!check.valid){setFieldError(t.invalidShape);return}
-  if(ha<(drawingSubplot?.01:.1)||ha>500){setFieldError(t.invalidArea);return}
+  if(ha<(drawingSubplot?.01:.1)||ha>10000){setFieldError(t.invalidArea);return}
   if(drawingSubplot&&field){
    const next={id:'Subparcela '+(1+Math.max(0,...subplots.map(v=>Number(v.id.match(/(\d+)$/)?.[1])||0))),polygon:toGeo(points)}
    const result=validateSubplotLayout(fromGeo(field),[...subplots,next].map(v=>({id:v.id,points:fromGeo(v.polygon)})))

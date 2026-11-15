@@ -145,8 +145,8 @@ def build_spatial_plan(polygon: dict, zones: list[dict],
         raise ValueError("Asigna cultivos a un máximo de 25 zonas.")
     field = _valid_polygon(polygon)
     area = _area_ha(field)
-    if not 0.1 <= area <= 500:
-        raise ValueError("Delimita un terreno de 0,1 a 500 hectáreas.")
+    if not 0.1 <= area <= 10000:
+        raise ValueError("Delimita un terreno de 0,1 a 10 000 hectáreas.")
     names: set[str] = set()
     explicit = []
     for record in zones:
