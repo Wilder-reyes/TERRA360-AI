@@ -5,8 +5,7 @@ type Lang='es'|'en'
 type Step=0|1|2
 type Rect={top:number;left:number;right:number;bottom:number}
 const KEY='chakra-choklito-guided-v4'
-const OLD_KEY='chakra-choklito-old-v3'
-function safeHidden(){try{return localStorage.getItem(KEY)==='hide'||false}catch{return false}}
+function safeHidden(){try{return localStorage.getItem(KEY)==='hide'}catch{return false}}
 function ChoklitoMascot(){return <svg className="bio-mascot" viewBox="0 0 112 154" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
  <g className="bio-body"><path d="M39 116Q12 116 6 82Q24 91 40 93Z" fill="#2b8555"/><path d="M74 115Q101 109 108 80Q88 92 74 94Z" fill="#57ac70"/>
  <path d="M51 124Q49 143 38 145" fill="none" stroke="#236447" strokeWidth="5" strokeLinecap="round"/><path d="M64 124Q66 142 77 145" fill="none" stroke="#236447" strokeWidth="5" strokeLinecap="round"/>
