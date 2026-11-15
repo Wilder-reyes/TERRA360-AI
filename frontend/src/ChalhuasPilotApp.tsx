@@ -384,8 +384,8 @@ export default function ChalhuasPilotApp(){
     </section>}
 
    {step===1&&<section className="c-form-step">
-      <div className="c-card"><span className="c-small">{es?'HISTORIAL DECLARADO':'FARMER HISTORY'}</span><h2>{es?'¿Qué sembraste en cada campaña?':'What did you plant each campaign?'}</h2>
-       <p>{es?'Esta es una ventana de cuatro campañas anuales para comparar familias botánicas. Los nombres iniciales son un ejemplo histórico; puedes modificarlos. No equivalen a cuatro años enteros de vegetación.':'This is a four-campaign study window. Initial crop names are a historical example, not a continuous four-year planting record. Edit as needed.'}</p>
+      <div className="c-card"><span className="c-small">{es?'HISTORIAL DECLARADO':'FARMER HISTORY'}</span><h2>{es?'¿Qué cultivos sueles alternar?':'Which crops do you usually rotate?'}</h2>
+       <p>{es?'Indica una secuencia habitual o utiliza la referencia histórica de papa y arveja del estudio de Chalhuas. Después compararemos cuatro campañas futuras; no asumimos que los cultivos permanecen todo el año sobre el terreno.':'Enter your usual crop sequence or use the historical potato-and-pea example from the Chalhuas study. We will compare four future campaigns, not assume year-round crop cover.'}</p>
        <fieldset className="c-history-origin"><legend>{es?'Origen de esta secuencia':'Where this sequence comes from'}</legend>
         <label><input type="radio" name="history-source" checked={historySource==='example'} onChange={()=>{setHistorySource('example');setPlan(null)}}/>{es?'Ejemplo histórico del estudio de Chalhuas':'Historical study example'}</label>
         <label><input type="radio" name="history-source" checked={historySource==='farmer_declared'} onChange={()=>{setHistorySource('farmer_declared');setPlan(null)}}/>{es?'Cultivos de mis campañas, confirmados por mí':'My campaigns, confirmed by me'}</label>
