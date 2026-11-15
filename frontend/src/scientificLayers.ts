@@ -1,5 +1,5 @@
 /** Canonical map-layer display metadata, not a claim that a GIBS tile has valid science data. */
-export type BaseOrScienceLayer = 'photo'|'terrain'|'vegetation'|'rain'
+export type BaseOrScienceLayer = 'photo'|'terrain'|'vegetation'|'rain'|'hls'
 export type ScienceLayer = 'vegetation'|'rain'
 export type LayerMetadata = {
  id:ScienceLayer

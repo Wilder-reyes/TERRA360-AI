@@ -6,7 +6,7 @@ const STEPS=[
  {target:'bio-hero',title:{es:'¡Bienvenido a BIOTEX!',en:'Welcome to BIOTEX!'},
   body:{es:'¡Holis! Soy BIO. Te enseñaré a explorar un terreno y preparar opciones de rotación de cultivos.',en:"Hello! I'm BIO. I will guide you through exploring a field and planning possible crop rotations."}},
  {target:'bio-map',title:{es:'Ubica tu terreno',en:'Find your field'},
-  body:{es:'Busca una localidad, escribe coordenadas o dibuja tu parcela en el mapa. Los ejemplos están identificados y nunca se seleccionan solos.',en:'Search a place, enter coordinates or draw your field on the map. Examples are labeled and never selected automatically.'}},
+  body:{es:'Elige la parcela de estudio de Barranca o marca otra de la zona. El ejemplo solo se selecciona cuando tú lo eliges.',en:'Choose the Barranca study field or mark another field nearby. The example is selected only when you choose it.'}},
  {target:'bio-layers',title:{es:'Explora las capas NASA',en:'Explore NASA layers'},
   body:{es:'Elige vegetación o lluvia y consulta su leyenda. Los datos regionales no son mediciones exactas de una chacra.',en:'Choose vegetation or rain and read the legend. Regional data are not exact farm measurements.'}},
  {target:'bio-steps',title:{es:'Tus cultivos y prioridades',en:'Your crops and priorities'},

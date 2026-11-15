@@ -12,7 +12,7 @@ async function selectEvidence(page:Page){
 test('historical URLs load the same single farmer application',async({page})=>{
  for(const url of ['/?vista=tecnica','/?vista=clima','/?vista=comparador-tecnico','/?pilot=chalhuas']){
   await page.goto(url)
-  await expect(page.getByRole('heading',{name:/Cultiva mejor/})).toBeVisible()
+  await expect(page.getByRole('heading',{name:/Tu parcela en el mapa/})).toBeVisible()
   await expect(page.locator('.b-progress button')).toHaveCount(4)
   await expect(page.locator('a[href*="vista="]')).toHaveCount(0)
  }

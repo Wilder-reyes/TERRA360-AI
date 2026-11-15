@@ -10,7 +10,8 @@ class VercelStaticOnlyTests(unittest.TestCase):
         self.assertEqual(config['outputDirectory'],'dist')
         self.assertEqual(config['buildCommand'],'npm run build')
         self.assertEqual(config['installCommand'],'npm ci')
-        for forbidden in ['services','functions','builds','crons','env','rewrites']:self.assertNotIn(forbidden,config)
+        for forbidden in ['services','functions','builds','crons','env']:self.assertNotIn(forbidden,config)
+        self.assertEqual(config['rewrites'],[{'source':'/api/:path*','destination':'https://terra360-api.onrender.com/api/:path*'}])
         for name in ['vercel.json','.vercelignore','render.yaml']:self.assertFalse((ROOT/name).exists())
     def test_frontend_build_has_no_backend_and_public_environment_has_no_secret(self):
         self.assertIn('e2e/',(ROOT/'frontend/.vercelignore').read_text())

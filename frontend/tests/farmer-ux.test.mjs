@@ -40,7 +40,7 @@ test('Farmer-facing workflow keeps optional geometry import and never auto-confi
 
 })
 
-test('Barranca scientific sample and explicitly synthetic Mantaro example share selection',()=>{
+test('Barranca is the only public study example',()=>{
 
  assert.match(app,/TEAM_FIELDS\.filter\(f=>f.zone==='barranca'\)/)
 

@@ -1,16 +1,12 @@
 {
   "application": "NSPACE BIOTEX",
-  "release": "stage-8-preview-candidate",
+  "release": "barranca-only-connected-api",
   "pilot": "Barranca · Pativilca / Supe",
   "features": [
-    "Single four-step BIOTEX farmer workflow with mobile agricultural dark mode and BIO guided tutorial",
-    "Farmer-selected GeoJSON polygon, editable subplots, local save and restoration",
-    "NASA HLS, POWER, IMERG, SMAP and other sourced environmental evidence with quality metadata",
-    "Chalhuas botanical crop rotation comparison with explicit water evidence abstention",
-    "Barranca NASA HLS trained real low-vegetation model: verified 33/11 chronological holdout",
-    "Model holdout accuracy, precision, recall and F1 exposed only for matching Barranca parcel",
-    "Four-campaign editable spatial crop proposal and print-safe vector PDF sketches",
-    "Frontend prepared for a NEW Vercel project importing the EXISTING GitHub repository; FastAPI hosted separately"
+    "Barranca-only four-step farmer workflow",
+    "Same-origin /api proxy to verified Render backend",
+    "Authentic HLS monthly observations and interpreted map legend",
+    "Historical NASA HLS model scoped to exact Barranca study parcel"
   ],
   "computer_vision_enabled": false,
   "environment": "github_candidate_no_deployment",
@@ -20,11 +16,10 @@
   "ai_model_status": "barranca_hls_chronological_holdout_11_only",
   "ai_model_source": "backend/app/data/history_seed/3365819f83a772e737d341ec1058efac.json",
   "ai_model_training": "33 chronological HLS observations for holdout evaluation; production fit on all 44",
-  "ui_release": "stages-2-through-8-integrated",
+  "ui_release": "barranca-map-first",
   "design_system": "Agricultural Dark Mode",
   "regional_profiles": {
-    "coastal_lima": "evidence_scoped_relative_comparison",
-    "mantaro": "exploratory_no_local_ai_model"
+    "barranca": "single_public_pilot_exact_parcel_hls_ai"
   },
   "deployment_ready": false,
   "deployment_readiness_reason": "Production deployment is not authorized. Configure a new backend HTTPS origin and verify live scientific sources before production.",

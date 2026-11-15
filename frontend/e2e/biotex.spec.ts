@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test'
+import history from '../src/data/barrancaHls.json' with {type:'json'}
 test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
 
 const message=(text:string)=>({es:[text],en:[text]})
@@ -34,7 +35,7 @@ const comparison={
 
 test('Barranca-focused farmer landing starts in ordinary Spanish and moves through crops',async({page})=>{
  await page.goto('/')
- await expect(page.getByRole('heading',{name:'Cultiva mejor, cuidando tu agua y tu tierra.'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'Tu parcela en el mapa. Tu próxima siembra, más clara.'})).toBeVisible()
  await expect(page.getByRole('button',{name:/Explorar parcela de Barranca/})).toBeVisible()
  await expect(page.getByText('Pegar o subir GeoJSON')).toHaveCount(0)
  await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
@@ -88,7 +89,7 @@ test('Recommendation is presented as a clear plan and A4 print report, not S1/S2
 test('Mobile farmer flow keeps controls and map inside the viewport',async({page})=>{
  await page.setViewportSize({width:390,height:844})
  await page.goto('/')
- await expect(page.getByRole('heading',{name:'Cultiva mejor, cuidando tu agua y tu tierra.'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'Tu parcela en el mapa. Tu próxima siembra, más clara.'})).toBeVisible()
  await expect(page.locator('.b-map')).toBeVisible()
  await expect(page.getByRole('button',{name:'Buscar lugar'})).toBeVisible()
  const width=await page.evaluate(()=>document.documentElement.scrollWidth)
@@ -108,22 +109,16 @@ test('Only one Barranca sample is visible and satellite imagery is accessible',a
 })
 
 test('Satellite clues display acquisition dates, mapped NASA imagery and original HLS scene link',async({page})=>{
- await page.route('**/api/rotation/history',route=>route.fulfill({
-  status:200,contentType:'application/json',body:JSON.stringify({
-   status:'available',sensor:'NASA HLS v2.0 (30 m)',period:{start:'2021-01-01',end:'2026-11-14'},
-   months_with_data:48,months_total:70,detection:{campaigns:[]},
-   months:[{month:'2026-08',ndvi:0.62,best_scene:{date:'2026-08-16',collection:'hls2-l30',scene_id:'HLS.L30.T18LYL.2026228T153532.v2.0',valid_pixels:35}}]
-  })
- }))
  await page.goto('/')
  await page.getByRole('button',{name:/Explorar parcela de Barranca/}).click()
  await page.getByRole('button',{name:'Continuar'}).click()
  await page.getByText('¿No recuerdas alguna siembra?').click()
  await page.getByRole('button',{name:'Buscar pistas con imágenes del terreno'}).click()
  await expect(page.getByText('Así se veía la zona desde el espacio')).toBeVisible()
- await expect(page.locator('.b-satellite-gallery select')).toHaveValue('2026-08')
+ const latest=[...history.months].reverse().find(m=>m.ndvi!==null)!
+ await expect(page.locator('.b-satellite-gallery select')).toHaveValue(latest.month)
  await expect(page.getByRole('link',{name:'Consultar la imagen HLS utilizada'})).toHaveAttribute('href',/planetarycomputer\.microsoft\.com/)
- await expect(page.getByText('0.62')).toBeVisible()
+ await expect(page.locator('.b-satellite-gallery')).toContainText(latest.ndvi!.toFixed(2))
 })
 
 test('Farmers can save and restore their marked field without an account',async({page})=>{
@@ -246,11 +241,11 @@ test('mobile redesign offers sample before map and never overflows',async({page}
 
 test('release keeps science v0.26 and makes visual redesign identifiable',async({page})=>{
  await page.goto('/')
- await expect(page.locator('meta[name="biotex-ui-release"]')).toHaveAttribute('content','stages-2-through-8-integrated')
+ await expect(page.locator('meta[name="biotex-ui-release"]')).toHaveAttribute('content','barranca-map-first')
  const res=await page.request.get('/release.json')
  const data=await res.json()
- expect(data.release).toBe('stage-8-preview-candidate')
- expect(data.ui_release).toBe('stages-2-through-8-integrated')
+ expect(data.release).toBe('barranca-only-connected-api')
+ expect(data.ui_release).toBe('barranca-map-first')
  expect(data.primary_url).toBeUndefined()
- expect(data.regional_profiles.mantaro).toBe('exploratory_no_local_ai_model')
+ expect(data.regional_profiles.barranca).toBe('single_public_pilot_exact_parcel_hls_ai');expect(data.regional_profiles.mantaro).toBeUndefined()
 })
