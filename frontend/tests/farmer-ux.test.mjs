@@ -20,7 +20,9 @@ test('The single farmer view is CHAKRA with no historical route selection',()=>{
 
  assert.doesNotMatch(bootstrap,/URLSearchParams|ChalhuasPilotApp|\.\/FarmerApp'|RotationApp|AdvancedApp/)
 
- assert.match(app,/Mi terreno.*Mis cultivos.*Mis prioridades.*Mi plan agrícola/)
+ assert.match(app,/steps:\['Delimitar','Cultivos y zonas','Mi plan'\]/)
+ assert.match(app,/chakra-crop-grid/)
+ assert.match(app,/spatial-plan/)
 
 })
 
@@ -28,15 +30,15 @@ test('Farmer-facing workflow keeps optional geometry import and never auto-confi
 
  assert.match(app,/¿Dónde está tu chacra\?/)
 
- assert.match(app,/¿Qué cultivos sembraste\?/)
+ assert.match(app,/¿Qué sembraste y en qué parte\?/)
 
- assert.match(app,/¿Qué quieres mejorar primero\?/)
+ assert.match(app,/¿Qué sembraste aquí\?/)
 
  assert.doesNotMatch(app,/Comparar 3 rotaciones/)
 
  assert.match(app,/Importar contorno GeoJSON \(opcional\)/)
 
- assert.match(app,/use_team_templates_as_fallback:false/)
+ assert.match(app,/buildSpatialPlan\(\)/)
 
 })
 
@@ -50,17 +52,19 @@ test('Barranca is the only public study example',()=>{
 
 })
 
-test('The printable report is A4 with explicit tables, charts and page-break rules',()=>{
+test('The zone plan renders a geographic printable A4 report and uses readable controls',()=>{
 
- assert.match(css,/@page\{size:A4 portrait;margin:18mm\}/)
+ const chakraCss=readFileSync(new URL('../src/chakra.css',import.meta.url),'utf8')
+ const zonePlan=readFileSync(new URL('../src/ChakraZonePlan.tsx',import.meta.url),'utf8')
+ assert.match(chakraCss,/@page\{size:A4;margin:18mm\}/)
 
- assert.match(css,/\.b-print-table/)
+ assert.match(zonePlan,/ChakraZonePrint/)
 
  assert.match(css,/break-inside:avoid/)
 
- assert.match(app,/b-print-chart/)
+ assert.match(zonePlan,/ChakraZoneSketch/)
 
- assert.match(app,/b-print-bar-fill/)
+ assert.match(zonePlan,/sow_label_es/)
 
 })
 
