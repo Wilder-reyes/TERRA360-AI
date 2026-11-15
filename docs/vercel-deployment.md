@@ -20,9 +20,9 @@ Vercel → **Project → Settings → Build and Deployment**:
 
 ## Comprobaciones después de publicar
 
-1. `https://terra360-ai-xi.vercel.app/release.json`: `release` = `v0.26-hls-trained-ai-barranca`.
-2. `https://terra360-ai-xi.vercel.app/api/health`: JSON real del backend (nunca el HTML de React).
-3. `https://terra360-ai-xi.vercel.app/api/rotation/ai-demo`: observaciones reales NASA HLS y evidencia del modelo.
+1. `https://terra360-ai-eta.vercel.app/release.json`: `release` = `v0.26-hls-trained-ai-barranca`.
+2. `https://terra360-ai-eta.vercel.app/api/health`: JSON real del backend (nunca el HTML de React).
+3. `https://terra360-ai-eta.vercel.app/api/rotation/ai-demo`: observaciones reales NASA HLS y evidencia del modelo.
 4. Probar el flujo: seleccionar parcela Barranca → declarar cultivos → prioridades → comparar rotaciones → abrir evidencia IA.
 5. Vercel → Usage debe mostrar **cero Functions nuevas** originadas por esta compilación estática. Los archivos JS/CSS están en `dist`; el modelo funciona en Render.
 

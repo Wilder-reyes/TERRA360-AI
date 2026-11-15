@@ -1,6 +1,6 @@
 # BIOTEX v0.26 · NSPACE BIOTEX
 
-**Frontend Vercel:** https://terra360-ai-xi.vercel.app/  
+**Frontend Vercel:** https://terra360-ai-eta.vercel.app/  
 **API Render:** https://terra360-api.onrender.com/api/health
 
 La versión final para demostración evalúa **una parcela de ~2,24 hectáreas en Barranca–Pativilca/Supe**. El agricultor ve el mapa, registra sus cultivos y compara rotaciones priorizando cobertura vegetal y demanda estimada de agua.
