@@ -1,0 +1,39 @@
+name: BIOTEX · reproducible NASA HLS trained AI
+on:
+  pull_request:
+    paths:
+      - 'backend/app/data/history_seed/**'
+      - 'backend/app/data/models/**'
+      - 'backend/app/services/field_shift_ai.py'
+      - 'scripts/reproduce_field_shift_ai.py'
+      - '.github/workflows/ai-reproducible.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/app/data/history_seed/**'
+      - 'backend/app/data/models/**'
+      - 'backend/app/services/field_shift_ai.py'
+      - 'scripts/reproduce_field_shift_ai.py'
+      - '.github/workflows/ai-reproducible.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-real-nasa-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refit from authentic NASA HLS observations and check chronological holdout
+        run: |
+          python scripts/reproduce_field_shift_ai.py --check --report model-validation.json
+      - name: Publish reproducibility evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: biotex-nasa-hls-real-training-holdout
+          path: model-validation.json
+          retention-days: 30
+          if-no-files-found: error
