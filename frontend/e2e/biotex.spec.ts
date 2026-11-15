@@ -57,7 +57,7 @@ test('per-zone PDF includes map, acreage, crop, date and four preparation action
  const report=page.locator('.chakra-spatial-print')
  await expect(report).toBeVisible()
  await expect(report.locator('svg')).toHaveCount(1)
- await expect(report).toContainText('Dónde, cuándo y cómo sembrar')
+ await expect(report).toContainText('Mi plan de siembra')
  await expect(report).toContainText('Vainita')
  await expect(report).toContainText('Comprobar agua')
  await expect(report).toContainText('enero de 2027')
@@ -130,7 +130,7 @@ test('main actions and map remain usable on narrow mobile screens',async({page})
 
 test('the published release retains the local CHAKRA brand and scientific provenance',async({page})=>{
  await page.goto('/?research=1')
- await expect(page).toHaveTitle('CHAKRA | Tu tierra. Mi plan de cultivos.')
+ await expect(page).toHaveTitle('CHAKRA | Tu tierra. Tu próxima siembra.')
  await expect(page.locator('.b-brand b')).toHaveText('chakra')
  const response=await page.request.get('/release.json')
  expect(response.ok()).toBe(true)

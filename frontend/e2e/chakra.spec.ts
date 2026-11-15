@@ -24,7 +24,7 @@ const prepared={
 
 test('CHAKRA shows the interactive map as the central step of a three-step journey',async({page})=>{
  await page.goto('/?research=1')
- await expect(page).toHaveTitle('CHAKRA | Tu tierra. Mi plan de cultivos.')
+ await expect(page).toHaveTitle('CHAKRA | Tu tierra. Tu próxima siembra.')
  await expect(page.getByRole('heading',{name:/Conoce tu terreno/})).toBeVisible()
  await expect(page.locator('.b-progress button')).toHaveCount(3)
  await expect(page.locator('.b-map')).toBeVisible()
@@ -55,7 +55,7 @@ test('crop cards and spatial plan produce a zone-specific printable map',async({
  await expect(page.getByText('Vainita',{exact:true}).first()).toBeVisible()
  await expect(page.getByText('enero de 2027',{exact:true})).toBeVisible()
  expect(submitted).toMatchObject({zones:[{id:'rest',crop_id:'camote'}]})
- await expect(page.getByRole('button',{name:'Imprimir mapa y plan PDF'})).toBeVisible()
+ await expect(page.getByRole('button',{name:'Guardar mi plan'})).toBeVisible()
  await page.emulateMedia({media:'print'})
  await expect(page.locator('.chakra-spatial-print')).toBeVisible()
  await expect(page.locator('.chakra-spatial-print svg')).toHaveCount(1)

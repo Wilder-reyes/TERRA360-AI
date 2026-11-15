@@ -60,7 +60,7 @@ test('the animated BIO guide can be replayed and dismissed without blocking the 
  await page.getByRole('button',{name:'Abrir guía de BIO'}).click()
  await expect(page.getByRole('region',{name:'BIO, tu guía'})).toBeVisible()
  await expect(page.getByText('¡Hola! Soy BIO')).toBeVisible()
- await page.getByRole('button',{name:'No mostrar más'}).click()
+ await page.getByRole('button',{name:'Salir del tutorial'}).click()
  await expect(page.getByRole('region',{name:'BIO, tu guía'})).toHaveCount(0)
 })
 
@@ -78,6 +78,6 @@ test('English retains the same three-step process and map',async({page})=>{
  await expect(page.getByRole('button',{name:/Explore the Barranca example/})).toBeVisible()
  await expect(page.locator('.b-progress button')).toHaveCount(3)
  await page.getByRole('button',{name:'Record crops by zone'}).click()
- await expect(page.getByRole('heading',{name:'What did you plant and where?'})).toBeVisible()
+ await expect(page.getByRole('heading',{name:'Show what you planted'})).toBeVisible()
  await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
 })
