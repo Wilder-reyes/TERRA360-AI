@@ -6,11 +6,19 @@ Copernicus ERA5-Land reanalysis. Cache/timeout bound public-demo traffic.
 from __future__ import annotations
 from datetime import date
 from time import monotonic
+import asyncio
 import httpx
 
 _SOURCE="https://archive-api.open-meteo.com/v1/archive"
 _DOC="https://open-meteo.com/en/docs/historical-weather-api"
 _CACHE:dict[tuple[float,float,int],tuple[float,dict]]={}
+_LOCK=asyncio.Lock()
+_DAY=date.today()
+_DAILY_CALLS=0
+_LAST_REQUEST=0.0
+class ERA5QuotaExceeded(RuntimeError):
+    """Bounded public demo request budget; retry after previous requests settle."""
+
 
 def summarize_era5_land(payload:dict,year:int)->dict:
     daily=payload.get("daily") or {}
@@ -56,11 +64,22 @@ async def era5_land_context(latitude:float,longitude:float,year:int)->dict:
             "start_date":f"{year}-01-01","end_date":f"{year}-12-31",
             "daily":"temperature_2m_min,precipitation_sum","timezone":"America/Lima",
             "models":"era5_land"}
-    async with httpx.AsyncClient(timeout=18,follow_redirects=False) as client:
-        r=await client.get(_SOURCE,params=params,headers={"Accept":"application/json","User-Agent":"BIOTEX-Research-Pilot/0.28"})
-        r.raise_for_status()
-        result=summarize_era5_land(r.json(),year)
-    if result["status"]=="available":
-        if len(_CACHE)>=64:_CACHE.clear()
-        _CACHE[key]=(monotonic(),result)
-    return result
+    global _DAY,_DAILY_CALLS,_LAST_REQUEST
+    async with _LOCK:
+        found=_CACHE.get(key)
+        if found and monotonic()-found[0]<86400:return found[1]
+        if date.today()!=_DAY:
+            _DAY=date.today()
+            _DAILY_CALLS=0
+        if _DAILY_CALLS>=50 or monotonic()-_LAST_REQUEST<1.2:
+            raise ERA5QuotaExceeded("Cuota pública del reanálisis alcanzada: intenta de nuevo después.")
+        _DAILY_CALLS+=1
+        _LAST_REQUEST=monotonic()
+        async with httpx.AsyncClient(timeout=18,follow_redirects=False) as client:
+            r=await client.get(_SOURCE,params=params,headers={"Accept":"application/json","User-Agent":"BIOTEX-Research-Pilot/0.28"})
+            r.raise_for_status()
+            result=summarize_era5_land(r.json(),year)
+        if result["status"]=="available":
+            if len(_CACHE)>=64:_CACHE.clear()
+            _CACHE[key]=(monotonic(),result)
+        return result

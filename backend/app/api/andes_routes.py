@@ -6,7 +6,7 @@ import httpx
 from fastapi import APIRouter,HTTPException,Query
 from pydantic import BaseModel,Field
 from app.services import andes_rotation
-from app.services.era5_land_context import era5_land_context
+from app.services.era5_land_context import era5_land_context,ERA5QuotaExceeded
 
 router=APIRouter(prefix="/api/andes",tags=["Chalhuas exploratory pilot"])
 
@@ -157,5 +157,7 @@ async def era5_land(latitude:float=Query(...,ge=-90,le=90),
         return await era5_land_context(latitude,longitude,year)
     except ValueError as exc:
         raise HTTPException(422,str(exc)) from exc
+    except ERA5QuotaExceeded as exc:
+        raise HTTPException(429,str(exc),headers={"Retry-After":"60"}) from exc
     except (httpx.HTTPError,TypeError,KeyError) as exc:
         raise HTTPException(503,"ERA5-Land no disponible en este momento; no se mostrarán valores inventados.") from exc
