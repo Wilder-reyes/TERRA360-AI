@@ -97,6 +97,20 @@ class CropBudget(BaseModel):
     cost_soles_ha: float = Field(ge=0, le=1000000)
 
 
+class BudgetPlanting(BaseModel):
+    crop_id: str
+
+
+class BudgetStrategy(BaseModel):
+    id: Literal["S0", "S1", "S2"]
+    plantings: list[BudgetPlanting] = Field(max_length=12)
+
+
+class EconomicsRequest(BaseModel):
+    strategies: list[BudgetStrategy] = Field(min_length=1, max_length=3)
+    crop_budgets: list[CropBudget] = Field(min_length=1, max_length=16)
+
+
 class CompareRequest(BaseModel):
     zone: Literal["huaral", "barranca"] | None = None
     latitude: float | None = Field(None, ge=-60, le=60)
@@ -112,6 +126,22 @@ class CompareRequest(BaseModel):
     irrigation_source: Literal["farmer_reported", "water_users_board"] | None = None
     irrigation_allowance_m3_ha_season: float | None = Field(None, ge=0, le=1000000)
     use_team_templates_as_fallback: bool = False
+
+
+@router.post("/economics")
+def estimate_economics(req: EconomicsRequest):
+    """No NASA fetch, no assumed farmgate prices, fully user-supplied inputs."""
+    from app.services.agro_evidence import crop_economic_comparison
+    expected = set(engine.load_catalog()["crops"])
+    crop_ids = [p.crop_id for strategy in req.strategies for p in strategy.plantings]
+    budget_ids = [p.crop_id for p in req.crop_budgets]
+    if (any(cid not in expected for cid in crop_ids+budget_ids)
+            or len(set(budget_ids)) != len(budget_ids)
+            or len({s.id for s in req.strategies}) != len(req.strategies)):
+        raise HTTPException(422, "Hay cultivos repetidos o no reconocidos.")
+    return crop_economic_comparison(
+        [s.model_dump() for s in req.strategies],
+        [item.model_dump() for item in req.crop_budgets])
 
 
 @router.get("/zones")
