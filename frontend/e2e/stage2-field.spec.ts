@@ -3,7 +3,7 @@ import {test,expect} from '@playwright/test'
 const barrancaOutline={type:'Polygon',coordinates:[[[-77.730,-10.739],[-77.729,-10.739],[-77.729,-10.738],[-77.730,-10.738],[-77.730,-10.739]]]}
 
 test.beforeEach(async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))
 })
 
 test('starts with a clearly labeled Barranca study example and accepts other coordinates',async({page})=>{

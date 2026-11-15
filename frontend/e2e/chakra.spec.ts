@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test'
 
 test.beforeEach(async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))
 })
 
 const prepared={
@@ -46,7 +46,11 @@ test('crop cards and spatial plan produce a zone-specific printable map',async({
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await page.getByRole('button',{name:'Guardar cultivo de esta zona'}).click()
  await expect(page.locator('.chakra-zone-choice')).toContainText(['Camote'])
- await page.getByRole('button',{name:'Preparar mi plan'}).click()
+ await page.getByRole('button',{name:'Continuar a mi plan'}).click()
+ await expect(page.getByRole('heading',{name:/¿Para cuántos meses/})).toBeVisible()
+ await page.getByRole('slider',{name:'Personaliza la duración'}).fill('18')
+ await page.getByRole('button',{name:'Crear mi calendario'}).click()
+ expect((submitted as Record<string,unknown>|null)?.planning_months).toBe(18)
  await expect(page.getByRole('heading',{name:/Tu próxima siembra, zona por zona/})).toBeVisible()
  await expect(page.getByText('Vainita',{exact:true}).first()).toBeVisible()
  await expect(page.getByText('enero de 2027',{exact:true})).toBeVisible()

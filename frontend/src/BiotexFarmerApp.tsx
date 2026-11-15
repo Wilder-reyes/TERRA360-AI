@@ -1,6 +1,6 @@
 // AI-assisted: farmer-first CHAKRA interface. Scientific calculations remain on the server.
 import {lazy,Suspense,useEffect,useMemo,useRef,useState,type FormEvent} from 'react'
-import {CircleMarker,MapContainer,Polygon,Polyline,Rectangle,TileLayer,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
+import {CircleMarker,MapContainer,Polygon,Polyline,Rectangle,TileLayer,Tooltip,WMSTileLayer,useMap,useMapEvents} from 'react-leaflet'
 import {API,httpErrorMessage,readableApiError} from './network'
 import {approximatePolygonHectares,validatePolygon,validateSubplotLayout} from './geometry'
 import {TEAM_FIELDS,type GeoPolygon} from './rotationZones'
@@ -20,6 +20,8 @@ import BarrancaLegend from './BarrancaLegend'
 import './agricultural-dark.css'
 import './chakra.css'
 import './chakra-light.css'
+import './chakra-ppt-flow.css'
+import {cropVisual} from './chakraCropVisuals'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
 import ChakraLanding from './ChakraLanding'
 import ChakraZonePlan,{ChakraZonePrint,type ChakraSpatialPlan} from './ChakraZonePlan'
@@ -200,6 +202,36 @@ function EditableCorners({points,selected,onPick,onMove}:{points:Point[]|null;se
   {points.map((v,i)=><CircleMarker key={i} center={[v.lat,v.lng]} radius={selected===i?10:7} pathOptions={{color:'#0B0E0C',weight:2,fillColor:selected===i?'#F59E0B':'#4CD964',fillOpacity:1}} eventHandlers={{click:(event:{originalEvent:MouseEvent})=>{event.originalEvent.stopPropagation();onPick(i)}}}/>)}
  </>
 }
+function insideCropArea(lng:number,lat:number,poly:GeoPolygon):boolean{
+ const points=poly.coordinates[0]
+ let inside=false
+ for(let i=0,j=points.length-1;i<points.length;j=i++){
+  const a=points[i],b=points[j]
+  if(((a[1]>lat)!==(b[1]>lat))&&(lng<(b[0]-a[0])*(lat-a[1])/(b[1]-a[1])+a[0]))inside=!inside
+ }
+ return inside
+}
+function ZoneDropBridge({field,subplots,onAssign}:{field:GeoPolygon;subplots:Subplot[];onAssign:(zoneId:string,cropId:string)=>void}){
+ const map=useMap()
+ useEffect(()=>{
+  const element=map.getContainer()
+  const over=(event:DragEvent)=>{if(event.dataTransfer?.types.includes('application/x-chakra-crop'))event.preventDefault()}
+  const drop=(event:DragEvent)=>{
+   const id=event.dataTransfer?.getData('application/x-chakra-crop')
+   if(!id||!CROPS.includes(id))return
+   event.preventDefault()
+   const box=element.getBoundingClientRect()
+   const point=map.containerPointToLatLng([event.clientX-box.left,event.clientY-box.top])
+   if(!insideCropArea(point.lng,point.lat,field))return
+   const zone=subplots.slice().reverse().find(z=>insideCropArea(point.lng,point.lat,z.polygon))
+   onAssign(zone?.id||'rest',id)
+  }
+  element.addEventListener('dragover',over)
+  element.addEventListener('drop',drop)
+  return()=>{element.removeEventListener('dragover',over);element.removeEventListener('drop',drop)}
+ },[map,field,subplots,onAssign])
+ return null
+}
 const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,1)
 const SAVED_FARM_KEY='biotex-farm-v1'
 export default function BiotexFarmerApp(){
@@ -223,6 +255,8 @@ export default function BiotexFarmerApp(){
  const [drawingSubplot,setDrawingSubplot]=useState(false)
  const [subplots,setSubplots]=useState<Subplot[]>([])
  const [zoneCrops,setZoneCrops]=useState<Record<string,{crop_id:string;planted_month:string}>>({})
+ const [pendingCrop,setPendingCrop]=useState<string|null>(null)
+ const [planningMonths,setPlanningMonths]=useState(12)
  const [activeZone,setActiveZone]=useState('rest')
  const [spatialPlan,setSpatialPlan]=useState<ChakraSpatialPlan|null>(null)
  const [spatialBusy,setSpatialBusy]=useState(false)
@@ -307,7 +341,7 @@ export default function BiotexFarmerApp(){
   if(!field)return
   try{
    localStorage.setItem(SAVED_FARM_KEY,JSON.stringify({version:1,field,place,fieldLabel,isDemoField,
-    plantings,baseYear,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear,subplots,zoneCrops}))
+    plantings,baseYear,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear,planningMonths,subplots,zoneCrops}))
    setSavedAvailable(true);setSavedNotice(lang==='es'?'Tus datos se guardaron en este dispositivo.':'Your details are saved on this device.')
   }catch{setSavedNotice(lang==='es'?'El navegador no permitió guardar los datos.':'Your browser could not save these details.')}
  }
@@ -335,6 +369,7 @@ export default function BiotexFarmerApp(){
    setSoil(data.soil&&typeof data.soil==='object'?data.soil:{})
    setWaterAllowance(String(data.waterAllowance||''))
    if(Number.isInteger(data.planStartYear))setPlanStartYear(data.planStartYear)
+   setPlanningMonths(Number.isInteger(data.planningMonths)&&data.planningMonths>=3&&data.planningMonths<=60?data.planningMonths:12)
    setSavedNotice(lang==='es'?'Recuperamos tu chacra. Verifica las fechas; campañas fuera de la ventana actual no se importan.':'Your field is restored. Check dates; campaigns outside the current window were not imported.')
   }catch{setSavedNotice(lang==='es'?'No pudimos recuperar el terreno guardado.':'Unable to restore saved field.')}
  }
@@ -439,11 +474,14 @@ export default function BiotexFarmerApp(){
  }
  const seasons=(history?.detection.campaigns||[]).filter(c=>{const n=relativeMonthIndex(c.start,baseYear);return n>=0&&n<=23}).slice(0,8)
 
- function applyZoneCrop(){
+ function assignZoneCrop(zoneId:string,cropId:string){
+  if(!availableZones.some(z=>z.id===zoneId)||!CROPS.includes(cropId))return
   const month=new Date(Date.UTC(baseYear,7+cropMonth,1)).toISOString().slice(0,7)
-  setZoneCrops(entries=>({...entries,[selectedZone]:{crop_id:crop,planted_month:month}}))
+  setZoneCrops(entries=>({...entries,[zoneId]:{crop_id:cropId,planted_month:month}}))
+  setActiveZone(zoneId);setCrop(cropId);setPendingCrop(null)
   setSpatialPlan(null);setSpatialError('')
  }
+ function applyZoneCrop(){assignZoneCrop(selectedZone,crop)}
  async function buildSpatialPlan(){
   if(!field)return
   if(!availableZones.length||availableZones.some(z=>!zoneCrops[z.id])){
@@ -452,7 +490,7 @@ export default function BiotexFarmerApp(){
   setSpatialBusy(true);setSpatialError('');setPrecomputedAt('');setSlowServer(false)
   const slowTimer=window.setTimeout(()=>setSlowServer(true),4000)
   try{
-   const payload={polygon:field,zones:availableZones.map(zone=>({
+   const payload={polygon:field,planning_months:planningMonths,zones:availableZones.map(zone=>({
     id:zone.id,crop_id:zoneCrops[zone.id].crop_id,planted_month:zoneCrops[zone.id].planted_month,
     ...(zone.polygon?{polygon:zone.polygon}:{})
    }))}
@@ -465,7 +503,7 @@ export default function BiotexFarmerApp(){
    setSpatialPlan(data);navigate(2)
    if(province)void compareZones()
   }catch(e){
-   if(isPrecomputedExample()){
+   if(planningMonths===12&&isPrecomputedExample()){
     setSpatialPlan(BARRANCA_EXAMPLE.spatial_plan as ChakraSpatialPlan);setResult(BARRANCA_EXAMPLE.compare as unknown as Result)
     setPrecomputedAt(BARRANCA_EXAMPLE.computed_at);navigate(2)
    }else setSpatialError(readableApiError(e,lang==='en'))
@@ -503,7 +541,7 @@ export default function BiotexFarmerApp(){
    const v=await r.json() as Result
    if(token===request.current)setResult(v)
   }catch(e){if(token===request.current){
-   if(isPrecomputedExample()){setResult(BARRANCA_EXAMPLE.compare as unknown as Result);setPrecomputedAt(BARRANCA_EXAMPLE.computed_at)}
+   if(planningMonths===12&&isPrecomputedExample()){setResult(BARRANCA_EXAMPLE.compare as unknown as Result);setPrecomputedAt(BARRANCA_EXAMPLE.computed_at)}
    else setCompareError(readableApiError(e,lang==='en'))}}
   finally{if(token===request.current)setCompareBusy(false)}
  }
@@ -754,13 +792,20 @@ export default function BiotexFarmerApp(){
      <p>{lang==='es'?'Toca una zona, elige su cultivo y registra el mes. Puedes dibujar tantas zonas como necesites.':'Choose an area, its crop and planting month. Draw other zones as needed.'}</p></div>
     <div className="chakra-zone-map-wrap">
      <div className="chakra-zone-map-frame"><MapContainer center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
+      <ZoneDropBridge field={field} subplots={subplots} onAssign={assignZoneCrop}/>
       <TileLayer attribution="Imagery © Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
       <FlyTo point={point} polygon={mapPolygon}/>
       <DrawLayer enabled={drawingSubplot} points={points} onPoint={p=>{setPoints(q=>[...q,p]);setFieldError('')}} onFinish={finish}/>
-      <Polygon positions={(mapPolygon||[]).map(v=>[v.lat,v.lng] as [number,number])} interactive={false} pathOptions={{color:'#D6F866',weight:3,fillColor:'#D6F866',fillOpacity:.1}}/>
+      <Polygon positions={(mapPolygon||[]).map(v=>[v.lat,v.lng] as [number,number])} interactive={!drawingSubplot}
+       eventHandlers={{click:()=>{if(pendingCrop)assignZoneCrop('rest',pendingCrop);else setActiveZone('rest')}}}
+       pathOptions={{color:'#D6F866',weight:5,fillColor:cropVisual(zoneCrops.rest?.crop_id).color,fillOpacity:zoneCrops.rest?.crop_id?0.45:0.15}}>
+       {zoneCrops.rest&&subplots.length===0&&<Tooltip permanent direction="center" className="chakra-crop-map-label">{cropVisual(zoneCrops.rest.crop_id).icon} {labelCrop(zoneCrops.rest.crop_id,lang)}</Tooltip>}
+      </Polygon>
       {subplots.map(z=><Polygon key={z.id} positions={fromGeo(z.polygon).map(v=>[v.lat,v.lng] as [number,number])}
-       pathOptions={{color:selectedZone===z.id?'#D6F866':'#F1CC80',weight:selectedZone===z.id?4:2,fillColor:zoneCrops[z.id]?'#77B78A':'#F1CC80',fillOpacity:.4}}
-       interactive={!drawingSubplot} eventHandlers={{click:()=>setActiveZone(z.id)}}/>)}
+       pathOptions={{color:selectedZone===z.id?'#D6F866':'#F1F8EB',weight:selectedZone===z.id?5:3,fillColor:cropVisual(zoneCrops[z.id]?.crop_id).color,fillOpacity:.8}}
+       interactive={!drawingSubplot} eventHandlers={{click:()=>{if(pendingCrop)assignZoneCrop(z.id,pendingCrop);else setActiveZone(z.id)}}}>
+       {zoneCrops[z.id]&&<Tooltip permanent direction="center" className="chakra-crop-map-label">{cropVisual(zoneCrops[z.id].crop_id).icon} {labelCrop(zoneCrops[z.id].crop_id,lang)}</Tooltip>}
+      </Polygon>)}
      </MapContainer></div>
      <div className="chakra-zone-map-actions">
       {drawingSubplot?<><span>{lang==='es'?'Toca las esquinas de la zona.':'Tap area corners.'}</span>
@@ -769,7 +814,7 @@ export default function BiotexFarmerApp(){
        <button className="b-btn b-btn-light" type="button" onClick={()=>{setDrawingSubplot(false);setPoints([])}}>{t.cancel}</button></>:
        <button className="b-btn b-btn-light" type="button" disabled={subplots.length>=20} onClick={()=>{setDrawingSubplot(true);setPoints([]);setFieldError('')}}>{lang==='es'?'+ Dibujar otra zona':'+ Draw another area'}</button>}
      </div>
-     <p className="chakra-zone-map-note">{lang==='es'?'Límite lima: tu terreno. Cada zona que dibujes se registra por separado.':'Lime outline: your field. Each drawn section is recorded separately.'}</p>
+     <p className="chakra-zone-map-note">{lang==='es'?'Borde verde: tu terreno. Cada color representa un cultivo que tú registras.':'Lime border: your field. Each color represents a crop you record.'}</p>
     </div>
     {fieldError&&<p className="b-error" role="alert">{fieldError}</p>}
     <div className="chakra-zones-heading"><h2>{lang==='es'?'¿Dónde sembraste?':'Where did you plant?'}</h2><span>{assignedCount}/{availableZones.length} {lang==='es'?'zonas registradas':'areas recorded'}</span></div>
@@ -777,8 +822,9 @@ export default function BiotexFarmerApp(){
      onClick={()=>{setActiveZone(z.id);const previous=zoneCrops[z.id];if(previous){setCrop(previous.crop_id);const idx=relativeMonthIndex(previous.planted_month,baseYear);if(idx>=0&&idx<36)setCropMonth(idx)}}}>
      <span>{z.id==='rest'?(lang==='es'?'Resto del terreno':'Remaining field'):(lang==='en'?z.id.replace(/^Subparcela /,'Area '):z.id)}</span><small>{z.ha.toFixed(2)} ha</small>
      <strong>{zoneCrops[z.id]?labelCrop(zoneCrops[z.id].crop_id,lang):(lang==='es'?'Por registrar':'To register')}</strong></button>)}</div>
-    <section className="chakra-crop-section"><h2>{lang==='es'?'¿Qué sembraste aquí?':'What did you grow here?'}</h2>
-     <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>setCrop(id)}>
+    <section className="chakra-crop-section" data-bio-target="bio-crops"><h2>{lang==='es'?'¿Qué sembraste aquí?':'What did you grow here?'}</h2>
+     <p className="chakra-zone-drag-hint">{lang==='es'?'Elige un cultivo y toca su zona en el mapa. En computadora también puedes llevar la tarjeta hasta esa zona.':'Choose a crop and tap its area on the map. On desktop you can also drag the card into that area.'}</p>
+     <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" draggable onDragStart={event=>{event.dataTransfer.setData('application/x-chakra-crop',id);event.dataTransfer.effectAllowed='copy';setPendingCrop(id);setCrop(id)}} key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>{setCrop(id);setPendingCrop(id)}}>
       <span className="chakra-crop-art" aria-hidden="true">{({maiz_amarillo_duro:'🌽',maiz_chala:'🌽',camote:'🍠',papa:'🥔',frijol_grano_seco:'🫘',frijol_castilla:'🫘',vainita:'🫛',pallar:'🫘',arveja_verde:'🫛',cebolla:'🧅',zanahoria:'🥕',brocoli_col:'🥦',alfalfa:'🌿'} as Record<string,string>)[id]}</span>
       <span>{labelCrop(id,lang)}</span><span className="chakra-crop-tick">{crop===id?'✓':''}</span></button>)}</div>
      <div className="chakra-crop-when"><label>{lang==='es'?'¿En qué mes lo sembraste?':'When did you plant it?'}
@@ -799,18 +845,34 @@ export default function BiotexFarmerApp(){
     <div className="b-next between">
      <button type="button" className="b-btn b-btn-light" onClick={()=>navigate(0)}>{t.back}</button>
      <button type="button" className="b-btn b-btn-light" onClick={saveFarm}>{lang==='es'?'Guardar avance':'Save progress'}</button>
-     <button type="button" className="b-btn b-btn-primary" disabled={spatialBusy||!availableZones.length} onClick={()=>void buildSpatialPlan()}>{spatialBusy?(lang==='es'?'Preparando…':'Preparing…'):(lang==='es'?'Preparar mi plan':'Prepare my plan')}</button></div>
+     <button type="button" className="b-btn b-btn-primary" disabled={!availableZones.length} onClick={()=>{if(availableZones.some(z=>!zoneCrops[z.id])){setSpatialError(lang==='es'?'Registra un cultivo en cada zona antes de continuar.':'Record a crop for every area before continuing.');return}setSpatialError('');navigate(2)}}>{lang==='es'?'Continuar a mi plan':'Continue to my plan'}<Icon name="right"/></button></div>
     {spatialBusy&&slowServer&&<p role="status" className="chakra-strategy-status">{lang==='es'?'Despertando el servidor, ~30 s…':'Waking up the server, ~30 s…'}</p>}
     {spatialError&&<p className="b-error" role="alert">{spatialError}</p>}
     {savedNotice&&<p role="status">{savedNotice}</p>}
    </section>}
+   {step===2&&!spatialPlan&&<section className="chakra-horizon" data-bio-target="bio-plan">
+    <span className="b-eyebrow">{lang==='es'?'PASO 3 DE 3 · MI PLAN':'STEP 3 OF 3 · MY PLAN'}</span>
+    <h1>{lang==='es'?'¿Para cuántos meses quieres preparar tu tierra?':'How many months ahead do you want to plan?'}</h1>
+    <p>{lang==='es'?'Elige el tiempo para organizar las próximas siembras. Puedes cambiarlo sin volver a registrar tu terreno.':'Choose how long to organize your next plantings. You can change it without entering your field again.'}</p>
+    <div className="chakra-horizon-buttons" role="group" aria-label={lang==='es'?'Duración del plan':'Planning period'}>
+     {[6,12,24,36].map(value=><button type="button" key={value} aria-pressed={planningMonths===value} onClick={()=>setPlanningMonths(value)}>{value} {lang==='es'?'meses':'months'}</button>)}
+    </div>
+    <div className="chakra-horizon-range"><label htmlFor="chakra-months">{lang==='es'?'Personaliza la duración':'Customize the duration'}</label><strong>{planningMonths} {lang==='es'?'meses':'months'}</strong>
+     <input id="chakra-months" type="range" min="3" max="60" step="1" value={planningMonths} onChange={e=>setPlanningMonths(Number(e.target.value))}/>
+    </div>
+    {spatialError&&<p role="alert" className="b-error">{spatialError}</p>}
+    {spatialBusy&&<p role="status">{lang==='es'?'Preparando el plan con los datos disponibles…':'Preparing your plan using the available data…'}</p>}
+    <div className="chakra-horizon-actions"><button type="button" className="b-btn b-btn-light" onClick={()=>navigate(1)}>{lang==='es'?'Volver a mis cultivos':'Back to my crops'}</button>
+     <button type="button" className="b-btn b-btn-primary" disabled={spatialBusy} onClick={()=>void buildSpatialPlan()}>{lang==='es'?'Crear mi calendario':'Create my calendar'}<Icon name="right"/></button></div>
+   </section>}
    {step===2&&spatialPlan&&field&&<ChakraZonePlan plan={spatialPlan} field={field} subplots={subplots}
     lang={lang} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
+   {step===2&&spatialPlan&&<div className="chakra-horizon-actions"><button type="button" className="b-btn b-btn-light" onClick={()=>{setSpatialPlan(null);setResult(null)}}>{lang==='es'?'Cambiar los meses de mi plan':'Change my planning months'}</button></div>}
    {step===2&&precomputedAt&&<p role="note" className="chakra-strategy-scope">{lang==='es'?'Resultado precalculado del ejemplo de Barranca ('+precomputedAt.slice(0,10)+'): el servidor no respondió a tiempo. Son los mismos cálculos del motor CHAKRA.':'Precomputed result for the Barranca example ('+precomputedAt.slice(0,10)+'): the server did not answer in time. Same CHAKRA engine calculations.'}</p>}
-   {step===2&&spatialPlan&&field&&<StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}
+   {step===2&&spatialPlan&&field&&<details className="chakra-more-science"><summary>{lang==='es'?'Compara otras maneras de cuidar el agua y la tierra':'Compare alternatives for water and soil'}</summary>{planningMonths!==24&&<p className="chakra-calendar-note">{lang==='es'?'Las tres estrategias de comparación siguen usando una ventana de referencia de 24 meses; tu calendario por zonas sí usa la duración que elegiste.':'The three comparison strategies retain their 24-month reference period; your zone calendar uses your chosen duration.'}</p>}<StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}
     crop={id=>labelCrop(id,lang)} busy={compareBusy} error={compareError} outOfScope={!province} onRetry={()=>void compareZones()}
-    maize={(result as unknown as {maize_low_river_share?:MaizeShare}|null)?.maize_low_river_share||null} upperBasin={result?.upper_basin_rain||null}/>}
-   {step===2&&spatialPlan&&result?.ai_analysis&&<FarmerAIEvidence ai={result.ai_analysis} lang={lang}/>}
+    maize={(result as unknown as {maize_low_river_share?:MaizeShare}|null)?.maize_low_river_share||null} upperBasin={result?.upper_basin_rain||null}/></details>}
+   {step===2&&spatialPlan&&result?.ai_analysis&&<details className="chakra-more-science"><summary>{lang==='es'?'¿Qué observó la NASA en la parcela de estudio?':'What did NASA observe in our study field?'}</summary><FarmerAIEvidence ai={result.ai_analysis} lang={lang}/></details>}
    {step===3&&result&&<section className="b-result-page"><div className="b-intro b-result-intro"><span className="b-eyebrow">{lang==='es'?'TU RESULTADO · 04 / 04':'YOUR RESULT · 04 / 04'}</span><h1>{t.planTitle}</h1><p>{lang==='es'?'Aquí tienes un orden posible de cultivos y las razones para revisarlo. No es una indicación definitiva para sembrar.':'Here is a possible crop order and why it is worth reviewing. It is not a definitive planting instruction.'}</p></div>
     <div className="b-location-summary"><Icon name="pin"/><strong>{place}</strong><span>{t.area}: {area.toFixed(2)} ha</span></div>
     {sampleNote&&<p className="b-demo-status">{lang==='es'?'Vista de demostración · Barranca':'Demonstration view · Barranca'}</p>}
@@ -836,7 +898,8 @@ export default function BiotexFarmerApp(){
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
   </main>
-  <footer className="b-footer"><div><strong>CHAKRA · CHAKRA X</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span><BioTour lang={lang}/></div></footer>
+  <BioTour lang={lang} step={step===3?2:step} assigned={assignedCount}/>
+  <footer className="b-footer"><div><strong>CHAKRA · CHAKRA X</strong><span>{lang==='es'?'Una ayuda para decidir tu próxima siembra.':'Information for decisions, not harvest promises.'}</span></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
   {printable()}
   {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}
    extra={result?.strategies?.length?<StrategyComparePrint strategies={result.strategies as CompareStrategy[]} lang={lang}/>:null}/>}

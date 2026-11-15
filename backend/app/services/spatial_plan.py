@@ -135,8 +135,12 @@ def _candidate(current: dict, start: date, local_calendar: bool,
 
 
 def build_spatial_plan(polygon: dict, zones: list[dict],
-                       climate: dict | None = None) -> dict:
-    """Validate spatial assignment and produce conservative, traceable suggestions."""
+                       climate: dict | None = None, planning_months: int = 12) -> dict:
+    """Validate geometry and build sequential reference campaigns within the requested horizon."""
+    if isinstance(planning_months, bool) or not isinstance(planning_months, int) or not 3 <= planning_months <= 60:
+        raise ValueError("El plazo del plan debe estar entre 3 y 60 meses.")
+    period_start = date.today().replace(day=1)
+    period_end = _add_months(period_start, planning_months)
     if not 1 <= len(zones) <= 25:
         raise ValueError("Asigna cultivos a un máximo de 25 zonas.")
     field = _valid_polygon(polygon)
@@ -240,7 +244,38 @@ def build_spatial_plan(polygon: dict, zones: list[dict],
             "sowing_window_scope": "lima_reference" if local else "farmer_check",
             "source_tags": ["FAO-56", "DRA Lima / MIDAGRI"] if local else ["FAO-56", "historial declarado"],
         })
+        # Consecutive campaigns, not independent per-month guesses. The model is
+        # historical evidence for the exact study polygon, never a future forecast.
+        campaigns = []
+        previous = current
+        earliest = start
+        for _ in range(36):
+            if not campaigns:
+                next_crop, next_sow, next_water = candidate, sow, water
+            else:
+                next_crop, next_sow, next_water = _candidate(previous, earliest, local, climate, seasonal)
+            if next_sow >= period_end:
+                break
+            duration = int(next_crop["cycle_days"])
+            # Month boundaries are indicative; end_month is exclusive.
+            end_month = _add_months(next_sow, max(1, math.ceil(duration / 30.44)))
+            campaigns.append({
+                "crop_id": next_crop["id"],
+                "crop_es": next_crop["name_es"],
+                "crop_en": engine.name_en(next_crop["id"]),
+                "sow_month": next_sow.strftime("%Y-%m"),
+                "end_month": end_month.strftime("%Y-%m"),
+                "estimated_cycle_days": duration,
+                "reference_water_mm": next_water,
+                "source": "agronomic_rule_with_regional_references",
+            })
+            earliest, previous = end_month, next_crop
+        results[-1]["campaigns"] = campaigns
     return {
+        "planning_months": planning_months,
+        "plan_start_month": period_start.strftime("%Y-%m"),
+        "plan_end_month": period_end.strftime("%Y-%m"),
+        "plan_kind": "reference_rotation_not_future_weather_forecast",
         "status": "prepared",
         "parcel_area_ha": round(area, 3),
         "zone_plans": results,

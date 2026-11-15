@@ -1,6 +1,6 @@
 import {test,expect,type Page} from '@playwright/test'
 const outline={type:'Polygon',coordinates:[[[-71.961,-13.321],[-71.960,-13.321],[-71.960,-13.322],[-71.961,-13.322],[-71.961,-13.321]]]}
-test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('biotex-bio-intro-v1','complete'))})
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
 async function selectEvidence(page:Page){
  await page.goto('/')
  await expect(page.getByRole('button',{name:'Calcular NDVI del terreno'})).toHaveCount(0)
