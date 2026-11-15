@@ -69,7 +69,7 @@ export function ChakraZoneHandles({field,zones,selected,onMove,onInvalid}:{
  // Keep the first editable rectangle visible even while the remaining area is selected.
  const current=zones.find(z=>z.id===selected)||zones[0]
  if(!current)return null
- const center=zoneCenter(current.polygon),corners=rectangleCorners(current.polygon)
+ const center=zoneCenter(current.polygon),corners=polygonCorners(current.polygon)
  const end=(kind:'move'|'resize',index:number)=>(event:{target:{getLatLng:()=>Point}})=>{
   const to=event.target.getLatLng()
   const candidate=kind==='move'?moveZone(field,zones,current.id,to):resizeZone(field,zones,current.id,index,to)
