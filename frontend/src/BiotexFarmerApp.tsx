@@ -181,6 +181,7 @@ function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Poi
  {points.map((p,i)=><CircleMarker key={i} center={[p.lat,p.lng]} radius={i===0?9:6} pathOptions={{color:'#134638',weight:2,fillColor:i===0?'#F7C85C':'#fff',fillOpacity:1}} eventHandlers={i===0?{click:()=>{if(points.length>=3)onFinish()}}:undefined}/>)}</>
 }
 const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,1)
+const SAVED_FARM_KEY='biotex-farm-v1'
 export default function BiotexFarmerApp(){
  const [lang,setLang]=useState<Lang>(()=>new URLSearchParams(window.location.search).get('lang')==='en'?'en':'es')
  const t=LABELS[lang]
@@ -219,6 +220,8 @@ export default function BiotexFarmerApp(){
  const [mapLayer,setMapLayer]=useState<'photo'|'vegetation'|'rain'>('photo')
  const [mapLayerFailed,setMapLayerFailed]=useState(false)
  const [planStartYear,setPlanStartYear]=useState(()=>{const d=new Date();return d.getUTCFullYear()+(d.getUTCMonth()>=7?1:0)})
+ const [savedAvailable,setSavedAvailable]=useState(()=>{try{return Boolean(localStorage.getItem(SAVED_FARM_KEY))}catch{return false}})
+ const [savedNotice,setSavedNotice]=useState('')
  const request=useRef(0)
  const baseYear=recentAugust()
  const point=field?centroid(field):centre
@@ -234,6 +237,32 @@ export default function BiotexFarmerApp(){
 
  useEffect(()=>{document.documentElement.lang=lang},[lang])
  function navigate(s:Step){setStep(s);window.scrollTo({top:0,behavior:'smooth'})}
+ function saveFarm(){
+  if(!field)return
+  try{
+   localStorage.setItem(SAVED_FARM_KEY,JSON.stringify({version:1,field,place,fieldLabel,isDemoField,
+    plantings,goal,incomeCrop,scarcity,soil,waterAllowance,planStartYear}))
+   setSavedAvailable(true);setSavedNotice(lang==='es'?'Tus datos se guardaron en este dispositivo.':'Your details are saved on this device.')
+  }catch{setSavedNotice(lang==='es'?'El navegador no permitió guardar los datos.':'Your browser could not save these details.')}
+ }
+ function restoreFarm(){
+  try{
+   const data=JSON.parse(localStorage.getItem(SAVED_FARM_KEY)||'null')
+   if(!data||data.version!==1||!data.field||!Array.isArray(data.plantings))throw new Error('bad saved farm')
+   const vertices=fromGeo(data.field)
+   if(!validatePolygon(vertices).valid||approximatePolygonHectares(vertices)<0.1||approximatePolygonHectares(vertices)>500)throw new Error('bad polygon')
+   const safe= (data.plantings as Planting[]).filter(v=>CROPS.includes(v.crop_id)&&Number.isInteger(v.start_index)&&v.start_index>=0&&v.start_index<24).slice(0,10)
+   resetAfterField()
+   setField(data.field);setCentre(centroid(data.field));setFieldLabel(String(data.fieldLabel||''));setPlace(String(data.place||'Barranca'))
+   setIsDemoField(Boolean(data.isDemoField));setPlantings(safe)
+   if(['water','soil','both'].includes(data.goal))setGoal(data.goal)
+   setIncomeCrop(String(data.incomeCrop||''));setScarcity(['escaso','normal','no_se'].includes(data.scarcity)?data.scarcity:'no_se')
+   setSoil(data.soil&&typeof data.soil==='object'?data.soil:{})
+   setWaterAllowance(String(data.waterAllowance||''))
+   if(Number.isInteger(data.planStartYear))setPlanStartYear(data.planStartYear)
+   setSavedNotice(lang==='es'?'Recuperamos tu chacra. Revisa los cultivos antes de continuar.':'Your field is restored. Please review the crops before continuing.')
+  }catch{setSavedNotice(lang==='es'?'No pudimos recuperar el terreno guardado.':'Unable to restore saved field.')}
+ }
  function resetAfterField(){request.current++;setPlantings([]);setHistory(null);setHistoryBusy(false);setHintChoices({});setSatelliteAccepted(false);setManualEntered(false);setResult(null);setPlanBusy(false);setPlanError('');setHistoryError('')}
  function changeArea(){setField(null);setFieldLabel('');setIsDemoField(false);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
  function setExample(f:typeof DEMOS[number]){const p=f.polygon;setField(p);setCentre(centroid(p));setPlace('Barranca · Pativilca / Supe');setFieldLabel(lang==='es'?'Terreno de ejemplo en Barranca':'Example field in Barranca');setIsDemoField(true);setDrawing(false);setPoints([]);setFieldError('');resetAfterField()}
@@ -420,6 +449,8 @@ export default function BiotexFarmerApp(){
       {fieldError&&<p role="alert" className="b-error">{fieldError}</p>}
       {field&&<div className="b-field-ready" role="status"><Icon name="check"/><div><strong>{t.fieldReady}</strong><span>{t.area}: {area.toLocaleString(lang==='es'?'es-PE':'en-US',{maximumFractionDigits:2})} ha</span></div></div>}
       {!supported&&<p className="b-note"><Icon name="info" size={18}/>{t.unsupported}</p>}
+      {savedNotice&&<p className="b-note" role="status">{savedNotice}</p>}
+      {savedAvailable&&<div className="b-farm-recovery"><button type="button" onClick={restoreFarm}>{lang==='es'?'Recuperar mi chacra guardada':'Restore saved field'}</button></div>}
      </div>
      <aside className="b-card b-examples"><h2>{t.examples}</h2>
       {DEMOS.map((f,i)=><button key={f.id} type="button" className="b-example-choice" onClick={()=>setExample(f)}><span className="b-example-index">{String(i+1).padStart(2,'0')}</span>
@@ -427,7 +458,7 @@ export default function BiotexFarmerApp(){
       <p className="b-muted">{lang==='es'?'También puedes buscar tu propio distrito y marcar tu terreno.':'You can also search your district and mark your own field.'}</p>
      </aside>
     </div>
-    <div className="b-next"><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
+    <div className="b-next"><button type="button" className="b-btn b-btn-light" disabled={!field} onClick={saveFarm}>{lang==='es'?'Guardar mi chacra':'Save my field'}</button><button type="button" className="b-btn b-btn-primary" disabled={!field} onClick={()=>navigate(1)}>{t.next}<Icon name="right"/></button></div>
    </section>}
    {step===1&&<section className="b-form-page"><div className="b-intro"><span className="b-eyebrow">02 / 04</span><h1>{t.historyTitle}</h1><p>{t.historyLead}</p></div>
     <div className="b-entry-grid"><section className="b-card"><h2>{t.add}</h2>
@@ -514,6 +545,9 @@ export default function BiotexFarmerApp(){
        <h3>{strategyName(s)}</h3><p>{cropsLine(s)}</p><div className="b-mini-kpis"><span className={(s.relative_to_current?.water_low_river_change_percent??0)>25?'b-water-high':''}>{t.keyWater}: {s.relative_to_current?showPct(s.relative_to_current.water_low_river_change_percent):(lang==='es'?'Actual':'Current')}</span><span>{t.keySoil}: {s.indicators.bare_months}/24</span></div>
        {s.plantings.length>0&&<details><summary>{t.planSchedule}</summary>{strip(s)}</details>}{technical(s)}
       </article>)}</div>}</section>:null}
+    <div className="b-save-actions"><button type="button" className="b-btn b-btn-light" onClick={saveFarm}>{lang==='es'?'Guardar datos en mi celular':'Save on this device'}</button>
+     <a className="b-btn b-btn-light" href={'https://wa.me/?text='+encodeURIComponent((lang==='es'?'Mi propuesta BIOTEX para ':'My BIOTEX plan for ')+place+': '+(preferred?cropsLine(preferred):'')+' · '+(result[lang==='es'?'recommendation_reason_es':'recommendation_reason_en']||'')+' · '+window.location.origin)} target="_blank" rel="noreferrer">{lang==='es'?'Compartir por WhatsApp':'Share on WhatsApp'}</a>
+     {savedNotice&&<p role="status">{savedNotice}</p>}</div>
     <div className="b-report-actions"><button type="button" onClick={goPrint} className="b-btn b-btn-primary"><Icon name="print"/>{t.report}</button>
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
