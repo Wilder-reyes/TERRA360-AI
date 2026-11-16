@@ -1,5 +1,5 @@
 import './chackra-team.css'
-import {ChackraMark} from './ChakraIcon'
+import {ChakraMark} from './ChakraIcon'
 
 type Lang='es'|'en'
 const MEMBERS=[
@@ -14,7 +14,7 @@ export default function ChackraTeamPage({lang,onBack}:{lang:Lang;onBack:()=>void
  return <div className="chackra-team-page">
   <a className="chackra-team-skip" href="#team-content">{es?'Ir al contenido':'Skip to content'}</a>
   <header className="chackra-team-header">
-   <button type="button" className="chackra-team-brand" onClick={onBack} aria-label={es?'Volver a CHACKRA X':'Back to CHACKRA X'}><ChackraMark/><span>CHACKRA X</span></button>
+   <button type="button" className="chackra-team-brand" onClick={onBack} aria-label={es?'Volver a CHACKRA X':'Back to CHACKRA X'}><ChakraMark/><span>CHACKRA X</span></button>
    <nav aria-label={es?'Navegación':'Navigation'}>
     <button type="button" onClick={onBack}>{es?'Inicio':'Home'}</button>
     <a href="/como-funciona">{es?'Cómo funciona':'How it works'}</a>
