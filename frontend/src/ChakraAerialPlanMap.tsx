@@ -2,16 +2,15 @@
  * The Barranca ML model stays limited to its research polygon; the imagery here
  * is cartographic, not a crop-classification output.
  */
-import {useEffect} from 'react'
-import {MapContainer,Polygon,TileLayer,Tooltip,useMap} from 'react-leaflet'
+import {useFieldFrame} from './useFieldFrame'
+import {MapContainer,Polygon,TileLayer,Tooltip} from 'react-leaflet'
 import type {GeoPolygon} from './rotationZones'
 import type {ChakraParcel,ChakraSpatialPlan,ChakraZoneAdvice} from './ChakraZonePlan'
 import {campaignAt,zoneLabel,displayMonth} from './ChakraRotationTimeline'
 import {cropVisual} from './chakraCropVisuals'
 const points=(p:GeoPolygon)=>p.coordinates[0].slice(0,-1).map(([lng,lat])=>[lat,lng] as [number,number])
 function Frame({field}:{field:GeoPolygon}){
- const map=useMap()
- useEffect(()=>{map.fitBounds(points(field),{padding:[24,24],maxZoom:17,animate:false})},[map,field])
+ useFieldFrame(points(field),0,0)
  return null
 }
 function cropFor(row:ChakraZoneAdvice|undefined,month:string|undefined,lang:'es'|'en'){
@@ -35,7 +34,7 @@ export default function ChakraAerialPlanMap({field,subplots,plan,month,lang}:{
    <span>{month?displayMonth(month,lang)+' '+month.slice(0,4):''}</span>
   </div>
   <div className="chakra-aerial-frame">
-   <MapContainer maxZoom={21} key={field.coordinates[0].map(p=>p.join(',')).join(';')} center={[centre.lat,centre.lng]} zoom={14} className="chakra-aerial-map" scrollWheelZoom={false}>
+   <MapContainer zoomSnap={0.25} maxZoom={21} key={field.coordinates[0].map(p=>p.join(',')).join(';')} center={[centre.lat,centre.lng]} zoom={14} className="chakra-aerial-map" scrollWheelZoom={false}>
     <TileLayer maxNativeZoom={17} maxZoom={21} attribution="Imagery © Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
     <Frame field={field}/>
     <Polygon positions={coordinates} pathOptions={{color:'#D6F866',weight:5,fillColor:rem.color,fillOpacity:remainder?.2:0}}>

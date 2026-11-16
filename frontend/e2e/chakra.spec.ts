@@ -1,8 +1,8 @@
 import {test,expect} from '@playwright/test'
-import {registerAllCropZones} from './chakra-fixtures'
+import {registerAllCropZones,selectStudyExample} from './chakra-fixtures'
 
 test.beforeEach(async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))
 })
 
 const prepared={
@@ -25,10 +25,13 @@ const prepared={
 
 test('CHAKRA shows the interactive map as the central step of a three-step journey',async({page})=>{
  await page.goto('/?research=1')
- await expect(page).toHaveTitle('CHAKRA | Tu tierra. Tu próxima siembra.')
+ await expect(page).toHaveTitle('CHAKRA X | Tu tierra. Tu próxima siembra.')
  await expect(page.getByRole('heading',{name:/Conoce tu terreno/})).toBeVisible()
  await expect(page.locator('.b-progress button')).toHaveCount(3)
  await expect(page.locator('.b-map')).toBeVisible()
+ await expect(page.locator('.b-field-ready')).toHaveCount(0)
+ await page.getByRole('button',{name:'Ver un ejemplo'}).click()
+ await page.getByRole('button',{name:'Vegetación de Barranca'}).click()
  await expect(page.getByRole('region',{name:'Vegetación observada en Barranca'})).toBeVisible()
  await expect(page.getByText('¿Qué muestra el satélite?')).toBeVisible()
  expect(await page.locator('body').innerText()).not.toMatch(/BIOTEX/)
@@ -41,9 +44,10 @@ test('crop cards and spatial plan produce a zone-specific printable map',async({
   await route.fulfill({contentType:'application/json',body:JSON.stringify(prepared)})
  })
  await page.goto('/?research=1')
+ await selectStudyExample(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await expect(page.getByRole('heading',{name:'Muéstranos qué sembraste'})).toBeVisible()
- await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
+ await expect(page.locator('.chakra-crop-card')).toHaveCount(9)
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
  await expect(page.locator('.chakra-zone-choice').first()).toContainText('Camote')
@@ -54,10 +58,10 @@ test('crop cards and spatial plan produce a zone-specific printable map',async({
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
  expect((submitted as Record<string,unknown>|null)?.planning_months).toBe(18)
  await expect(page.getByRole('heading',{name:/Mi plan de cultivos/})).toBeVisible()
- await expect(page.getByText('Vainita',{exact:true}).first()).toBeVisible()
- await expect(page.getByText('enero de 2027',{exact:true})).toBeVisible()
- expect(submitted).toMatchObject({zones:expect.arrayContaining([expect.objectContaining({id:'rest',crop_id:'camote'})])})
- await expect(page.getByRole('button',{name:'Guardar mi plan'})).toBeVisible()
+ await expect(page.locator('.chakra-advice-card').getByRole('heading',{name:/Vainita/}).first()).toBeVisible()
+ await expect(page.locator('.chakra-advice-card').getByText('enero de 2027',{exact:true})).toBeVisible()
+ expect(submitted).toMatchObject({zones:expect.arrayContaining([expect.objectContaining({crop_id:'camote'})])})
+ await expect(page.getByRole('button',{name:/Guardar como PDF/})).toBeVisible()
  await page.emulateMedia({media:'print'})
  await expect(page.locator('.chakra-spatial-print')).toBeVisible()
  await expect(page.locator('.chakra-spatial-print svg')).toHaveCount(1)

@@ -34,6 +34,13 @@ export async function httpErrorMessage(response: Response, en: boolean): Promise
  if(response.status===429)return en
   ? 'The server is handling too many requests. Please retry shortly.'
   : 'El servidor está procesando demasiadas consultas. Vuelve a intentarlo en un momento.'
+ if([400,409,422].includes(response.status)){
+  try{
+   const body=await response.json() as {detail?:unknown}
+   if(typeof body.detail==='string'&&body.detail.trim()&&body.detail.length<=300)return body.detail.trim()
+  }catch{/* A non-JSON proxy response must not become a browser error. */}
+  return en?'Check the field boundaries, crops and sowing dates.':'Revisa los límites del terreno, los cultivos y sus fechas de siembra.'
+ }
  return en
   ? 'Could not obtain the data right now. Please try again.'
   : 'No pudimos obtener los datos en este momento. Inténtalo nuevamente.'

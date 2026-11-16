@@ -1,10 +1,12 @@
+import {selectStudyExample} from './chakra-fixtures'
 import {test,expect,type Page} from '@playwright/test'
+
+test.setTimeout(90000)
 
 const viewports=[320,360,375,390,430,640,768,820,960,1024,1280] as const
 test.beforeEach(async({page})=>{
  await page.addInitScript(()=>{
-  localStorage.setItem('chakra-bio-guided-v3','hide')
-  localStorage.setItem('chakra-bio-guided-v2','hide')
+  localStorage.setItem('chakra-choklito-guided-v4','hide')
  })
 })
 
@@ -48,8 +50,9 @@ test('step two respects the viewport on phones/tablets with usable buttons and d
  for(const width of [320,360,390,430,640,768,820,960,1024,1280]){
   await page.setViewportSize({width,height:900})
   await page.goto('/')
+  await selectStudyExample(page)
   await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
-  await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
+  await expect(page.locator('.chakra-crop-card')).toHaveCount(9)
   await expect(page.locator('.chakra-zone-choice')).toHaveCount(3)
   await noHorizontalOverflow(page,width,'crops '+width)
   await touchTargets(page,'.chakra-crop-card',60)
@@ -85,15 +88,15 @@ test('informational pages keep accessible links and columns on 320px phones thro
 
 test('BIO tutorial fits phone and never covers the fixed three-step navigation',async({page})=>{
  await page.addInitScript(()=>{
-  localStorage.removeItem('chakra-bio-guided-v3')
-  localStorage.removeItem('chakra-bio-guided-v2')
+  localStorage.removeItem('chakra-choklito-guided-v4')
  })
  for(const width of [320,360,390,430]){
   await page.setViewportSize({width,height:750})
   await page.goto('/')
-  const bio=page.getByRole('region',{name:'BIO, tu guía'})
+  await page.getByRole('button',{name:'Comenzar recorrido'}).click()
+  const bio=page.getByRole('region',{name:'CHOKLITO, tu guía'})
   await expect(bio).toBeVisible()
-  await expect(page.locator('.bio-shade')).toHaveCount(4)
+  await expect(page.locator('.bio-shade')).toHaveCount(0)
   const panel=await bio.boundingBox(),rail=await page.locator('.b-progress-wrap').boundingBox()
   expect(panel).toBeTruthy();expect(rail).toBeTruthy()
   expect(panel!.x).toBeGreaterThanOrEqual(0)

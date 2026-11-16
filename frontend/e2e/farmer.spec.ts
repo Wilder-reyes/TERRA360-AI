@@ -1,6 +1,7 @@
+import {selectStudyExample} from './chakra-fixtures'
 import {test,expect,type Page} from '@playwright/test'
 const outline={type:'Polygon',coordinates:[[[-71.961,-13.321],[-71.960,-13.321],[-71.960,-13.322],[-71.961,-13.322],[-71.961,-13.321]]]}
-test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))})
 async function selectEvidence(page:Page){
  await page.goto('/?research=1')
  await expect(page.getByRole('button',{name:'Calcular NDVI del terreno'})).toHaveCount(0)
@@ -25,6 +26,7 @@ test('place search and crop reference lookup are inside the shared journey',asyn
  await page.getByRole('button',{name:/Calca.*Cusco/}).click()
  await expect(page.getByText('Calca, Cusco, Perú',{exact:true})).toBeVisible()
  await page.getByRole('button',{name:'Usar parcela de Barranca',exact:true}).click()
+ await selectStudyExample(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click()
  await expect(page.getByRole('heading',{name:'Muéstranos qué sembraste'})).toBeVisible()
  await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click()
@@ -201,19 +203,19 @@ test('FAO GAEZ real-source tab labels raw regional code without claiming crop su
 test('network failure in crop catalogue can retry without refresh',async({page})=>{
  let attempts=0
  await page.route('**/api/arie/crops?**',async r=>{attempts++;if(attempts===1){await r.abort('failed');return}await r.fulfill({contentType:'application/json',body:'{"items":[{"id":"maize","name":"Maíz","scientific_name":"Zea mays"}]}'})})
- await page.goto('/?research=1');await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click()
+ await page.goto('/?research=1');await selectStudyExample(page);await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click()
  await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('maíz');await page.getByRole('button',{name:'Buscar en catálogo'}).click()
  await expect(page.getByText(/No se pudo conectar con CHAKRA/)).toBeVisible();await expect(page.getByText(/Failed to fetch/)).toHaveCount(0)
  await page.getByRole('button',{name:'Buscar en catálogo'}).click();await expect(page.getByRole('button',{name:'Maíz · Zea mays'})).toBeVisible();expect(attempts).toBe(2)
 })
 test('production API requests honor the configured backend origin',async({page})=>{
  let called='';await page.route('**/api/arie/crops?**',r=>{called=r.request().url();return r.fulfill({contentType:'application/json',body:'{"items":[]}'})})
- await page.goto('/?research=1');await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click();await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('maíz');await page.getByRole('button',{name:'Buscar en catálogo'}).click()
+ await page.goto('/?research=1');await selectStudyExample(page);await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click();await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('maíz');await page.getByRole('button',{name:'Buscar en catálogo'}).click()
  await expect.poll(()=>called).not.toBe('');expect(new URL(called).origin).toBe(process.env.E2E_API_ORIGIN||new URL(page.url()).origin)
 })
 test('crop photo preview stays local and never claims automatic AI identification',async({page})=>{
  const uploads:string[]=[];page.on('request',r=>{if(r.method()==='POST')uploads.push(r.url())})
- await page.goto('/?research=1');await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click();await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Foto de referencia en tu dispositivo',{exact:true}).click()
+ await page.goto('/?research=1');await selectStudyExample(page);await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click();await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Foto de referencia en tu dispositivo',{exact:true}).click()
  const picker=page.locator('#terra-photo-input');await expect(picker).toHaveAttribute('capture','environment');await expect(page.getByText(/identificación automática aún no está disponible/)).toBeVisible()
  await picker.setInputFiles({name:'hoja.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jBuQAAAAASUVORK5CYII=','base64')})
  await expect(page.getByText('Foto lista')).toBeVisible();await expect(page.locator('.terra-camera-preview img')).toHaveAttribute('src',/^blob:/);expect(uploads).toEqual([])

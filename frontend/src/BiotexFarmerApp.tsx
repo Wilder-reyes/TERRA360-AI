@@ -11,6 +11,7 @@ import FarmDecisionEvidence,{type EconomicReport} from './FarmDecisionEvidence'
 import FarmerAIEvidence,{type AIEvidence} from './FarmerAIEvidence'
 import './biotex-farmer.css'
 import BioTour from './BioTour'
+import {useFieldFrame} from './useFieldFrame'
 import ChakraInfoPage from './ChakraInfoPage'
 import {CropPhotoGuide} from './CropPhotoGuide'
 import {parseGeoJSONPolygon} from './geometry'
@@ -24,6 +25,7 @@ import './chakra-light.css'
 import './chakra-ppt-flow.css'
 import './chakra-farmer-v3.css'
 import './chakra-responsive-audit.css'
+import './onboarding-fixes.css'
 import {cropVisual} from './chakraCropVisuals'
 import {ChakraZoneHandles,suggestedZones} from './ChakraRectZones'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
@@ -178,8 +180,7 @@ function Icon({name,size=20}:{name:'search'|'pin'|'check'|'left'|'right'|'undo'|
  return <ChakraIcon name={names[name]} size={size}/>
 }
 function FlyTo({point,polygon}:{point:Point;polygon:Point[]|null}){
- const map=useMap()
- useEffect(()=>{if(polygon&&polygon.length>2){map.fitBounds(polygon.map(p=>[p.lat,p.lng] as [number,number]),{padding:[40,40],maxZoom:17,animate:false})}else{map.setView([point.lat,point.lng],13)}},[map,point.lat,point.lng,polygon])
+ useFieldFrame(polygon?.map(p=>[p.lat,p.lng] as [number,number])||null,point.lat,point.lng)
  return null
 }
 function DrawLayer({enabled,points,onPoint,onFinish}:{enabled:boolean;points:Point[];onPoint:(p:Point)=>void;onFinish:()=>void}){
@@ -256,7 +257,7 @@ export default function BiotexFarmerApp(){
   if(window.location.pathname!==path)window.history.pushState({},'',path+window.location.search)
   setInfoPage(page);window.scrollTo({top:0,behavior:'auto'})
  }
- const [place,setPlace]=useState('Barranca · Pativilca / Supe')
+ const [place,setPlace]=useState('')
  const [centre,setCentre]=useState<Point>(centroid(BARRANCA_FIELD.polygon))
  const [query,setQuery]=useState('')
  const [coordinateLat,setCoordinateLat]=useState('')
@@ -264,9 +265,9 @@ export default function BiotexFarmerApp(){
  const [places,setPlaces]=useState<{name:string;lat:number;lng:number}[]>([])
  const [searching,setSearching]=useState(false)
  const [searchError,setSearchError]=useState('')
- const [field,setField]=useState<GeoPolygon|null>(BARRANCA_FIELD.polygon)
+ const [field,setField]=useState<GeoPolygon|null>(null)
  const [fieldLabel,setFieldLabel]=useState('')
- const [isDemoField,setIsDemoField]=useState(true)
+ const [isDemoField,setIsDemoField]=useState(false)
  const [drawing,setDrawing]=useState(false)
  const [drawingSubplot,setDrawingSubplot]=useState(false)
  const [subplots,setSubplots]=useState<Subplot[]>([])
@@ -540,7 +541,7 @@ export default function BiotexFarmerApp(){
     ...(zone.polygon?{polygon:zone.polygon}:{})
    }))}
    const response=await fetch(API+'/api/rotation/spatial-plan',{
-    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(60000)
    })
    if(!response.ok)throw new Error(await httpErrorMessage(response,lang==='en'))
    const data=await response.json() as ChakraSpatialPlan
@@ -734,6 +735,7 @@ export default function BiotexFarmerApp(){
  <button type="button" className="chakra-theme-toggle" aria-pressed={theme==='light'} aria-label={theme==='light'?(lang==='es'?'Cambiar a modo oscuro':'Switch to dark mode'):(lang==='es'?'Cambiar a modo claro':'Switch to light mode')} title={theme==='light'?'Dark':'Light'} onClick={()=>setTheme(v=>v==='light'?'dark':'light')}>{theme==='light'?'☾':'☀'}</button>
  <div className="b-language" role="group" aria-label="Idioma / Language"><button type="button" aria-pressed={lang==='es'} className={lang==='es'?'on':''} onClick={()=>setLang('es')}>ES</button><button type="button" aria-pressed={lang==='en'} className={lang==='en'?'on':''} onClick={()=>setLang('en')}>EN</button></div></div></div></header>
   <div className="chakra-background" aria-hidden="true"><img src="/chakra-fields.webp" alt=""/><div/></div>
+  <BioTour onStart={()=>{if(!field){changeArea();setDrawing(true)}window.scrollTo({top:0,behavior:'smooth'})}} lang={lang} step={step===3?2:step} assigned={assignedCount} zoneCount={availableZones.length||1} landing={landing} fieldReady={Boolean(field)} cropPending={Boolean(pendingCrop)} planReady={Boolean(spatialPlan)} error={step===0?fieldError:spatialError||fieldError}/>
   <main id="main" className={'b-main '+(landing&&step===0?'chakra-home':'chakra-workspace')}>
    {landing&&step===0&&<ChakraLanding lang={lang} onStart={()=>{setLanding(false);setExample(BARRANCA_FIELD);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}} onMap={()=>{setLanding(false);changeArea();setDrawing(true);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}}/>}
   <div className="b-progress-wrap"><div className="b-progress-shell"><div className="b-progress-label"><span>{lang==='es'?'Tu recorrido':'Your journey'}</span><strong>{lang==='es'?'Paso '+(Math.min(step,2)+1)+' de 3':'Step '+(Math.min(step,2)+1)+' of 3'}</strong></div>
@@ -770,7 +772,7 @@ export default function BiotexFarmerApp(){
        </details>
       <label className="b-low-bandwidth"><input type="checkbox" checked={saveMobileData} onChange={e=>{setSaveMobileData(e.target.checked);if(e.target.checked)setMapLayer('photo')}}/> {lang==='es'?'Ahorrar datos móviles (mapa sencillo)':'Save mobile data (simple map)'}</label>
       {(drawing||drawingSubplot)&&<div className="b-map-guide"><strong>{drawingSubplot?(lang==='es'?'Dibuja una zona dentro de tu terreno':'Draw an area inside your field'):(lang==='es'?'Marca tu chacra en 3 pasos':'Mark your field in 3 steps')}</strong><ol><li>{lang==='es'?'Acerca el mapa.':'Zoom in.'}</li><li>{lang==='es'?'Toca cada esquina del terreno.':'Tap each field corner.'}</li><li>{drawingSubplot?(lang==='es'?'Pulsa «Guardar subparcela».':'Tap Save subplot.'):(lang==='es'?'Pulsa «Terminar terreno».':'Tap Finish field.')}</li></ol></div>}
-      <div className="b-map-frame" data-bio-target="bio-map"><MapContainer maxZoom={21} className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
+      <div className="b-map-frame" data-bio-target="bio-map"><MapContainer zoomSnap={0.25} maxZoom={21} className="b-map" center={[centre.lat,centre.lng]} zoom={13} scrollWheelZoom={false}>
        <TileLayer maxNativeZoom={17} maxZoom={21} key={saveMobileData?'streets':mapLayer==='terrain'?'terrain':'satellite'} attribution={saveMobileData?'© OpenStreetMap contributors':'Imagery © Esri, Maxar, Earthstar Geographics | Geocoding © OpenStreetMap contributors'}
         url={saveMobileData?'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png':mapLayer==='terrain'?'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}':'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'}/>
        {!saveMobileData&&isScienceLayer(mapLayer)&&<WMSTileLayer key={mapLayer+mapDate} url={GIBS_WMS}
@@ -840,7 +842,7 @@ export default function BiotexFarmerApp(){
      <h1>{lang==='es'?'Muéstranos qué sembraste':'Show what you planted'}</h1>
      <p>{lang==='es'?'Marca únicamente las zonas que tienen cultivos actualmente. Ajusta sus vértices para que sigan el contorno real de cada área sembrada.':'Only mark areas currently planted. Adjust polygon vertices to match each cultivated area.'}</p></div>
     <div className="chakra-zone-map-wrap" data-bio-target="bio-zone-map">
-     <div className="chakra-zone-map-frame" id="chakra-zone-map"><MapContainer maxZoom={21} center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
+     <div className="chakra-zone-map-frame" id="chakra-zone-map"><MapContainer zoomSnap={0.25} maxZoom={21} center={[point.lat,point.lng]} zoom={15} scrollWheelZoom={false} className="chakra-zone-map">
       <ZoneDropBridge field={field} subplots={subplots} onAssign={assignZoneCrop}/>
       <ChakraZoneHandles field={field} zones={subplots} selected={selectedZone} onMove={updateZonePolygon} onInvalid={message=>setFieldError(message)}/>
       <TileLayer maxNativeZoom={17} maxZoom={21} attribution="Imagery © Esri, Maxar, Earthstar Geographics" url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"/>
@@ -952,7 +954,6 @@ export default function BiotexFarmerApp(){
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
   </main>
-  <BioTour lang={lang} step={step===3?2:step} assigned={assignedCount} zoneCount={availableZones.length||1} landing={landing} fieldReady={Boolean(field)} cropPending={Boolean(pendingCrop)} planReady={Boolean(spatialPlan)} error={step===0?fieldError:spatialError||fieldError}/>
   <footer className="b-footer"><div><strong>CHAKRA X</strong></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><a href="/como-funciona" onClick={e=>{e.preventDefault();showPage('how')}}>{lang==='es'?'Cómo funciona':'How it works'}</a><a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
   {printable()}
   {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}/>}

@@ -74,6 +74,7 @@ async def health():
         "application": "CHAKRA",
         "team": "CHAKRA X",
         "version": "1.0.0",
+        "spatial_plan_contract": "explicit-planted-zones-v2",
     }
 
 

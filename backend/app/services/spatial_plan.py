@@ -174,8 +174,8 @@ def build_spatial_plan(polygon: dict, zones: list[dict],
     for record in zones:
         if record["id"] == "rest" and record.get("polygon"):
             raise ValueError("La zona general se calcula a partir de las subdivisiones.")
-    if "rest" not in names and area_rem > max(0.02, area * 0.005):
-        raise ValueError("Asigna también el resto del terreno.")
+    # Explicit polygons describe planted areas only. Unassigned land is not a
+    # crop zone; a legacy full-field/remainder record is still optional.
     if "rest" in names and area_rem < 0.005:
         raise ValueError("La zona general ya está cubierta por las subdivisiones.")
 

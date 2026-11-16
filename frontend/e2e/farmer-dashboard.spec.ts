@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test'
-import {registerAllCropZones} from './chakra-fixtures'
+import {registerAllCropZones,selectStudyExample} from './chakra-fixtures'
 
 const daily={
  source:'NASA POWER',data_status:'available',records:[
@@ -28,7 +28,7 @@ const guidance={
  source_urls:['https://power.larc.nasa.gov/','https://cgiar-climate-data-hub.github.io/catalog/ecocrop/']
 }
 test.beforeEach(async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))
  await page.route('**/api/environment/nasa-power/daily**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify(daily)}))
  await page.route('**/api/environment/terrain?**',r=>r.fulfill({contentType:'application/json',body:'{"elevation_m":120,"approximate_gradient_degrees":1.2}'}))
  await page.route('**/api/rotation/climate?**',r=>r.fulfill({contentType:'application/json',body:'{"annual_et0_mm":900}'}))
@@ -38,6 +38,7 @@ test.beforeEach(async({page})=>{
 async function selectedField(page:import('@playwright/test').Page){await page.goto('/?research=1');await page.getByRole('button',{name:/Ver un ejemplo/}).click()}
 async function context(page:import('@playwright/test').Page){await selectedField(page);await page.getByText('Datos ambientales y satélite (opcional)',{exact:true}).click();await page.getByRole('button',{name:'Consultar datos del terreno'}).click()}
 async function cropReference(page:import('@playwright/test').Page){
+ await selectStudyExample(page)
  await selectedField(page);await page.getByRole('button',{name:'Registrar cultivos por zona',exact:true}).click();await page.getByText('Ayuda para reconocer cultivos (opcional)',{exact:true}).click();await page.getByText('Referencias de cultivos (opcional)',{exact:true}).click();await page.getByLabel('Buscar nombre de cultivo').fill('camote');await page.getByRole('button',{name:'Buscar en catálogo'}).click();await page.getByRole('button',{name:'Camote · Ipomoea batatas'}).click();await page.getByRole('button',{name:'Revisar referencia regional'}).click()
 }
 test('regional climate is available inside Mi terreno with incomplete-period disclosure',async({page})=>{
@@ -53,7 +54,7 @@ test('searched crop reference does not become declared crop history or suitabili
  await expect(page.getByText(/La temperatura regional coincide/)).toBeVisible()
  await expect(page.getByText(/NO recomendaciones de siembra/)).toBeVisible()
  await expect(page.locator('.chakra-zone-choice').first()).toContainText('Por registrar')
- await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
+ await expect(page.locator('.chakra-crop-card')).toHaveCount(9)
 })
 test('zone-by-zone PDF uses the native print entry point and a geometric map',async({page})=>{
  await page.addInitScript(()=>{(window as any).__printed=0;window.print=()=>{(window as any).__printed++}})
@@ -66,12 +67,13 @@ test('zone-by-zone PDF uses the native print entry point and a geometric map',as
    reference_water_mm:null,sowing_window_scope:'lima_reference',source_tags:['FAO-56']}]
  })}))
  await selectedField(page)
+ await selectStudyExample(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
  await registerAllCropZones(page)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
- await page.getByRole('button',{name:'Guardar mi plan'}).click()
+ await page.getByRole('button',{name:/Guardar como PDF/}).click()
  await expect.poll(()=>page.evaluate(()=>(window as any).__printed)).toBe(1)
  await page.emulateMedia({media:'print'})
  await expect(page.locator('.chakra-spatial-print')).toBeVisible()
@@ -90,8 +92,8 @@ test('missing NASA data remains unknown and catalogue review never invents plant
  await cropReference(page);await expect(page.getByText(/Años completos: 0/)).toBeVisible();await expect(page.getByText(/Lluvia anual media: —/)).toBeVisible()
 })
 test('release describes the unified application with no published-site dependency',async({page})=>{
- await page.goto('/?research=1');await expect(page).toHaveTitle('CHAKRA | Tu tierra. Tu próxima siembra.')
- const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('chakra-1.0.0-nasa-space-apps-2026');expect(d.environment).toBe('production');expect(d.team).toBe('CHAKRA X');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('chakra-glass-lime')
+ await page.goto('/?research=1');await expect(page).toHaveTitle('CHAKRA X | Tu tierra. Tu próxima siembra.')
+ const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('chakra-1.0.0-nasa-space-apps-2026');expect(d.environment).toBe('production');expect(d.team).toBe('CHAKRA X');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('chakrax-field-onboarding-2026-11')
 })
 test('NASA GIBS layers and POWER figures keep distinct regional provenance',async({page})=>{
  await context(page);await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()

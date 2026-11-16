@@ -41,3 +41,9 @@ export async function registerAllCropZones(page:Page){
   }
  }
 }
+
+/** A study field is always chosen explicitly in tests. */
+export async function selectStudyExample(page:Page){
+ const next=page.getByRole('button',{name:/^(Registrar cultivos por zona|Record crops by zone)$/})
+ if(await next.count()&&await next.isDisabled())await page.getByRole('button',{name:/^(Ver un ejemplo|Try an example)$/}).click()
+}

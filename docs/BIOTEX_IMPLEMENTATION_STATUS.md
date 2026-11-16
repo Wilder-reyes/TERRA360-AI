@@ -179,3 +179,17 @@ Encargo vigente: corregir la aplicación publicada y ofrecer solo Barranca. Sust
 - Recorrido de Barranca conservado; CTA retira la portada y abre el mapa. Edición científica, leyendas y valores originales preservados.
 - Compilación aprobada; 41 pruebas frontend y 266 backend aprobadas localmente. Navegador/QA visual y publicación pendientes de CI de este commit.
 - Ver docs/CHAKRA_DESIGN.md y frontend/src/chakra.css. Commit: el que incorpora esta sección.
+
+
+## Corrección de CHAKRAX: selección del terreno y planificación por zonas
+
+Rama: `fix/chackra-onboarding-and-zone-plan`.
+
+- El terreno empieza sin selección; el recorrido de CHOKLITO inicia el dibujo de forma explícita. El ejemplo de Barranca conserva su botón voluntario.
+- Eliminado el texto superpuesto dentro del SVG de la mascota. La guía permanece en el flujo del documento y no cubre el mapa.
+- Encuadre automático de la parcela al seleccionarla y al cambiar el tamaño del mapa; se conserva el límite nativo de las imágenes.
+- El plan admite zonas sembradas explícitas sin exigir un cultivo en el terreno restante. Se conservan el cálculo agronómico, el modelo y la compatibilidad con registros de terreno completo.
+- Los errores HTTP de validación muestran su explicación; las consultas tienen un tiempo límite.
+- Pruebas actualizadas para seleccionar el ejemplo expresamente y comprobar los nueve cultivos, las zonas declaradas y las acciones vigentes.
+
+Verificación: TypeScript y Vite, 43 pruebas unitarias frontend, 278 pruebas Python, reproducción del modelo HLS y 55 escenarios de navegador aprobados. El nuevo recorrido se comprobó además con `E2E_SCIENTIFIC_API=http://127.0.0.1:8000` contra el motor científico en ejecución. Marcador del frontend: `chakrax-field-onboarding-2026-11`. Contrato de salud de API: `explicit-planted-zones-v2`. La publicación se verifica sobre `https://chakrax.vercel.app/` y su ruta `/api/health`.

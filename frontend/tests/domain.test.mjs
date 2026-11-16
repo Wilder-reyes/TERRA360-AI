@@ -44,11 +44,11 @@ test('no valid min/max observations is not reported as zero cold/hot days', () =
   assert.equal(r.hotDays, null)
 })
 
-test('the Barranca study field is visibly offered while other fields stay selectable, with a favicon', async () => {
+test('the field starts unselected and the Barranca example remains an explicit choice', async () => {
  const {readFile}=await import('node:fs/promises')
  const app=await readFile(new URL('../src/BiotexFarmerApp.tsx',import.meta.url),'utf8')
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8')
- assert.match(app,/useState<GeoPolygon\|null>\(BARRANCA_FIELD\.polygon\)/)
+ assert.match(app,/useState<GeoPolygon\|null>\(null\)/)
  assert.match(app,/function changeArea\(\)/)
  assert.match(app,/setDrawing\(true\)/)
  assert.match(app,/if\(!field\)/)

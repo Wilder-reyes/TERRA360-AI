@@ -1,9 +1,10 @@
+import {selectStudyExample} from './chakra-fixtures'
 import {test,expect} from '@playwright/test'
 import {readFileSync} from 'node:fs'
 // Playwright runs this spec in Node, where imported JSON needs an import attribute.
 const BARRANCA_HISTORY=JSON.parse(readFileSync(new URL('../src/data/barrancaHls.json',import.meta.url),'utf8')) as {months:{month:string;ndvi:number|null}[]}
 
-test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))})
 
 test('Barranca is the only public study example and users may outline another place',async({page})=>{
  await page.goto('/?vista=chalhuas&research=1')
@@ -15,6 +16,8 @@ test('Barranca is the only public study example and users may outline another pl
 
 test('NASA HLS uses the archived observations and explains low vegetation in plain language',async({page})=>{
  await page.goto('/?research=1')
+ await page.getByRole('button',{name:'Ver un ejemplo'}).click()
+ await page.getByRole('button',{name:'Vegetación de Barranca'}).click()
  const legend=page.getByRole('region',{name:'Vegetación observada en Barranca'})
  await expect(legend).toBeVisible()
  await expect(legend).toContainText('¿Qué muestra el satélite?')
@@ -29,6 +32,7 @@ test('NASA HLS uses the archived observations and explains low vegetation in pla
 
 test('moving the study parcel boundary disables the specific trained HLS layer',async({page})=>{
  await page.goto('/?research=1')
+ await page.getByRole('button',{name:'Ver un ejemplo'}).click()
  await page.getByText('Ajustar límites o subparcelas (opcional)',{exact:true}).click()
  await page.getByRole('button',{name:'Editar esquinas'}).click()
  await page.getByRole('button',{name:'Esquina 2',exact:true}).click()
@@ -50,18 +54,19 @@ test('previously saved polygons outside Barranca restore and remain editable',as
  await page.getByRole('button',{name:'Recuperar mi chacra guardada'}).click()
  await expect(page.locator('.b-field-ready')).toBeVisible()
  await expect(page.getByText(/Recuperamos tu chacra/)).toBeVisible()
+ await selectStudyExample(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await expect(page.locator('.chakra-zone-map')).toBeVisible()
 })
 
 test('the animated BIO guide can be replayed and dismissed without blocking the map',async({page})=>{
  await page.goto('/?research=1')
- await expect(page.getByRole('region',{name:'BIO, tu guía'})).toHaveCount(0)
- await page.getByRole('button',{name:'Abrir guía de BIO'}).click()
- await expect(page.getByRole('region',{name:'BIO, tu guía'})).toBeVisible()
- await expect(page.getByText('¡Hola! Soy BIO')).toBeVisible()
+ await expect(page.getByRole('region',{name:'CHOKLITO, tu guía'})).toHaveCount(0)
+ await page.getByRole('button',{name:'Abrir guía de CHOKLITO'}).click()
+ await expect(page.getByRole('region',{name:'CHOKLITO, tu guía'})).toBeVisible()
+ await expect(page.getByText('¡Hola! Soy CHOKLITO')).toBeVisible()
  await page.getByRole('button',{name:'Salir del tutorial'}).click()
- await expect(page.getByRole('region',{name:'BIO, tu guía'})).toHaveCount(0)
+ await expect(page.getByRole('region',{name:'CHOKLITO, tu guía'})).toHaveCount(0)
 })
 
 test('desktop and mobile show three accessible steps without horizontal overflow',async({page})=>{
@@ -77,7 +82,8 @@ test('English retains the same three-step process and map',async({page})=>{
  await page.goto('/?lang=en&research=1')
  await expect(page.getByRole('button',{name:/Try an example/})).toBeVisible()
  await expect(page.locator('.b-progress button')).toHaveCount(3)
+ await selectStudyExample(page)
  await page.getByRole('button',{name:'Record crops by zone'}).click()
  await expect(page.getByRole('heading',{name:'Show what you planted'})).toBeVisible()
- await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
+ await expect(page.locator('.chakra-crop-card')).toHaveCount(9)
 })

@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test'
-import {registerAllCropZones} from './chakra-fixtures'
+import {registerAllCropZones,selectStudyExample} from './chakra-fixtures'
 
 const plan={
  status:'prepared',parcel_area_ha:2.25,scope:'barranca_reference',
@@ -22,20 +22,20 @@ const plan={
 
 test('first-visit BIO guide focuses on an actual next action and follows the step',async({page})=>{
  await page.addInitScript(()=>{
-  localStorage.removeItem('chakra-bio-guided-v3')
-  localStorage.removeItem('chakra-bio-guided-v2')
+  localStorage.removeItem('chakra-choklito-guided-v4')
  })
  await page.goto('/')
- await expect(page.getByRole('region',{name:'BIO, tu guía'})).toBeVisible()
- await expect(page.getByText('¡Hola! Soy BIO')).toBeVisible()
- await expect(page.locator('.bio-shade')).toHaveCount(4)
+ await page.getByRole('button',{name:'Comenzar recorrido'}).click()
+ await expect(page.getByRole('region',{name:'CHOKLITO, tu guía'})).toBeVisible()
+ await expect(page.getByRole('button',{name:'Terminar terreno'})).toBeVisible()
+ await expect(page.locator('.bio-shade')).toHaveCount(0)
  await page.getByRole('button',{name:'Salir del tutorial'}).click()
- await expect(page.getByRole('region',{name:'BIO, tu guía'})).toHaveCount(0)
- await expect(page.getByRole('button',{name:'Abrir guía de BIO'})).toBeVisible()
+ await expect(page.getByRole('region',{name:'CHOKLITO, tu guía'})).toHaveCount(0)
+ await expect(page.getByRole('button',{name:'Abrir guía de CHOKLITO'})).toBeVisible()
 })
 
 test('how and sources are independent public pages with real provider links',async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v3','hide'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))
  await page.goto('/como-funciona')
  await expect(page.getByRole('heading',{name:'Tu próxima siembra empieza en tu mapa.'})).toBeVisible()
  await expect(page.locator('.chakra-story-card')).toHaveCount(3)
@@ -48,15 +48,16 @@ test('how and sources are independent public pages with real provider links',asy
 })
 
 test('the farmer has a readable quarter calendar and last crop when no campaign is scheduled',async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v3','hide'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))
  let submitted:Record<string,unknown>|undefined
  await page.route('**/api/rotation/spatial-plan',route=>{
   submitted=route.request().postDataJSON()
   return route.fulfill({contentType:'application/json',body:JSON.stringify(plan)})
  })
  await page.goto('/')
+ await selectStudyExample(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
- await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
+ await expect(page.locator('.chakra-crop-card')).toHaveCount(9)
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await page.getByRole('button',{name:'Marcar en zona elegida'}).click()
  await registerAllCropZones(page)
@@ -79,15 +80,16 @@ test('the farmer has a readable quarter calendar and last crop when no campaign 
 })
 
 test('mobile keeps crop cards compact and map in the same step without horizontal overflow',async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v3','hide'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))
  await page.setViewportSize({width:390,height:844})
  await page.goto('/')
+ await selectStudyExample(page)
  await page.getByRole('button',{name:'Registrar cultivos por zona'}).click()
  await expect(page.locator('.chakra-zone-map')).toBeVisible()
  await expect(page.locator('.chakra-zone-choice')).toHaveCount(3)
  await expect(page.locator('.chakra-zone-move-icon')).toHaveCount(1)
  await expect(page.locator('.chakra-zone-resize-icon')).toHaveCount(4)
- await expect(page.locator('.chakra-crop-card')).toHaveCount(13)
+ await expect(page.locator('.chakra-crop-card')).toHaveCount(9)
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(391)
  await page.getByRole('group',{name:'Elige el cultivo'}).getByRole('button',{name:/Camote/}).click()
  await expect(page.locator('.chakra-zone-map')).toBeInViewport()

@@ -1,0 +1,10 @@
+@media screen {
+ .b-app .bio-guide-root{position:relative!important;inset:auto!important;z-index:1101!important;pointer-events:auto!important;width:min(760px,calc(100% - 28px));max-width:none!important;margin:18px auto}
+ .b-app .bio-guide-root .bio-tour.bio-guided-card{position:static!important;width:100%!important;max-width:none!important;max-height:none!important;margin:0}
+ .b-app .bio-guide-root .bio-repeat{position:static!important;max-width:none!important}
+ .b-app .bio-tour .bio-tour-top p{max-width:none!important}
+ .b-app .bio-guide-root .choklito-welcome{z-index:7000;pointer-events:auto}
+ .b-app .bio-guide-root .choklito-welcome-card{pointer-events:auto}
+ .b-app.chakra-farmer-clean #chakra-field .b-field-ready{display:flex!important}
+ .b-app.chakra-farmer-clean #chakra-field .b-map-guide{display:block!important}
+}

@@ -3,12 +3,12 @@ import {test,expect} from '@playwright/test'
 const barrancaOutline={type:'Polygon',coordinates:[[[-77.730,-10.739],[-77.729,-10.739],[-77.729,-10.738],[-77.730,-10.738],[-77.730,-10.739]]]}
 
 test.beforeEach(async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))
+ await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))
 })
 
-test('starts with a clearly labeled Barranca study example and accepts other coordinates',async({page})=>{
+test('starts without a selected field and accepts other coordinates',async({page})=>{
  await page.goto('/?research=1')
- await expect(page.locator('.b-field-ready')).toHaveCount(1)
+ await expect(page.locator('.b-field-ready')).toHaveCount(0)
  await expect(page.getByRole('button',{name:'Dibujar mi terreno'})).toBeVisible()
  await page.getByText('Buscar por coordenadas').click()
  await page.getByRole('spinbutton',{name:'Latitud',exact:true}).fill('-10.738')

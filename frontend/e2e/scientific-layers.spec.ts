@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test'
-test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-bio-guided-v2','hide'))})
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))})
 
 test('regional NASA imagery keeps its provenance and native provider color scale',async({page})=>{
  await page.goto('/?research=1')
@@ -22,6 +22,7 @@ test('regional NASA imagery keeps its provenance and native provider color scale
 
 test('SENAMHI and scientific directory links are accessible as optional context',async({page})=>{
  await page.goto('/?research=1')
+ await page.getByRole('button',{name:'Ver un ejemplo'}).click()
  await page.getByText('Datos ambientales y satélite (opcional)',{exact:true}).click()
  await page.getByText('Fuentes oficiales y limitaciones',{exact:true}).click()
  await expect(page.getByRole('link',{name:'SENAMHI',exact:true})).toHaveAttribute('href',/senamhi.gob.pe/)

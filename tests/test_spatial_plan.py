@@ -95,12 +95,13 @@ class SpatialPlanTests(unittest.TestCase):
                  "polygon": self.left},
             ])
 
-    def test_requires_crop_for_unassigned_remaining_area(self):
-        with self.assertRaisesRegex(ValueError, "resto"):
-            build_spatial_plan(self.field, [
-                {"id": "Zona 1", "crop_id": "camote",
-                 "planted_month": "2026-01", "polygon": self.left}
-            ])
+    def test_unplanted_remainder_is_not_a_crop_zone(self):
+        result = build_spatial_plan(self.field, [
+            {"id": "Zona 1", "crop_id": "camote",
+             "planted_month": "2026-01", "polygon": self.left}
+        ])
+        self.assertEqual([z["zone_id"] for z in result["zone_plans"]], ["Zona 1"])
+        self.assertLess(result["zone_plans"][0]["area_ha"], result["parcel_area_ha"])
 
     def test_rejects_bad_crop(self):
         with self.assertRaises(ValueError):
