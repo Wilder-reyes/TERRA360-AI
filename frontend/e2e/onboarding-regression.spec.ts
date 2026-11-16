@@ -45,7 +45,8 @@ test('explicitly choosing the example creates a real plan without assigning unpl
   if(route.request().url().includes('/spatial-plan')){
    const body=route.request().postDataJSON();responseStatus=200
    await route.fulfill({json:{...prepared,zone_plans:body.zones.map((z:{id:string;crop_id:string})=>({...preparedZone,zone_id:z.id,current_crop_id:z.crop_id}))}})
-  }else await route.fulfill({json:{status:'ok'}})
+  }else if(route.request().url().includes('/compare'))await route.fulfill({json:{status:'available',strategies:[]}})
+  else await route.fulfill({json:{status:'ok'}})
  })
  await page.goto('/')
  await expect(page.locator('.b-field-ready')).toHaveCount(0)
