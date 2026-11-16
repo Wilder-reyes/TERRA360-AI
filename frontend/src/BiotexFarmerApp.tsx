@@ -14,6 +14,7 @@ import BioTour from './BioTour'
 import CropGlyph,{ZoneMapLabel} from './CropGlyph'
 import {useFieldFrame} from './useFieldFrame'
 import ChakraInfoPage from './ChakraInfoPage'
+import ChakraTeamPage from './ChakraTeamPage'
 import {CropPhotoGuide} from './CropPhotoGuide'
 import {parseGeoJSONPolygon} from './geometry'
 import {imergApproxCell} from './imerg-grid'
@@ -248,15 +249,15 @@ export default function BiotexFarmerApp(){
  const t=LABELS[lang]
  const [step,setStep]=useState<Step>(0)
  const [landing,setLanding]=useState(true)
- const [infoPage,setInfoPage]=useState<'how'|'sources'|null>(()=>{
-  const p=window.location.pathname;return p==='/como-funciona'?'how':p==='/fuentes'?'sources':null
+ const [infoPage,setInfoPage]=useState<'how'|'sources'|'team'|null>(()=>{
+  const p=window.location.pathname;return p==='/como-funciona'?'how':p==='/fuentes'?'sources':p==='/equipo'||p==='/team'?'team':null
  })
  useEffect(()=>{
-  const onPop=()=>{const p=window.location.pathname;setInfoPage(p==='/como-funciona'?'how':p==='/fuentes'?'sources':null)}
+  const onPop=()=>{const p=window.location.pathname;setInfoPage(p==='/como-funciona'?'how':p==='/fuentes'?'sources':p==='/equipo'||p==='/team'?'team':null)}
   window.addEventListener('popstate',onPop);return()=>window.removeEventListener('popstate',onPop)
  },[])
- function showPage(page:'how'|'sources'|null){
-  const path=page==='how'?'/como-funciona':page==='sources'?'/fuentes':'/'
+ function showPage(page:'how'|'sources'|'team'|null){
+  const path=page==='how'?'/como-funciona':page==='sources'?'/fuentes':page==='team'?'/equipo':'/'
   if(window.location.pathname!==path)window.history.pushState({},'',path+window.location.search)
   setInfoPage(page);window.scrollTo({top:0,behavior:'auto'})
  }
@@ -725,6 +726,7 @@ export default function BiotexFarmerApp(){
    {economicReport.strategies.map(x=><p key={x.strategy_id}><strong>{x.strategy_id==='S0'?t.current:x.strategy_id}:</strong> {x.margin_soles_ha_24months==null?(lang==='es'?'Datos incompletos':'Incomplete inputs'):'S/ '+x.margin_soles_ha_24months.toLocaleString(lang==='es'?'es-PE':'en-US')}</p>)}
   </div>}
   <p>{sampleNote?(lang==='es'?'Terreno mostrado para demostración; los cultivos registrados fueron proporcionados durante esta sesión.':'Field used for demonstration; crop inputs were supplied during this session.'):''}</p></div></div>}
+ if(infoPage==='team')return <ChakraTeamPage lang={lang} onBack={()=>showPage(null)}/>
  if(infoPage)return <ChakraInfoPage page={infoPage} lang={lang} onBack={()=>showPage(null)} onNavigate={showPage}/>
  return <div className={'b-app chakra-farmer-clean '+(new URLSearchParams(window.location.search).get('research')==='1'?'chakra-research ':'')+(spatialPlan?'chakra-has-zone-print':'')}>
   <a className="b-skip" href="#main">Ir al contenido / Skip to content</a>
@@ -732,7 +734,7 @@ export default function BiotexFarmerApp(){
  <button type="button" className="b-brand" aria-label={lang==='es'?'Inicio CHAKRA X':'CHAKRA X home'} onClick={()=>{showPage(null);navigate(0);setLanding(true)}}><span className="b-brand-mark"><ChakraMark/></span><div><b>CHAKRA X</b><small>{lang==='es'?'Tu tierra. Tu decisión.':'Your land. Your decision.'}</small></div></button>
  <nav className="chakra-nav" aria-label={lang==='es'?'Navegación principal':'Main navigation'}>
  <a href="/como-funciona" onClick={e=>{e.preventDefault();showPage('how')}}>{lang==='es'?'Cómo funciona':'How it works'}</a>
- <a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a>
+ <a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a><a href="/equipo" onClick={e=>{e.preventDefault();showPage('team')}}>{lang==='es'?'Nuestro equipo':'Our team'}</a>
  </nav>
  <div className="b-header-tools"><button className="chakra-nav-cta" aria-label={lang==='es'?'Ir al mapa':'Go to the map'} onClick={()=>{setLanding(false);navigate(0);setTimeout(()=>document.getElementById('chakra-field')?.scrollIntoView({behavior:'smooth'}),0)}}><span className="chakra-nav-long">{lang==='es'?'Ir al mapa':'Go to the map'}</span><span className="chakra-nav-short" aria-hidden="true">{lang==='es'?'Mapa':'Map'}</span><Icon name="right" size={16}/></button>
  <button type="button" className="chakra-theme-toggle" aria-pressed={theme==='light'} aria-label={theme==='light'?(lang==='es'?'Cambiar a modo oscuro':'Switch to dark mode'):(lang==='es'?'Cambiar a modo claro':'Switch to light mode')} title={theme==='light'?'Dark':'Light'} onClick={()=>setTheme(v=>v==='light'?'dark':'light')}>{theme==='light'?'☾':'☀'}</button>
@@ -957,7 +959,7 @@ export default function BiotexFarmerApp(){
      <button type="button" onClick={()=>navigate(2)} className="b-btn b-btn-light"><Icon name="left"/>{t.startOver}</button></div>
    </section>}
   </main>
-  <footer className="b-footer"><div><strong>CHAKRA X</strong></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><a href="/como-funciona" onClick={e=>{e.preventDefault();showPage('how')}}>{lang==='es'?'Cómo funciona':'How it works'}</a><a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
+  <footer className="b-footer"><div><strong>CHAKRA X</strong></div><div className="b-footer-links"><a href="https://github.com/Wilder-reyes/TERRA360-AI/blob/main/docs/CHAKRA_NASA.md" target="_blank" rel="noreferrer">{lang==='es'?'Cómo usamos NASA':'How we use NASA'}</a><a href="/como-funciona" onClick={e=>{e.preventDefault();showPage('how')}}>{lang==='es'?'Cómo funciona':'How it works'}</a><a href="/fuentes" onClick={e=>{e.preventDefault();showPage('sources')}}>{lang==='es'?'Fuentes':'Sources'}</a><a href="/equipo" onClick={e=>{e.preventDefault();showPage('team')}}>{lang==='es'?'Nuestro equipo':'Our team'}</a><span>NASA Space Apps Challenge 2026 · Field Shift</span></div></footer>
   {printable()}
   {spatialPlan&&field&&<ChakraZonePrint plan={spatialPlan} field={field} subplots={subplots} lang={lang} place={place}/>}
  </div>

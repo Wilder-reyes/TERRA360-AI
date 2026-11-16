@@ -38,6 +38,14 @@
     {
       "source": "/fuentes",
       "destination": "/index.html"
+    },
+    {
+      "source": "/equipo",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/team",
+      "destination": "/index.html"
     }
   ]
 }

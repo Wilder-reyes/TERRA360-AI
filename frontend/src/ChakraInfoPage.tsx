@@ -31,6 +31,7 @@ export default function ChakraInfoPage({page,lang,onBack,onNavigate}:{page:Page;
     <button type="button" onClick={onBack}>{es?'Ir a mi terreno':'My field'}</button>
     <a href="/como-funciona" onClick={e=>{e.preventDefault();onNavigate('how')}} aria-current={how?'page':undefined}>{es?'Cómo funciona':'How it works'}</a>
     <a href="/fuentes" onClick={e=>{e.preventDefault();onNavigate('sources')}} aria-current={!how?'page':undefined}>{es?'Fuentes':'Sources'}</a>
+    <a href="/equipo">{es?'Nuestro equipo':'Our team'}</a>
    </nav>
   </header>
   <main className="chakra-info-main">

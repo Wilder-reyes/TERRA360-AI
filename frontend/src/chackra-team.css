@@ -1,0 +1,23 @@
+.chackra-team-page{--ct-accent:#D6F866;--ct-muted:#b3c7b5;min-height:100svh;background:radial-gradient(ellipse at 50% -15%,#1f3220 0%,transparent 48%),#050806;color:#f2f6ee;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.chackra-team-page *{box-sizing:border-box}
+.chackra-team-skip{position:absolute;left:-9999px;top:8px;z-index:100;color:#050806;background:#D6F866;padding:10px}.chackra-team-skip:focus{left:8px}
+.chackra-team-header{position:sticky;top:0;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:20px;min-height:78px;padding:12px clamp(20px,5vw,76px);border-bottom:1px solid #ffffff18;background:rgba(5,8,6,.90);backdrop-filter:blur(18px)}
+.chackra-team-brand{display:flex;align-items:center;gap:10px;background:transparent;border:0;color:#f5f8f2;font-weight:800;font-size:19px;white-space:nowrap;cursor:pointer}.chackra-team-brand svg{width:38px;height:38px}
+.chackra-team-header nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.chackra-team-header nav a,.chackra-team-header nav button{border:1px solid #ffffff24;border-radius:999px;padding:10px 16px;min-height:44px;background:#ffffff08;color:#ebf4e9;text-decoration:none;font-size:13px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.chackra-team-header nav :is(a,button):hover{border-color:#D6F866;color:#D6F866}
+.chackra-team-main{width:min(1240px,100%);margin:0 auto;padding:clamp(45px,7vw,98px) clamp(20px,5vw,64px) 90px}
+.chackra-team-intro{max-width:790px;margin:0 0 clamp(28px,4vw,52px)}.chackra-team-eyebrow{display:block;letter-spacing:.18em;color:#d6f866;font-size:11px;font-weight:750;margin-bottom:20px}
+.chackra-team-intro h1{font-size:clamp(42px,7.3vw,100px);letter-spacing:-.065em;line-height:.98;font-weight:850;margin:0 0 22px;color:#f7fcf2}.chackra-team-intro h1 span{color:#D6F866}
+.chackra-team-intro p{max-width:640px;color:var(--ct-muted);font-size:clamp(15px,1.65vw,19px);line-height:1.7;margin:0}
+.chackra-team-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(14px,2.4vw,30px)}
+.chackra-team-card{overflow:hidden;border:1px solid #ffffff22;background:linear-gradient(145deg,#1b281c,#111912 55%,#101510);border-radius:24px;box-shadow:0 22px 50px #0004;min-width:0;transition:transform .25s,border-color .25s}
+.chackra-team-card:hover{transform:translateY(-5px);border-color:#b9dc7575}.chackra-team-photo{position:relative;aspect-ratio:4/4.4;overflow:hidden;background:#1e2920}
+.chackra-team-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 24%;filter:saturate(.85);transition:transform .4s}.chackra-team-card:hover img{transform:scale(1.035)}
+.chackra-team-number{position:absolute;left:18px;top:18px;border-radius:999px;background:#0c150dcc;border:1px solid #ffffff28;padding:8px 12px;font-size:11px;font-weight:750;color:#D6F866}
+.chackra-team-meta{padding:clamp(20px,2.6vw,32px)}.chackra-team-meta h2{color:#fff;font-size:clamp(20px,2.25vw,28px);letter-spacing:-.035em;margin:0 0 7px;line-height:1.2;overflow-wrap:anywhere}.chackra-team-meta p{color:#D6F866;font-size:14px;margin:0;font-weight:550}
+.chackra-team-end{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-top:52px;padding:30px 0;border-top:1px solid #ffffff20}.chackra-team-end p{max-width:580px;margin:0;color:var(--ct-muted);line-height:1.65}
+.chackra-team-end button{border:0;border-radius:999px;background:#D6F866;color:#10180e;font-weight:750;padding:15px 22px;min-height:48px;white-space:nowrap;cursor:pointer}
+.chackra-team-footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid #ffffff1d;padding:26px clamp(20px,5vw,76px);color:#abc0ab;font-size:12px}.chackra-team-footer strong{color:#f2f7ee;font-size:14px}
+@media(max-width:820px){.chackra-team-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.chackra-team-header{flex-wrap:wrap}.chackra-team-header nav{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.chackra-team-header nav :is(button,a){padding:10px 6px;text-align:center;white-space:normal}}
+@media(max-width:550px){.chackra-team-grid{grid-template-columns:1fr;max-width:390px;margin:0 auto}.chackra-team-intro{text-align:center}.chackra-team-intro h1{font-size:clamp(41px,11vw,64px)}.chackra-team-header{gap:6px}.chackra-team-end{flex-direction:column;align-items:stretch}.chackra-team-end button{align-self:flex-start}.chackra-team-photo{aspect-ratio:4/4}.chackra-team-main{padding:50px 18px 65px}}
+@media(prefers-reduced-motion:reduce){.chackra-team-card,.chackra-team-photo img{transition:none}.chackra-team-card:hover,.chackra-team-card:hover img{transform:none}}
