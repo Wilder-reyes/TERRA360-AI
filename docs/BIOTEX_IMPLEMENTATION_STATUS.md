@@ -207,3 +207,16 @@ Rama: `fix/guided-popup-crop-labels-calendar`.
 - Marcador de versión: `chakrax-guided-popup-calendar-2026-11`.
 
 Validación: TypeScript/Vite, 47 pruebas unitarias frontend y escenarios de navegador para el recorrido completo con popup, teclado, pictogramas, etiquetas y noviembre/diciembre de 2026 en once anchos de pantalla.
+
+## PDF generado, compartir resultados y espaciado final
+
+Rama: `fix/direct-pdf-sharing-and-page-spacing`.
+
+- «Guardar como PDF» descarga directamente un documento vectorial A4, con márgenes de 18 mm, fuentes incrustadas Open Sans (Apache 2.0), texto ajustado y paginación independiente del ancho del navegador. Incluye croquis con letras de zona, superficies, cultivos, fechas, preparación, calendario mensual, comparación disponible y fuentes/limitaciones.
+- El archivo se prepara antes del clic para conservar la activación del usuario al invocar Web Share. «Compartir PDF por WhatsApp» entrega el archivo generado al panel nativo: no pide cargar ni seleccionar un PDF previo. Cancelar no descarga ni abre otra aplicación.
+- Si el navegador no admite compartir archivos, descarga el mismo PDF y abre WhatsApp con el resumen real de resultados. La interfaz explica que el adjunto se puede añadir desde Descargas y que el envío debe confirmarse; no afirma entrega automática.
+- La impresión nativa sigue disponible como acción independiente. Croquis y tablas impresas ajustan nombres, columnas y saltos de página.
+- Mayor espacio lateral y superior en escritorio, contenido centrado con ancho máximo de 1480 px y márgenes móviles contenidos.
+- Marcador de versión: `chakrax-direct-pdf-sharing-2026-11`.
+
+Verificación: 50 pruebas unitarias frontend, compilación TypeScript/Vite y regresiones de navegador para PDF A4 móvil/escritorio, archivo compartido con activación de usuario, alternativa sin selector de archivos y once anchos de pantalla. Se comprueban los resultados publicados en `https://chakrax.vercel.app/` tras el despliegue.

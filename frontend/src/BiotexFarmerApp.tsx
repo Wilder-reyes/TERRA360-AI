@@ -28,6 +28,7 @@ import './chakra-farmer-v3.css'
 import './chakra-responsive-audit.css'
 import './onboarding-fixes.css'
 import './zone-presentation.css'
+import './report-layout.css'
 import {cropVisual} from './chakraCropVisuals'
 import {ChakraZoneHandles,suggestedZones} from './ChakraRectZones'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
@@ -924,7 +925,7 @@ export default function BiotexFarmerApp(){
      <button type="button" className="b-btn b-btn-primary" disabled={spatialBusy} onClick={()=>void buildSpatialPlan()}>{lang==='es'?'Crear mi calendario':'Create my calendar'}<Icon name="right"/></button></div>
    </section>}
    {step===2&&spatialPlan&&field&&<ChakraZonePlan plan={spatialPlan} field={field} subplots={subplots}
-    lang={lang} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
+    lang={lang} place={place} comparisons={result?.strategies as CompareStrategy[]|undefined} onPrint={()=>window.print()} onEdit={()=>navigate(1)}/>}
    {step===2&&spatialPlan&&<div className="chakra-horizon-actions"><button type="button" className="b-btn b-btn-light" onClick={()=>{setSpatialPlan(null);setResult(null)}}>{lang==='es'?'Cambiar los meses de mi plan':'Change my planning months'}</button></div>}
    {step===2&&precomputedAt&&<p role="note" className="chakra-strategy-scope">{lang==='es'?'Resultado precalculado del ejemplo de Barranca ('+precomputedAt.slice(0,10)+'): el servidor no respondió a tiempo. Son los mismos cálculos del motor CHAKRA.':'Precomputed result for the Barranca example ('+precomputedAt.slice(0,10)+'): the server did not answer in time. Same CHAKRA engine calculations.'}</p>}
    {step===2&&spatialPlan&&field&&<details className="chakra-more-science"><summary>{lang==='es'?'Compara otras maneras de cuidar el agua y la tierra':'Compare alternatives for water and soil'}</summary>{planningMonths!==24&&<p className="chakra-calendar-note">{lang==='es'?'Las tres estrategias de comparación siguen usando una ventana de referencia de 24 meses; tu calendario por zonas sí usa la duración que elegiste.':'The three comparison strategies retain their 24-month reference period; your zone calendar uses your chosen duration.'}</p>}<StrategyCompare strategies={(result?.strategies as CompareStrategy[]|undefined)||null} lang={lang}

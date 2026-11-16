@@ -56,7 +56,7 @@ test('searched crop reference does not become declared crop history or suitabili
  await expect(page.locator('.chakra-zone-choice').first()).toContainText('Por registrar')
  await expect(page.locator('.chakra-crop-card')).toHaveCount(9)
 })
-test('zone-by-zone PDF uses the native print entry point and a geometric map',async({page})=>{
+test('native printing remains available alongside generated PDF downloads',async({page})=>{
  await page.addInitScript(()=>{(window as any).__printed=0;window.print=()=>{(window as any).__printed++}})
  await page.route('**/api/rotation/spatial-plan',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({
   status:'prepared',parcel_area_ha:2.25,scope:'barranca_reference',ai_status:'agronomic_rule_engine',
@@ -73,7 +73,7 @@ test('zone-by-zone PDF uses the native print entry point and a geometric map',as
  await registerAllCropZones(page)
  await page.getByRole('button',{name:'Continuar a mi plan'}).click()
  await page.getByRole('button',{name:'Crear mi calendario'}).click()
- await page.getByRole('button',{name:/Guardar como PDF/}).click()
+ await page.getByRole('button',{name:'Imprimir',exact:true}).click()
  await expect.poll(()=>page.evaluate(()=>(window as any).__printed)).toBe(1)
  await page.emulateMedia({media:'print'})
  await expect(page.locator('.chakra-spatial-print')).toBeVisible()
@@ -93,7 +93,7 @@ test('missing NASA data remains unknown and catalogue review never invents plant
 })
 test('release describes the unified application with no published-site dependency',async({page})=>{
  await page.goto('/?research=1');await expect(page).toHaveTitle('CHAKRA X | Tu tierra. Tu próxima siembra.')
- const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('chakra-1.0.0-nasa-space-apps-2026');expect(d.environment).toBe('production');expect(d.team).toBe('CHAKRA X');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('chakrax-guided-popup-calendar-2026-11')
+ const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('chakra-1.0.0-nasa-space-apps-2026');expect(d.environment).toBe('production');expect(d.team).toBe('CHAKRA X');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('chakrax-direct-pdf-sharing-2026-11')
 })
 test('NASA GIBS layers and POWER figures keep distinct regional provenance',async({page})=>{
  await context(page);await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()

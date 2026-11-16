@@ -1,0 +1,33 @@
+@media screen {
+ .b-app.chakra-farmer-clean{--page-gutter:clamp(24px,4vw,72px)}
+ .b-app.chakra-farmer-clean .b-main{box-sizing:border-box;width:100%;max-width:1480px!important;margin-inline:auto!important;padding-inline:var(--page-gutter)!important;padding-top:16px!important}
+ .b-app.chakra-farmer-clean .b-header{box-sizing:border-box;width:100%;max-width:1480px;margin:0 auto 18px!important;padding:clamp(22px,2.2vw,38px) var(--page-gutter) 0!important;top:0!important}
+ .b-app.chakra-farmer-clean .b-header-inner{max-width:none!important;width:100%;box-sizing:border-box}
+ .b-app.chakra-farmer-clean .b-footer{box-sizing:border-box;max-width:1480px;margin-inline:auto;padding-inline:var(--page-gutter)!important}
+ .chakra-pdf-status{padding:13px 16px;border:1px solid #d6f86666;border-radius:13px;background:#122117;color:#e5efd9;line-height:1.5;overflow-wrap:anywhere}
+ .chakra-pdf-status p{margin:0 0 8px}.chakra-pdf-status a{display:inline-flex;align-items:center;min-height:44px;color:#d6f866;text-decoration:underline}
+ .chakra-pdf-help{font-size:13px;line-height:1.6;color:#b9cbb2;max-width:760px}
+ .chakra-result-actions button:disabled{opacity:.5;cursor:progress}
+}
+@media screen and (max-width:960px){.b-app.chakra-farmer-clean{--page-gutter:24px}}
+@media screen and (max-width:640px){
+ .b-app.chakra-farmer-clean{--page-gutter:16px}
+ .b-app.chakra-farmer-clean .b-header{width:auto;margin:16px 12px 16px!important;padding:0!important;top:auto!important}
+ .b-app.chakra-farmer-clean .b-main{padding-top:12px!important}
+}
+@media print {
+ @page{size:A4 portrait;margin:18mm}
+ html,body{min-width:0!important;max-width:none!important;background:#fff!important}
+ .b-app.chakra-has-zone-print>.chakra-spatial-print{width:100%!important;max-width:174mm!important;box-sizing:border-box;overflow-wrap:anywhere}
+ .chakra-spatial-print>header{flex-wrap:wrap;gap:8px}
+ .chakra-spatial-print .chakra-plan-sketch svg{width:100%!important;height:auto!important;max-height:72mm!important}
+ .chakra-spatial-print .chakra-sketch-legend{display:grid;grid-template-columns:1fr;gap:5px}
+ .chakra-spatial-print .chakra-print-zone{break-inside:avoid-page;page-break-inside:avoid}
+ .chakra-spatial-print .chakra-print-year{break-inside:auto!important;page-break-inside:auto!important}
+ .chakra-print-year table{width:100%!important;table-layout:fixed!important;border-collapse:collapse}
+ .chakra-print-year thead{display:table-header-group}
+ .chakra-print-year tr{break-inside:avoid-page;page-break-inside:avoid}
+ .chakra-print-year th,.chakra-print-year td{padding:6px!important;vertical-align:top;overflow-wrap:anywhere;word-break:normal;line-height:1.35}
+ .chakra-print-year th small,.chakra-print-year .chakra-print-month{font-size:8pt!important;line-height:1.35}
+ .chakra-pdf-status,.chakra-pdf-help{display:none!important}
+}
