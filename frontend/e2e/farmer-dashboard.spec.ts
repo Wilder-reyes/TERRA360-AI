@@ -93,7 +93,7 @@ test('missing NASA data remains unknown and catalogue review never invents plant
 })
 test('release describes the unified application with no published-site dependency',async({page})=>{
  await page.goto('/?research=1');await expect(page).toHaveTitle('CHAKRA X | Tu tierra. Tu próxima siembra.')
- const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('chakra-1.0.0-nasa-space-apps-2026');expect(d.environment).toBe('production');expect(d.team).toBe('CHAKRA X');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('chakrax-field-onboarding-2026-11')
+ const r=await page.request.get('/release.json');expect(r.ok()).toBeTruthy();const d=await r.json();expect(d.release).toBe('chakra-1.0.0-nasa-space-apps-2026');expect(d.environment).toBe('production');expect(d.team).toBe('CHAKRA X');expect(d.computer_vision_enabled).toBe(false);expect(d.primary_url).toBeUndefined();expect(d.ui_release).toBe('chakrax-guided-popup-calendar-2026-11')
 })
 test('NASA GIBS layers and POWER figures keep distinct regional provenance',async({page})=>{
  await context(page);await page.getByRole('button',{name:'Lluvia NASA',exact:true}).click()

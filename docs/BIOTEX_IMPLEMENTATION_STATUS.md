@@ -193,3 +193,17 @@ Rama: `fix/chackra-onboarding-and-zone-plan`.
 - Pruebas actualizadas para seleccionar el ejemplo expresamente y comprobar los nueve cultivos, las zonas declaradas y las acciones vigentes.
 
 Verificación: TypeScript y Vite, 43 pruebas unitarias frontend, 278 pruebas Python, reproducción del modelo HLS y 55 escenarios de navegador aprobados. El nuevo recorrido se comprobó además con `E2E_SCIENTIFIC_API=http://127.0.0.1:8000` contra el motor científico en ejecución. Marcador del frontend: `chakrax-field-onboarding-2026-11`. Contrato de salud de API: `explicit-planted-zones-v2`. La publicación se verifica sobre `https://chakrax.vercel.app/` y su ruta `/api/health`.
+
+
+## Guía emergente, pictogramas y calendario de cultivos actuales
+
+Rama: `fix/guided-popup-crop-labels-calendar`.
+
+- CHOKLITO vuelve a una ventana flotante contextual: avanza con las acciones, resalta el control pertinente, se minimiza al usar el mapa y puede repetirse. El diálogo inicial conserva foco de teclado y salida con Escape.
+- Pictogramas SVG diferentes para frijol canario, frijol castilla y pallar, compartidos entre selección, mapa, recomendaciones y calendario.
+- Etiquetas de zona con icono, jerarquía legible y anchura acotada; en móvil se complementan con tarjetas de nombres completos debajo del mapa.
+- El calendario inicia en el primer mes del periodo y muestra el cultivo actual según la fecha declarada y la duración de catálogo. Cada mes tiene estado explícito; los meses desconocidos no se convierten en campañas ni descansos inventados.
+- Pantalla, mapa e impresión comparten los estados mensuales. Los coeficientes y el cálculo de recomendaciones del backend no cambian.
+- Marcador de versión: `chakrax-guided-popup-calendar-2026-11`.
+
+Validación: TypeScript/Vite, 47 pruebas unitarias frontend y escenarios de navegador para el recorrido completo con popup, teclado, pictogramas, etiquetas y noviembre/diciembre de 2026 en once anchos de pantalla.

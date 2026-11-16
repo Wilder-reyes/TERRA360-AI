@@ -11,6 +11,7 @@ import FarmDecisionEvidence,{type EconomicReport} from './FarmDecisionEvidence'
 import FarmerAIEvidence,{type AIEvidence} from './FarmerAIEvidence'
 import './biotex-farmer.css'
 import BioTour from './BioTour'
+import CropGlyph,{ZoneMapLabel} from './CropGlyph'
 import {useFieldFrame} from './useFieldFrame'
 import ChakraInfoPage from './ChakraInfoPage'
 import {CropPhotoGuide} from './CropPhotoGuide'
@@ -26,6 +27,7 @@ import './chakra-ppt-flow.css'
 import './chakra-farmer-v3.css'
 import './chakra-responsive-audit.css'
 import './onboarding-fixes.css'
+import './zone-presentation.css'
 import {cropVisual} from './chakraCropVisuals'
 import {ChakraZoneHandles,suggestedZones} from './ChakraRectZones'
 import ChakraIcon,{ChakraMark} from './ChakraIcon'
@@ -546,7 +548,7 @@ export default function BiotexFarmerApp(){
    if(!response.ok)throw new Error(await httpErrorMessage(response,lang==='en'))
    const data=await response.json() as ChakraSpatialPlan
    if(data.status!=='prepared'||!Array.isArray(data.zone_plans))throw new Error('Plan response needs review')
-   setSpatialPlan(data);navigate(2)
+   setSpatialPlan({...data,zone_plans:data.zone_plans.map(row=>({...row,last_planting_month:row.last_planting_month||zoneCrops[row.zone_id]?.planted_month}))});navigate(2)
    if(province)void compareZones()
   }catch(e){
    if(planningMonths===12&&isPrecomputedExample()){
@@ -851,12 +853,12 @@ export default function BiotexFarmerApp(){
       <Polygon positions={(mapPolygon||[]).map(v=>[v.lat,v.lng] as [number,number])} interactive={!drawingSubplot}
        eventHandlers={{click:()=>{if(!subplots.length){if(pendingCrop)assignZoneCrop('rest',pendingCrop);else setActiveZone('rest')}}}}
        pathOptions={{color:'#D6F866',weight:5,fillColor:cropVisual(zoneCrops.rest?.crop_id).color,fillOpacity:subplots.length?0:zoneCrops.rest?.crop_id?0.45:0.15}}>
-       {zoneCrops.rest&&subplots.length===0&&<Tooltip permanent direction="center" className="chakra-crop-map-label">{cropVisual(zoneCrops.rest.crop_id).icon} {labelCrop(zoneCrops.rest.crop_id,lang)}</Tooltip>}
+       {zoneCrops.rest&&subplots.length===0&&<Tooltip permanent direction="center" className="chakra-crop-map-label"><ZoneMapLabel zone={zoneTitle('rest').split(' · ')[0]} cropId={zoneCrops.rest.crop_id} cropName={labelCrop(zoneCrops.rest.crop_id,lang)}/></Tooltip>}
       </Polygon>
       {subplots.map(z=><Polygon key={z.id} positions={fromGeo(z.polygon).map(v=>[v.lat,v.lng] as [number,number])}
        pathOptions={{color:selectedZone===z.id?'#D6F866':'#F1F8EB',weight:selectedZone===z.id?5:3,fillColor:cropVisual(zoneCrops[z.id]?.crop_id).color,fillOpacity:.8}}
        interactive={!drawingSubplot} eventHandlers={{click:()=>{if(pendingCrop)assignZoneCrop(z.id,pendingCrop);else setActiveZone(z.id)}}}>
-       {zoneCrops[z.id]&&<Tooltip permanent direction="center" className="chakra-crop-map-label">{cropVisual(zoneCrops[z.id].crop_id).icon} {labelCrop(zoneCrops[z.id].crop_id,lang)}</Tooltip>}
+       {zoneCrops[z.id]&&<Tooltip permanent direction="center" className="chakra-crop-map-label"><ZoneMapLabel zone={zoneTitle(z.id)} cropId={zoneCrops[z.id].crop_id} cropName={labelCrop(zoneCrops[z.id].crop_id,lang)}/></Tooltip>}
       </Polygon>)}
      </MapContainer></div>
      <div className="chakra-zone-map-actions" data-bio-target="bio-zone-edit">
@@ -882,7 +884,7 @@ export default function BiotexFarmerApp(){
       <p className="chakra-month-why">{lang==='es'?'Indica la fecha de siembra actual de esta zona; no necesitas registrar campañas antiguas. La usamos para estimar cuándo termina el ciclo.':'Enter when the current crop was planted, not historical campaigns. It helps us estimate when its cycle ends.'}</p>
      </div>
      <div className="chakra-crop-grid" role="group" aria-label={lang==='es'?'Elige el cultivo':'Choose crop'}>{CROPS.map(id=><button type="button" draggable onDragStart={event=>{event.dataTransfer.setData('application/x-chakra-crop',id);event.dataTransfer.effectAllowed='copy';setPendingCrop(id);setCrop(id)}} key={id} className={'chakra-crop-card '+(crop===id?'chosen':'')} aria-pressed={crop===id} onClick={()=>{setCrop(id);setPendingCrop(id);if(window.innerWidth<=960)document.getElementById('chakra-zone-map')?.scrollIntoView({behavior:'smooth',block:'center'})}}>
-      <span className="chakra-crop-art" aria-hidden="true">{({maiz_amarillo_duro:'🌽',maiz_chala:'🌽',camote:'🍠',papa:'🥔',frijol_grano_seco:'🫘',frijol_castilla:'🫘',vainita:'🫛',pallar:'🫘',arveja_verde:'🫛',cebolla:'🧅',zanahoria:'🥕',brocoli_col:'🥦',alfalfa:'🌿'} as Record<string,string>)[id]}</span>
+      <span className="chakra-crop-art"><CropGlyph id={id} size={54}/></span>
       <span>{labelCrop(id,lang)}</span><span className="chakra-crop-tick">{crop===id?'✓':''}</span></button>)}</div>
      <div className="chakra-crop-when">
       <button className="b-btn b-btn-primary" type="button" onClick={applyZoneCrop}>{lang==='es'?'Marcar en zona elegida':'Assign to selected area'}</button></div>

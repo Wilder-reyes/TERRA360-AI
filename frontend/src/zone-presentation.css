@@ -1,0 +1,34 @@
+.crop-glyph{display:inline-flex;flex:none;vertical-align:middle;align-items:center;justify-content:center}
+.chakra-crop-art>.crop-glyph{max-width:100%;max-height:100%}
+.chakra-map-badge{display:grid;grid-template-columns:27px minmax(0,1fr);gap:7px;align-items:center;text-align:left}
+.chakra-map-badge-copy{display:grid;gap:3px;min-width:0}
+.chakra-map-badge-copy strong{font-size:12px;line-height:1.2;color:#13291d}
+.chakra-map-badge-crop{font-size:12px;line-height:1.3;font-weight:600;color:#233b2a;overflow-wrap:anywhere}
+.chakra-map-badge-state{font-size:10px;line-height:1.25;color:#46604a}
+.b-app.chakra-farmer-clean :is(.chakra-zone-map,.chakra-aerial-map) .leaflet-tooltip.chakra-crop-map-label{width:max-content!important;max-width:180px!important;min-width:0!important;white-space:normal!important;padding:9px 11px!important;background:#f2f7ecef!important;color:#13291d!important;border:1px solid #fff9!important;border-radius:12px!important;box-sizing:border-box;box-shadow:0 4px 16px #0003;pointer-events:none}
+.chakra-map-zone-key{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px;padding:0;margin:14px 0 0;list-style:none}
+.chakra-map-zone-key li{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #ffffff26;border-radius:14px;background:#15281a;min-width:0}
+.chakra-map-zone-key li>div{display:grid;gap:4px;min-width:0;overflow-wrap:anywhere}
+.chakra-map-zone-key strong{font-size:14px;color:#D6F866}
+.chakra-map-zone-key span{font-size:15px;line-height:1.35;color:#f1f7ea}
+.chakra-map-zone-key small{font-size:12px;line-height:1.4;color:#bcccb5}
+.b-app.chakra-farmer-clean .chakra-advice-card h2{display:flex;align-items:center;gap:9px}
+.b-app.chakra-farmer-clean .chakra-calendar .chakra-quarter-heading,.b-app.chakra-farmer-clean .chakra-calendar .chakra-quarter-row{grid-template-columns:140px repeat(var(--quarter-count,4),minmax(0,1fr))!important}
+.chakra-quarter-month-status{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:8px}
+.chakra-quarter-month-status li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:5px;border-top:1px solid #ffffff1c;padding-top:7px;font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+.chakra-quarter-month-status b{color:#d6f866}
+.chakra-quarter-month-status small{display:block;margin-top:4px;font-size:10px;color:#b9cdb2}
+.chakra-calendar-legend>span{flex-wrap:wrap;min-width:0;overflow-wrap:anywhere}
+.chakra-calendar-legend small{flex-basis:100%;font-size:12px;color:#b9cdb2}
+@media screen and (max-width:700px){
+ .b-app.chakra-farmer-clean :is(.chakra-zone-map,.chakra-aerial-map) .leaflet-tooltip.chakra-crop-map-label{max-width:88px!important;padding:5px 6px!important;border-radius:9px!important}
+ .chakra-map-badge{grid-template-columns:24px minmax(0,1fr);gap:4px}
+ .chakra-map-badge .crop-glyph{max-width:24px;max-height:27px}
+ .chakra-map-badge-copy strong{font-size:10px;white-space:nowrap}
+ .chakra-map-badge-crop,.chakra-map-badge-state{display:none}
+ .b-app.chakra-farmer-clean .chakra-calendar .chakra-quarter-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .b-app.chakra-farmer-clean .chakra-calendar .chakra-quarters[data-quarter-count="1"] .chakra-quarter-row{grid-template-columns:minmax(0,1fr)!important}
+ .chakra-quarter-month-status li{grid-template-columns:minmax(0,1fr);gap:3px}
+ .chakra-map-zone-key{grid-template-columns:minmax(0,1fr)}
+}
+@media print{.chakra-print-month{display:block;font-size:9px;line-height:1.35;margin-top:4px;overflow-wrap:anywhere}}

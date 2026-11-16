@@ -1,10 +1,35 @@
 @media screen {
- .b-app .bio-guide-root{position:relative!important;inset:auto!important;z-index:1101!important;pointer-events:auto!important;width:min(760px,calc(100% - 28px));max-width:none!important;margin:18px auto}
- .b-app .bio-guide-root .bio-tour.bio-guided-card{position:static!important;width:100%!important;max-width:none!important;max-height:none!important;margin:0}
- .b-app .bio-guide-root .bio-repeat{position:static!important;max-width:none!important}
- .b-app .bio-tour .bio-tour-top p{max-width:none!important}
- .b-app .bio-guide-root .choklito-welcome{z-index:7000;pointer-events:auto}
- .b-app .bio-guide-root .choklito-welcome-card{pointer-events:auto}
+ .bio-guide-root.bio-popup-root{position:fixed!important;inset:0!important;width:0!important;height:0!important;margin:0!important;padding:0!important;z-index:9000!important;pointer-events:none}
+ .bio-popup-root .bio-tour.bio-guided-card{position:fixed!important;right:auto!important;bottom:auto!important;width:min(360px,calc(100vw - 24px))!important;max-width:none!important;max-height:min(310px,55dvh)!important;margin:0!important;padding:16px!important;overflow:auto;background:#102018!important;color:#f5faed!important;border:1px solid #d6f86688;border-radius:22px;box-shadow:0 18px 60px #0009;pointer-events:auto;font-family:Inter,system-ui,sans-serif}
+ .bio-popup-root .bio-tour-top{gap:10px;align-items:center}
+ .bio-popup-root .bio-tour-top .bio-mascot{width:58px;height:82px;flex:none}
+ .bio-popup-root .bio-kicker{font-size:10px;color:#D6F866!important;letter-spacing:.06em}
+ .bio-popup-root .bio-tour-top strong{font-size:17px;color:#f5faed}
+ .bio-popup-root .bio-tour-top p{font-size:13px!important;line-height:1.45!important;color:#cbd8c8!important;max-width:none!important}
+ .bio-popup-root .bio-actions{gap:8px;margin-top:10px}
+ .bio-popup-root .bio-actions button{min-height:44px;white-space:normal;font-size:12px;padding:8px 10px}
+ .bio-popup-root .bio-forward{background:#D6F866;color:#071207}
+ .bio-popup-root .bio-skip{color:#d7e1d3;background:transparent}
+ .bio-popup-root .bio-repeat{position:fixed!important;right:12px!important;bottom:calc(90px + env(safe-area-inset-bottom,0px))!important;display:flex;max-width:170px;min-height:48px;padding:5px 12px 5px 4px;background:#102018;color:#eaf5df;border:1px solid #d6f86677;border-radius:24px;pointer-events:auto;box-shadow:0 8px 28px #0006}
+ .bio-popup-root .bio-repeat .bio-mascot{width:30px;height:42px}
+ .bio-popup-root .choklito-welcome{z-index:10000;pointer-events:auto}
+ .bio-popup-root .choklito-drag-example{color:#183d2c}
+ .bio-step-progress{display:flex;gap:6px;margin-top:9px}
+ .bio-step-progress i{height:3px;flex:1;border-radius:3px;background:#36513b}
+ .bio-step-progress i.active{background:#D6F866}
+ .choklito-target{outline:2px solid #d6f866!important;outline-offset:4px;scroll-margin-top:130px}
+ .b-app.chakra-farmer-clean .b-header{margin-bottom:20px!important}
+ .b-app.chakra-farmer-clean .b-progress-wrap{margin-top:12px;margin-bottom:26px}
  .b-app.chakra-farmer-clean #chakra-field .b-field-ready{display:flex!important}
  .b-app.chakra-farmer-clean #chakra-field .b-map-guide{display:block!important}
 }
+@media screen and (max-width:640px){
+ .bio-popup-root .bio-repeat{width:54px!important;height:54px!important;max-width:54px!important;padding:4px!important;justify-content:center;border-radius:50%}
+ .bio-popup-root .bio-repeat>span{display:none}
+ .bio-popup-root .bio-tour.bio-guided-card{padding:12px!important;max-height:min(260px,48dvh)!important}
+ .bio-popup-root .bio-tour-top .bio-mascot{width:45px;height:65px}
+ .bio-popup-root .bio-tour-top strong{font-size:15px}
+ .bio-popup-root .bio-tour-top p{font-size:12px!important}
+ .b-app.chakra-farmer-clean .b-header{margin-bottom:14px!important}
+}
+@media print{.bio-popup-root{display:none!important}}

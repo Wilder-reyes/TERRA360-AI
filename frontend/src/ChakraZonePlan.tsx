@@ -1,13 +1,15 @@
+import {calendarState} from './calendarState'
+import CropGlyph from './CropGlyph'
 /** Clear, print-safe spatial planting recommendations; do not mistake colors for satellite evidence. */
 import {useState,type ReactNode} from 'react'
-import ChakraRotationTimeline,{planMonths,campaignAt,displayMonth,quarterMonths,quarterCrops,quarterName,zoneLabel} from './ChakraRotationTimeline'
+import ChakraRotationTimeline,{planMonths,campaignAt,displayMonth,quarterMonths,quarterCrops,quarterPeriod,zoneLabel} from './ChakraRotationTimeline'
 import {cropVisual} from './chakraCropVisuals'
 import ChakraAerialPlanMap from './ChakraAerialPlanMap'
 import type {GeoPolygon} from './rotationZones'
 import {printableGeometry} from './campaignPlan'
 
 export type ChakraZoneAdvice={
- zone_id:string;area_ha:number;current_crop_id:string;current_crop:string;current_crop_en?:string;
+ last_planting_month?:string;zone_id:string;area_ha:number;current_crop_id:string;current_crop:string;current_crop_en?:string;
  suggested_crop_id:string;suggested_crop:string;suggested_crop_en?:string;sow_month:string;sow_label_es:string;sow_label_en?:string;
  estimated_cycle_days:number;why_es:string;why_en?:string;how_es:string[];how_en?:string[];
  reference_water_mm:number|null;sowing_window_scope:string;source_tags:string[];
@@ -74,11 +76,7 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
  onPrint:()=>void;onEdit:()=>void
 }){
  const es=lang==='es'
- const [monthIndex,setMonthIndex]=useState(()=>{
-  const months=planMonths(plan)
-  const first=months.findIndex(m=>plan.zone_plans.some(row=>row.campaigns?.some(c=>c.sow_month===m)))
-  return Math.max(0,first)
- })
+ const [monthIndex,setMonthIndex]=useState(0)
  const months=planMonths(plan)
  const sharePdf=()=>{
   const picker=document.createElement('input');picker.type='file';picker.accept='application/pdf';picker.setAttribute('aria-label',es?'Selecciona el PDF guardado':'Choose saved PDF')
@@ -101,8 +99,8 @@ export default function ChakraZonePlan({plan,field,subplots,lang,onPrint,onEdit}
   <ChakraAerialPlanMap field={field} subplots={subplots} plan={plan} lang={lang} month={months[Math.min(monthIndex,months.length-1)]}/>
   <ChakraRotationTimeline plan={plan} lang={lang} monthIndex={monthIndex} onMonth={setMonthIndex}/>
   <div className="chakra-result-advice">{plan.zone_plans.map((row,i)=><article className="chakra-advice-card" key={row.zone_id}>
-   <header><span className="chakra-advice-zone"><i style={{background:shade(i)}}/>{label(row.zone_id,es,i)} · {areaName(row.area_ha,es)}</span><span className="chakra-advice-current">{es?'Antes':'Current'}: {localizedCrop(row.current_crop,row.current_crop_en,es)}</span></header>
-   <h2><span aria-hidden="true">{cropVisual(row.suggested_crop_id).icon} </span>{localizedCrop(row.suggested_crop,row.suggested_crop_en,es)}</h2>
+   <header><span className="chakra-advice-zone"><i style={{background:shade(i)}}/>{label(row.zone_id,es,i)} · {areaName(row.area_ha,es)}</span><span className="chakra-advice-current">{es?'Cultivo actual':'Current crop'}: {localizedCrop(row.current_crop,row.current_crop_en,es)}</span></header>
+   <h2><CropGlyph id={row.suggested_crop_id} size={32}/>{localizedCrop(row.suggested_crop,row.suggested_crop_en,es)}</h2>
    <div className="chakra-advice-when"><span aria-hidden="true">🗓️ </span><span>{es?'CUÁNDO SEMBRAR':'WHEN TO PLANT'}</span><strong>{localizedDate(row,es)}</strong></div>
    <p>{!es&&row.why_en?row.why_en:row.why_es}</p>
    <details open><summary>{es?'🌱 Cómo prepararlo, paso a paso':'How to prepare the planting'}</summary><ol>{(!es&&row.how_en?row.how_en:row.how_es).map((line,j)=><li key={j}>{line}</li>)}</ol></details>
@@ -132,20 +130,20 @@ export function ChakraZonePrint({plan,field,subplots,lang,place,extra}:{
    <ol>{(!es&&row.how_en?row.how_en:row.how_es).map((s,j)=><li key={j}>{s}</li>)}</ol>
   </section>)}
   {planMonths(plan).length>0&&[...new Set(planMonths(plan).map(m=>m.slice(0,4)))].map(year=>{
-   const slots=planMonths(plan).filter(m=>m.startsWith(year))
+   const slots=planMonths(plan).filter(m=>m.startsWith(year)),quarters=[0,1,2,3].filter(q=>quarterMonths(slots,q).length)
    return <section className="chakra-print-year" key={year}>
     <h2>{es?'Calendario de rotación':'Rotation calendar'} · {year}</h2>
-    <table><thead><tr><th>{es?'Zona':'Area'}</th>{[0,1,2,3].map(q=><th key={q}>{quarterName(q,lang)}</th>)}</tr></thead>
+    <table><thead><tr><th>{es?'Zona':'Area'}</th>{quarters.map(q=><th key={q}>{quarterPeriod(slots,q,lang)}</th>)}</tr></thead>
      <tbody>{plan.zone_plans.map((row,i)=><tr key={row.zone_id}>
       <th>{zoneLabel(row.zone_id,es,i)}<small>{es?'Antes: ':'Previously: '}{es?row.current_crop:row.current_crop_en||row.current_crop}</small></th>
-      {[0,1,2,3].map(q=>{
+      {quarters.map(q=>{
        const cells=quarterCrops(row,quarterMonths(slots,q))
-       return <td key={q}>{cells.length?cells.map(c=>{const v=cropVisual(c.crop_id);return <span key={c.when} style={{background:v.color}}>{es?c.label:c.label_en} · {c.continues?(es?'Continúa':'Ongoing'):displayMonth(c.when,lang)}</span>} ):(es?'Sin siembra programada':'No planting scheduled')}</td>
+       return <td key={q}>{cells.length?cells.map(c=>{const v=cropVisual(c.crop_id);return <span key={c.when} style={{background:v.color}}>{es?c.label:c.label_en} · {c.current?(es?'Cultivo actual':'Current crop'):c.continues?(es?'Continúa':'Ongoing'):displayMonth(c.when,lang)}</span>} ):(es?'Sin programación confirmada':'No confirmed schedule')}{quarterMonths(slots,q).map(month=>{const state=calendarState(row,month,es);return <small className="chakra-print-month" key={month}>{displayMonth(month,lang)}: {state.name} · {state.state}</small>})}</td>
       })}
      </tr>)}</tbody></table>
    </section>
   })}
   {extra}
-  <footer><p>{es?'Fuentes disponibles en ':'Sources available at '}{'https://biotex-eta.vercel.app/fuentes'}</p><p>CHAKRA X · NASA Space Apps 2026 · Field Shift</p></footer>
+  <footer><p>{es?'Fuentes disponibles en ':'Sources available at '}{window.location.origin+'/fuentes'}</p><p>CHAKRA X · NASA Space Apps 2026 · Field Shift</p></footer>
  </article>
 }

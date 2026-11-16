@@ -5,7 +5,7 @@ const VISUALS:Record<string,CropVisual>={
  maiz_chala:{color:'#D8CB78',icon:'🌽',name:'Maíz chala'},
  camote:{color:'#D99270',icon:'🍠',name:'Camote'},
  papa:{color:'#B4B89A',icon:'🥔',name:'Papa'},
- frijol_grano_seco:{color:'#9ACFAD',icon:'🫘',name:'Frijol'},
+ frijol_grano_seco:{color:'#9ACFAD',icon:'🫘',name:'Frijol canario'},
  frijol_castilla:{color:'#83BDB7',icon:'🫘',name:'Frijol castilla'},
  vainita:{color:'#70BE9B',icon:'🫛',name:'Vainita'},
  pallar:{color:'#B5C48A',icon:'🫘',name:'Pallar'},

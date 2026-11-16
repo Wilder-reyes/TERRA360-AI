@@ -47,7 +47,7 @@ test('how and sources are independent public pages with real provider links',asy
  await expect(page.locator('.b-map')).toBeVisible()
 })
 
-test('the farmer has a readable quarter calendar and last crop when no campaign is scheduled',async({page})=>{
+test('the quarter calendar explicitly marks months without confirmed scheduling',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('chakra-choklito-guided-v4','hide'))
  let submitted:Record<string,unknown>|undefined
  await page.route('**/api/rotation/spatial-plan',route=>{
@@ -73,7 +73,7 @@ test('the farmer has a readable quarter calendar and last crop when no campaign 
  await expect(page.locator('.chakra-quarter-zone')).toContainText('Camote')
  await page.getByRole('button',{name:'2026',exact:true}).click()
  await page.getByRole('button',{name:/nov/i}).first().click()
- await expect(page.getByText('Último cultivo: Camote').first()).toBeVisible()
+ await expect(page.locator('.chakra-calendar-legend')).toContainText('Sin programación confirmada')
  expect(submitted?.planning_months).toBe(18)
  await page.emulateMedia({media:'print'})
  await expect(page.locator('.chakra-print-year')).toHaveCount(3)
