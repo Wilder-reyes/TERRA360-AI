@@ -1,0 +1,581 @@
+{
+  "version": "2026-11-14b",
+  "scope": "Cultivos transitorios de valles costeros irrigados de Lima (Huaral, Barranca). Valores de referencia para comparar rotaciones de forma RELATIVA; no son recomendaciones agronómicas.",
+  "sources": {
+    "fao56_kc": "FAO Irrigation and Drainage Paper 56, Cap. 6, Tabla 12 (Kc ini/mid/end) y Tabla 11 (duración de etapas): https://www.fao.org/4/x0490e/x0490e0b.htm",
+    "dra_lima": "DRA Lima / MIDAGRI, Evaluación mensual de la dinámica agropecuaria, octubre 2025 (siembras por mes, campaña 2024-2025, departamento de Lima): https://cdn.www.gob.pe/uploads/document/file/9396404/6533728-evaluacion-mensual-de-la-dinamica-agropecuaria-octubre-2025.pdf",
+    "note_dra": "Las siembras son del DEPARTAMENTO de Lima e incluyen provincias de sierra; para la costa se usan como calendario aproximado. Meses en formato 1=ene ... 12=dic."
+  },
+  "fields": {
+    "kc": "Coeficiente de cultivo FAO-56 [inicial, medio, final]",
+    "stages_days": "Duración de etapas FAO-56 [inicial, desarrollo, media, final] adaptada a un ciclo típico de la costa; total = ciclo",
+    "sowing_months_lima": "Meses con siembra relevante en el departamento de Lima según DRA Lima 2024-25",
+    "sowing_peak_months": "Meses con mayor superficie sembrada",
+    "nitrogen_fixer": "Leguminosa que fija N biológicamente",
+    "residue_class": "Aporte relativo de rastrojo/biomasa al suelo: alto/medio/bajo (literatura general)",
+    "root_depth": "superficial/media/profunda (FAO-56 Tabla 22, rango típico)",
+    "heat_sensitive_stage": "Etapa en la que el calor extremo afecta más",
+    "confidence": "Qué tan seguro es el dato: 'fao56' (valor de tabla), 'proxy' (cultivo similar), 'verificar'"
+  },
+  "crops": [
+    {
+      "id": "maiz_amarillo_duro",
+      "name_es": "Maíz amarillo duro",
+      "family": "Poaceae",
+      "kc": [
+        0.3,
+        1.2,
+        0.35
+      ],
+      "stages_days": [
+        25,
+        40,
+        50,
+        30
+      ],
+      "cycle_days": 145,
+      "sowing_months_lima": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sowing_peak_months": [
+        2,
+        3,
+        1
+      ],
+      "sowing_evidence": "Campaña 2024-25 (DRA Lima, total 12 463,8 ha): ago 708,5 · set 1 257,5 · oct 731,5 · nov 859,5 · dic 798 · ene 1 401 · feb 2 313 · mar 1 956,6 · abr 588,9 · may 399,5 · jun 608,6 · jul 841,2. Siembra todo el año; 45,5 % en ene–mar y 21,6 % en ago–oct. (Corregido: la fila salía rotulada MAIZ CHALA en la extracción del PDF; la continuidad de la superficie verde de 2025-26 confirma que es MAD. Las cifras ago–oct 1 292 / 913 / 757 son de la campaña 2025-26.)",
+      "nitrogen_fixer": false,
+      "residue_class": "alto",
+      "root_depth": "media-profunda",
+      "heat_sensitive_stage": "floración y llenado de grano",
+      "market": "cadena avícola; precio en chacra ~S/1,60/kg (DRA Lima)",
+      "confidence": "fao56",
+      "sowing_monthly_ha_2024_25_ago_jul": [
+        708.5,
+        1257.5,
+        731.5,
+        859.5,
+        798,
+        1401,
+        2313,
+        1956.6,
+        588.9,
+        399.5,
+        608.6,
+        841.2
+      ]
+    },
+    {
+      "id": "maiz_chala",
+      "name_es": "Maíz chala (forraje)",
+      "family": "Poaceae",
+      "kc": [
+        0.3,
+        1.15,
+        1.05
+      ],
+      "stages_days": [
+        20,
+        30,
+        35,
+        15
+      ],
+      "cycle_days": 100,
+      "sowing_months_lima": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sowing_peak_months": [
+        1,
+        2,
+        3
+      ],
+      "sowing_evidence": "Fila no confiable en la extracción del PDF (desalineada con el MAD). Se asume siembra todo el año: VERIFICAR en el PDF, pág. 15.",
+      "nitrogen_fixer": false,
+      "residue_class": "bajo (se cosecha la planta entera)",
+      "root_depth": "media",
+      "heat_sensitive_stage": "baja sensibilidad (se cosecha antes del grano)",
+      "market": "forraje para lecherías locales",
+      "confidence": "verificar calendario; Kc proxy de maíz dulce (FAO-56)"
+    },
+    {
+      "id": "camote",
+      "name_es": "Camote",
+      "family": "Convolvulaceae",
+      "kc": [
+        0.5,
+        1.15,
+        0.65
+      ],
+      "stages_days": [
+        15,
+        30,
+        50,
+        30
+      ],
+      "cycle_days": 125,
+      "sowing_months_lima": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sowing_peak_months": [
+        1,
+        6,
+        7
+      ],
+      "sowing_evidence": "Camote Jonathan 2024-25: ene 1 195 ha; jun 445; jul 446; resto 180–370 ha/mes (DRA Lima).",
+      "nitrogen_fixer": false,
+      "residue_class": "medio",
+      "root_depth": "media",
+      "heat_sensitive_stage": "tolerante al calor",
+      "market": "Lima; cultivo principal de la región",
+      "confidence": "fao56"
+    },
+    {
+      "id": "papa",
+      "name_es": "Papa (costa)",
+      "family": "Solanaceae",
+      "kc": [
+        0.5,
+        1.15,
+        0.75
+      ],
+      "stages_days": [
+        25,
+        30,
+        40,
+        25
+      ],
+      "cycle_days": 120,
+      "sowing_months_lima": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "sowing_peak_months": [
+        6,
+        7,
+        8
+      ],
+      "sowing_evidence": "Papa color 2024-25: ago 880, jul 850, jun 615 ha; papa única: may 1 046 ha (DRA Lima). Siembra de invierno en la costa.",
+      "nitrogen_fixer": false,
+      "residue_class": "bajo",
+      "root_depth": "superficial",
+      "heat_sensitive_stage": "tuberización (sensible a noches cálidas)",
+      "market": "Lima",
+      "confidence": "fao56"
+    },
+    {
+      "id": "frijol_grano_seco",
+      "name_es": "Frijol (canario) grano seco",
+      "family": "Fabaceae",
+      "kc": [
+        0.4,
+        1.15,
+        0.35
+      ],
+      "stages_days": [
+        15,
+        25,
+        35,
+        20
+      ],
+      "cycle_days": 95,
+      "sowing_months_lima": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "sowing_peak_months": [
+        6,
+        7,
+        8
+      ],
+      "sowing_evidence": "Frijol canario 2024-25: ago 286, jun 263, jul 205, set 188 ha (DRA Lima).",
+      "nitrogen_fixer": true,
+      "residue_class": "medio",
+      "root_depth": "media",
+      "heat_sensitive_stage": "floración",
+      "market": "Lima",
+      "confidence": "fao56"
+    },
+    {
+      "id": "frijol_castilla",
+      "name_es": "Frijol castilla / caupí",
+      "family": "Fabaceae",
+      "kc": [
+        0.4,
+        1.05,
+        0.6
+      ],
+      "stages_days": [
+        15,
+        25,
+        35,
+        15
+      ],
+      "cycle_days": 90,
+      "sowing_months_lima": [
+        11,
+        12,
+        1,
+        2,
+        3
+      ],
+      "sowing_peak_months": [
+        2,
+        3
+      ],
+      "sowing_evidence": "Caupí/castilla grano seco 2024-25: mar 892, feb 237, ene 148 ha (DRA Lima). Leguminosa de verano.",
+      "nitrogen_fixer": true,
+      "residue_class": "medio",
+      "root_depth": "media-profunda",
+      "heat_sensitive_stage": "tolerante al calor y a la sequía",
+      "market": "mercado nacional y exportación de grano",
+      "confidence": "fao56 (cowpea)"
+    },
+    {
+      "id": "vainita",
+      "name_es": "Frijol vainita",
+      "family": "Fabaceae",
+      "kc": [
+        0.5,
+        1.05,
+        0.9
+      ],
+      "stages_days": [
+        20,
+        30,
+        30,
+        10
+      ],
+      "cycle_days": 90,
+      "sowing_months_lima": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sowing_peak_months": [
+        5,
+        1
+      ],
+      "sowing_evidence": "Vainita 2024-25: todo el año, may 256, ene 200 ha (DRA Lima).",
+      "nitrogen_fixer": true,
+      "residue_class": "bajo",
+      "root_depth": "media",
+      "heat_sensitive_stage": "floración",
+      "market": "Lima (hortaliza fresca)",
+      "confidence": "fao56 (green beans)"
+    },
+    {
+      "id": "pallar",
+      "name_es": "Pallar grano verde",
+      "family": "Fabaceae",
+      "kc": [
+        0.5,
+        1.05,
+        0.9
+      ],
+      "stages_days": [
+        20,
+        35,
+        50,
+        25
+      ],
+      "cycle_days": 130,
+      "sowing_months_lima": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sowing_peak_months": [
+        1
+      ],
+      "sowing_evidence": "Pallar grano verde 2024-25: todo el año, ene 70,5 ha (DRA Lima). Superficie pequeña.",
+      "nitrogen_fixer": true,
+      "residue_class": "medio",
+      "root_depth": "media",
+      "heat_sensitive_stage": "floración",
+      "market": "Lima (nicho)",
+      "confidence": "proxy (Kc de vainita) — verificar duración del ciclo"
+    },
+    {
+      "id": "arveja_verde",
+      "name_es": "Arveja grano verde",
+      "family": "Fabaceae",
+      "kc": [
+        0.5,
+        1.15,
+        1.1
+      ],
+      "stages_days": [
+        15,
+        25,
+        35,
+        15
+      ],
+      "cycle_days": 90,
+      "sowing_months_lima": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sowing_peak_months": [
+        5,
+        6
+      ],
+      "sowing_evidence": "DRA Lima 2024-25 muestra siembra todo el año (pico ene–feb), pero incluye la sierra. En la costa la arveja es de clima fresco (invierno): verificar con la Agencia Agraria.",
+      "nitrogen_fixer": true,
+      "residue_class": "medio",
+      "root_depth": "superficial-media",
+      "heat_sensitive_stage": "muy sensible al calor",
+      "market": "Lima",
+      "confidence": "verificar calendario en costa"
+    },
+    {
+      "id": "cebolla",
+      "name_es": "Cebolla roja",
+      "family": "Amaryllidaceae",
+      "kc": [
+        0.7,
+        1.05,
+        0.75
+      ],
+      "stages_days": [
+        15,
+        25,
+        70,
+        40
+      ],
+      "cycle_days": 150,
+      "sowing_months_lima": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sowing_peak_months": [
+        6,
+        7
+      ],
+      "sowing_evidence": "Cebolla roja 2024-25: jun 101,5, jul 101,6 ha; resto 13–68 ha/mes (DRA Lima).",
+      "nitrogen_fixer": false,
+      "residue_class": "bajo",
+      "root_depth": "superficial",
+      "heat_sensitive_stage": "bulbificación",
+      "market": "Lima",
+      "confidence": "fao56"
+    },
+    {
+      "id": "zanahoria",
+      "name_es": "Zanahoria",
+      "family": "Apiaceae",
+      "kc": [
+        0.7,
+        1.05,
+        0.95
+      ],
+      "stages_days": [
+        20,
+        30,
+        50,
+        20
+      ],
+      "cycle_days": 120,
+      "sowing_months_lima": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "sowing_peak_months": [
+        4,
+        5,
+        6
+      ],
+      "sowing_evidence": "Zanahoria Chantenay 2024-25: abr 453, may 420, jun 447 ha (DRA Lima).",
+      "nitrogen_fixer": false,
+      "residue_class": "bajo",
+      "root_depth": "media",
+      "heat_sensitive_stage": "engrosamiento de raíz",
+      "market": "Lima",
+      "confidence": "fao56"
+    },
+    {
+      "id": "brocoli_col",
+      "name_es": "Brócoli / col",
+      "family": "Brassicaceae",
+      "kc": [
+        0.7,
+        1.05,
+        0.95
+      ],
+      "stages_days": [
+        30,
+        35,
+        25,
+        10
+      ],
+      "cycle_days": 100,
+      "sowing_months_lima": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sowing_peak_months": [
+        12,
+        3
+      ],
+      "sowing_evidence": "Brócoli 2024-25: 64–108 ha/mes todo el año; col 25–80 ha/mes (DRA Lima).",
+      "nitrogen_fixer": false,
+      "residue_class": "medio",
+      "root_depth": "superficial-media",
+      "heat_sensitive_stage": "formación de cabeza",
+      "market": "Lima",
+      "confidence": "fao56 (ciclo acortado a trasplante)"
+    },
+    {
+      "id": "alfalfa",
+      "name_es": "Alfalfa (2–4 años)",
+      "family": "Fabaceae",
+      "kc": [
+        0.4,
+        0.95,
+        0.9
+      ],
+      "stages_days": [
+        10,
+        30,
+        25,
+        10
+      ],
+      "cycle_days": 730,
+      "sowing_months_lima": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "sowing_peak_months": [
+        1,
+        12
+      ],
+      "sowing_evidence": "Alfalfa 2024-25: todo el año, ene 136 ha (DRA Lima). Kc medio de 0,95 promediando los cortes (FAO-56).",
+      "nitrogen_fixer": true,
+      "residue_class": "alto (raíces profundas y cobertura permanente)",
+      "root_depth": "profunda",
+      "heat_sensitive_stage": "tolerante",
+      "market": "forraje para lecherías",
+      "confidence": "fao56 (averaged cutting effects); etapas por corte",
+      "note": "Opción de 'descanso productivo' de varios años: alta demanda de agua todo el año, pero mejora mucho el suelo. Mostrar ese trade-off."
+    }
+  ],
+  "seasons_costa_lima": {
+    "river_low_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "river_high_months": [
+      12,
+      1,
+      2,
+      3,
+      4
+    ],
+    "river_evidence": "DRA Lima: 60–70 % de la descarga anual de los ríos de Lima ocurre en 3–4 meses de avenidas. Confirmar meses con los caudales ANA del boletín, sección XII.",
+    "hot_months": [
+      1,
+      2,
+      3
+    ],
+    "hot_evidence": "Verano costero; calcular con NASA POWER T2M_MAX por zona (no usar este valor fijo en producción)."
+  }
+}
