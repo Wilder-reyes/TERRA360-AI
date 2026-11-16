@@ -245,7 +245,7 @@ function ZoneDropBridge({field,subplots,onAssign}:{field:GeoPolygon;subplots:Sub
 const DEMOS=TEAM_FIELDS.filter(f=>f.zone==='barranca').slice(0,1)
 const SAVED_FARM_KEY='biotex-farm-v1'
 export default function BiotexFarmerApp(){
- const [lang,setLang]=useState<Lang>(()=>new URLSearchParams(window.location.search).get('lang')==='en'?'en':'es')
+ const [lang,setLang]=useState<Lang>(()=>new URLSearchParams(window.location.search).get('lang')==='es'?'es':'en')
  const t=LABELS[lang]
  const [step,setStep]=useState<Step>(0)
  const [landing,setLanding]=useState(true)
